@@ -20,7 +20,7 @@ import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, isOpen, isLoading } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, isOpen } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
