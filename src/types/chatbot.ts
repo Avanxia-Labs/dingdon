@@ -3,14 +3,21 @@
  * @description These types are used across the frontend and backend to ensure consistency.
  */
 
+type Roles = 
+  'user'      | // The user who interacts with the chatbot
+  'assistant' | // The chatbot itself, providing responses
+  'system'    | // System messages, typically for internal use
+  'agent'       // An agent who can take over the conversation
+
 /**
  * Represents a single message in the chat conversation.
  */
 export interface Message {
   id: string;
   content: string;
-  role: 'user' | 'assistant' | 'system'; // 'system' can be used for error messages
+  role: Roles 
   timestamp: Date;
+  agentName?: string; // Optional, used for agent messages
 }
 
 /**
@@ -29,3 +36,20 @@ export interface ChatbotConfig {
 export interface ChatApiResponse {
   reply: string;
 }
+
+/**
+ * Represents a chat session, which includes the messages exchanged and the session status.
+ */
+export type ChatSessionStatus = 
+  'bot'             // The bot is handling the session 
+| 'pending_agent'   // The session is waiting for an agent to take over
+| 'in_progress'     // The session is currently being handled by an agent
+| 'closed';         // The session has been closed
+
+export interface ChatSession {
+  id: string;
+  messages: Message[];
+  status: ChatSessionStatus;
+  assignedAgentId?: string;
+}
+

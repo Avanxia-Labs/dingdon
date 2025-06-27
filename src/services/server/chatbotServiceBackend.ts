@@ -49,25 +49,41 @@ function findLocalAnswer(userQuery: string): string | null {
  * @returns {string} The context prompt for the AI.
  */
 function generateAIContext(): string {
-  const { companyName, services } = MOCK_CHATBOT_CONFIG;
+  const { companyName, services, commonQuestions } = MOCK_CHATBOT_CONFIG;
+
+  const formattedQA = commonQuestions.map(qa =>
+    `Q: ${qa.question}\nA: ${qa.answer}`
+  ).join('\n\n')
+
   return `
-    You are a professional and friendly virtual assistant for ${companyName}.
-    Your goal is to provide initial support, answer questions, and identify potential leads.
+  You are a professional and knowledgeable virtual assistant for ${companyName}.
+  Your goal is to provide expert guidance on payment processing solutions, answer technical questions, and identify potential business opportunities.
 
-    About the company:
-    - Company Name: ${companyName}
-    - We specialize in AI and automation solutions for sales and support.
+  About the company:
+  - Company Name: ${companyName}
+  - We are a comprehensive payment processing and financial services provider
+  - We specialize in secure, scalable payment solutions for businesses across multiple industries
+  - We offer both payment processing technology and additional business services
 
-    Our Services:
-    ${services.map(service => `- ${service}`).join('\n')}
+  Our Core Services:
+  ${services.map(service => `- ${service}`).join('\n')}
 
-    Your Instructions:
-    1. Always be polite, professional, and helpful.
-    2. Use the provided information to answer questions about our services.
-    3. If you don't know an answer, politely state that you can connect the user with a human specialist.
-    4. Your primary goal is to encourage the user to take the next step, such as scheduling a demo, talking to sales, or requesting a quote.
-    5. When asked for pricing, explain that it's custom and offer to arrange a consultation for a personalized quote.
-    6. Keep your answers concise and easy to understand.
+  KNOWLEDGE BASE - Use this information to answer user questions accurately:
+  ${formattedQA}
+
+  Your Instructions:
+  1. FIRST, check if the user's question relates to any topic in the KNOWLEDGE BASE above. Use those answers as your primary reference.
+  2. For payment processing questions (credit cards, ACH, pricing models), use the relevant knowledge base information.
+  3. For industry-specific questions (legal, healthcare, retail, jewelry), reference our specialized industry solutions.
+  4. For fraud protection, chargeback, or security questions, highlight our advanced protection features.
+  5. For POS or hardware questions, mention our Clover solutions and payment hardware options.
+  6. For business services beyond payments (accounting, payroll, registration), reference our additional services.
+  7. Always be professional, knowledgeable, and solution-oriented.
+  8. If you need more specific technical details not in the knowledge base, offer to connect them with a payment specialist.
+  9. Your primary goal is to demonstrate our expertise and encourage next steps like consultations, demos, or quotes.
+  10. When discussing pricing, emphasize our transparent interchange plus pricing model and offer personalized consultations.
+  11. Keep responses informative but concise, matching the professional tone of the financial services industry.
+  12. Always prioritize security, compliance, and reliability in your responses.
   `;
 }
 
@@ -75,12 +91,27 @@ function generateAIContext(): string {
  * Generates a response to the user's prompt.
  * It first checks for a local answer and falls back to the Gemini API if none is found.
  * @param {string} userPrompt - The message sent by the user.
+ * @param {string} sessionId - The unique ID of the chat session.
  * @returns {Promise<string>} The generated or retrieved response.
  */
-async function generateChatbotResponse(userPrompt: string): Promise<string> {
+async function generateChatbotResponse(userPrompt: string, sessionId: string): Promise<string | { handoff: true }> {
+
+  console.log(`[Backend] Generating response for session: ${sessionId}`);
+
+  // Validate the user prompt
+  const normalizedQuery = userPrompt.toLowerCase();
+  const handOffKeywords = ['agent', 'human', 'speak to', 'talk to', 'representative', 'customer service', 'support'];
+
+  // Check if the user is explicitly asking to speak to a human agent
+  if (handOffKeywords.some(keyword => normalizedQuery.includes(keyword))) {
+    console.log(`[Handoff] User requested human assistance in session: ${sessionId}`);
+    return { handoff: true }; // Indicate that the user wants to speak to a human agent
+  }
+
   // 1. (Retrieval) Attempt to find a direct answer from our knowledge base first.
   const localAnswer = findLocalAnswer(userPrompt);
   if (localAnswer) {
+    console.log("Returning local answer");
     return localAnswer;
   }
 
@@ -100,13 +131,19 @@ async function generateChatbotResponse(userPrompt: string): Promise<string> {
       GEMINI_API_URL,
       {
         contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 1024, },
+        generationConfig: {
+          temperature: 0.7, // The lower the temp, the more consistent response
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        },
       },
       { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
     );
 
     const textResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (textResponse) {
+      console.log("Returning AI response");
       return textResponse.trim();
     }
     throw new Error('Invalid response structure from Gemini API');
@@ -116,8 +153,14 @@ async function generateChatbotResponse(userPrompt: string): Promise<string> {
     } else {
       console.error('Generic error calling Gemini API:', error);
     }
+    
     return "I'm sorry, I seem to be having some technical difficulties at the moment. Please try again in a little while.";
+
+
   }
+
+
+
 }
 
 /**

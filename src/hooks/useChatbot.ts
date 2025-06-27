@@ -1,11 +1,13 @@
 // app/hooks/useChatbot.ts
 'use client';
-
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatStore } from '@/stores/chatbotStore';
-import { Message } from '@/types/chatbot';
+import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
+import {io, Socket} from 'socket.io-client';
+
 
 /**
  * @file The main client-side hook for managing the chatbot's state and logic.
@@ -20,7 +22,7 @@ import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, isOpen } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat  } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -29,12 +31,59 @@ export const useChatbot = () => {
       toggleChat: state.toggleChat,
       isOpen: state.isOpen,
       isLoading: state.isLoading,
+      status: state.status, 
+      sessionId: state.sessionId, 
+      startSession: state.startSession, 
+      setSessionStatus: state.setSessionStatus,
+      resetChat: state.resetChat,
     }))
   );
 
-  const mutation = useMutation({
+  // Reference to the socket connection
+  const socketRef = useRef<Socket | null>(null);
+
+  // --- EFECTO PARA GESTIONAR LA CONEXIÓN WEBSOCKET ---
+  useEffect(() => {
+
+    if (isOpen && !sessionId) {
+      const newSessionId = `session-${Date.now()}`;
+      startSession(newSessionId);
+    }
+
+    if (sessionId && !socketRef.current) {
+      // Initialize the socket connection only if we have a sessionId and no existing socket
+      const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001')
+      socketRef.current = socket;
+
+      // Join the session room using the sessionId
+      socket.emit('join_session', sessionId);
+
+      // Listen from new messages of the agent
+      socket.on('agent_message', (message: Message) => {
+        addMessage(message);
+      })
+    
+      // Listen for session status changes
+      socket.on('status_change', (newStatus: ChatSessionStatus) => {
+        setSessionStatus(newStatus);
+      })
+    }
+  
+    // Cleanup function to disconnect the socket when the component unmounts
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null; // Clear the reference to prevent memory leaks
+      }
+    }
+  
+  }, [isOpen, sessionId, startSession, setSessionStatus, addMessage])
+
+
+
+   const mutation = useMutation({
     // The mutation function now calls our clean client service
-    mutationFn: (message: string) => chatbotServiceClient.postChatMessage(message),
+    mutationFn: (variables: {message: string, sessionId: string, history: Message[]}) => chatbotServiceClient.postChatMessage(variables.message, variables.sessionId, variables.history),
 
     onMutate: () => {
       setIsLoading(true);
@@ -49,6 +98,11 @@ export const useChatbot = () => {
         timestamp: new Date(),
       };
       addMessage(assistantMessage);
+
+      // Send the bot's message to save it
+      if(socketRef.current && sessionId) {
+        socketRef.current.emit('user_message', {sessionId, message: assistantMessage})
+      }
     },
 
     onError: (error) => {
@@ -75,7 +129,7 @@ export const useChatbot = () => {
    * @param {string} content - The text content of the user's message.
    */
   const sendMessage = (content: string) => {
-    if (!content.trim() || mutation.isPending) return;
+    if (!content.trim() || mutation.isPending || !sessionId) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -85,15 +139,44 @@ export const useChatbot = () => {
     };
     addMessage(userMessage);
 
-    // Trigger the mutation to send the message to the backend
-    mutation.mutate(content);
+    // Send the user message to save it
+    if (socketRef.current && sessionId) {
+      socketRef.current.emit('user_message', {sessionId, message: userMessage})
+    }
+
+    // We create an updated history to send it
+    const updatedHistory = [...messages, userMessage]
+
+    if (status === 'bot') {
+      mutation.mutate({message: content, sessionId, history: updatedHistory});
+    } else if (status === 'in_progress' && socketRef.current) {
+      socketRef.current.emit('user_message', { sessionId, message: userMessage})
+    }   
   };
+
+   
+
+
+  /**
+   * Function to resets the chat state if the chat is being closed.
+   */
+  const startNewChat = () => {
+    // Disconnect the current socket if it exists
+    if(socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    // Reset the chat state
+    resetChat();
+  }
 
   return {
     messages,
     isOpen,
-    isLoading: mutation.isPending, // Use mutation's pending state as the source of truth
+    status,
+    isLoading: mutation.isPending, 
     toggleChat,
     sendMessage,
+    startNewChat,
   };
 };

@@ -1,6 +1,5 @@
 import { ChatbotConfig } from "@/types/chatbot";
 
-
 /**
  * @file Provides the initial knowledge base for the chatbot.
  * @description This mock data is used to give the chatbot its personality,
@@ -12,31 +11,66 @@ import { ChatbotConfig } from "@/types/chatbot";
  * The initial configuration and knowledge base for the chatbot.
  */
 export const MOCK_CHATBOT_CONFIG: ChatbotConfig = {
-  companyName: "GYB Connect Inc.",
+  
+  companyName: "GYB Connect",
+  
   services: [
-    "AI-powered Customer Support",
-    "Automated Lead Follow-up",
-    "Cold Outreach Automation",
-    "CRM & Multi-channel Integration (WhatsApp, Web, Social Media)",
-    "Sales Process Automation",
-    "Custom Automation Consulting"
+    "Payment Processing Solutions",
+    "Interchange Plus Pricing Models",
+    "Recurring Payments & Subscriptions",
+    "Virtual Terminal Services",
+    "Point-of-Sale (Clover) Systems",
+    "ACH & Credit Card Processing",
+    "Fraud Management & 3D Secure",
+    "Chargeback Protection",
+    "IVR Payment Solutions",
+    "SMS & Email Payment Notifications",
+    "Professional Accounting Services",
+    "Payroll & Bookkeeping",
+    "Company Registration",
+    "Branding & E-Commerce Development"
   ],
+  
   commonQuestions: [
     {
-      question: "What is AI-powered customer support?",
-      answer: "It's a system that uses Artificial Intelligence, like me, to answer customer questions 24/7 across different channels, freeing up your human agents for more complex issues."
+      question: "What payment methods do you support?",
+      answer: "We support all major payment methods including debit & credit cards, ACH payments, and cash management solutions. Our systems are designed to handle diverse payment needs for businesses of all sizes."
     },
     {
-      question: "How does lead follow-up automation work?",
-      answer: "Our system automatically sends personalized messages and reminders to your prospects based on their actions, ensuring no lead goes cold and guiding them through the sales funnel."
+      question: "What is interchange plus pricing?",
+      answer: "Interchange plus pricing is a transparent pricing model where you pay the actual interchange cost set by card networks plus a fixed markup. This pass-through cost structure ensures you get the most competitive rates available."
     },
     {
-      question: "What platforms can you integrate with?",
-      answer: "We offer seamless integration with WhatsApp, WordPress websites, Facebook, Instagram, email, and can build custom integrations for your existing CRM or other tools."
+      question: "Do you offer recurring payment solutions?",
+      answer: "Yes! We provide comprehensive recurring payment solutions including subscription management, payment plans, and automated billing cycles. Perfect for businesses with recurring revenue models."
     },
     {
-      question: "What are the pricing plans?",
-      answer: "Our pricing is tailored to your specific needs, depending on the volume of interactions and the level of customization. Would you like to schedule a call with a sales specialist for a personalized quote?"
+      question: "What industries do you serve?",
+      answer: "We specialize in serving Legal Offices, Jewelry stores, Healthcare providers, and Retail businesses. Our solutions are tailored to meet the specific compliance and processing needs of each industry."
+    },
+    {
+      question: "What fraud protection do you offer?",
+      answer: "We provide advanced fraud management tools including 3D Secure authentication, Transaction Risk Scoring, and our advanced Chargeback Module. You'll receive alerts 24-48 hours before potential chargebacks, giving you time to respond proactively."
+    },
+    {
+      question: "Do you offer Point-of-Sale solutions?",
+      answer: "Yes, we offer Clover Point-of-Sale systems with integrated payment hardware. Our POS solutions include customizable reports, advanced system tracking, and seamless payment processing."
+    },
+    {
+      question: "What additional business services do you provide?",
+      answer: "Beyond payment processing, we offer Professional Accounting Services, Company Registration, Payroll management, Bookkeeping, Business Assessment, and Branding & E-Commerce Development services."
+    },
+    {
+      question: "How do your payment pages work?",
+      answer: "Our payment pages are secure, customizable, and can be integrated into your website or sent via SMS and email. They support multiple payment methods and provide a seamless checkout experience for your customers."
+    },
+    {
+      question: "What are your pricing plans?",
+      answer: "Our pricing is based on your business volume and specific needs. We offer competitive interchange plus pricing models with transparent, pass-through costs. Would you like to schedule a consultation for a personalized quote based on your business requirements?"
+    },
+    {
+      question: "How fast are deposits processed?",
+      answer: "We offer faster deposit options to improve your cash flow. Deposit timing depends on your processing volume and business profile. Contact us to learn about our expedited deposit solutions."
     }
   ]
 };

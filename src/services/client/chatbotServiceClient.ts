@@ -1,7 +1,7 @@
 // app/services/chatbotServiceClient.ts
 
 import { apiClient } from "../apiClient";
-import { ChatApiResponse } from "@/types/chatbot";
+import { ChatApiResponse, Message } from "@/types/chatbot";
 
 /**
  * @file API service for client-side chat operations.
@@ -14,13 +14,14 @@ import { ChatApiResponse } from "@/types/chatbot";
  * Sends a user's message to our backend chat API endpoint.
  * This function is designed to be called from client-side components/hooks.
  * @param message - The text content from the user.
+ * @param sessionId - The unique identifier for the current chat session.
  * @returns A promise that resolves to the AI's reply string, fetched from our backend.
  * @throws Will throw an error if the API call to our backend fails.
  */
-async function postChatMessage(message: string): Promise<string> {
+async function postChatMessage(message: string, sessionId: string, history: Message[]): Promise<string> {
   try {
     // Uses the pre-configured apiClient to make the request to '/api/chat'
-    const response = await apiClient.post<ChatApiResponse>('/chat', { message });
+    const response = await apiClient.post<ChatApiResponse>('/chat', { message, sessionId, history });
 
     // Axios wraps the response data in a 'data' property.
     if (response.data && response.data.reply) {
