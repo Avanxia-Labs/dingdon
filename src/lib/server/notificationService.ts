@@ -19,26 +19,30 @@ socket.on('connect', () => {
 })
 
 socket.on('connect_error', (err) => {
-  console.error(`[NotificationService] Error de conexión con WebSockets: ${err.message}`);
+    console.error(`[NotificationService] Error de conexión con WebSockets: ${err.message}`);
 });
 
 
 /**
  * Notifica al dashboard de agentes que hay una nueva solicitud de chat
- * @param sessionId - El ID de la sesion que requiere atencion
- * @param initialMessage - El primer mensaje del usuario para dar contexto
+ * @param workspaceId - El ID del workspace al que pertenece la solicitud. <-- CAMBIO
+ * @param requestData - Un objeto que contiene el sessionId y el initialMessage. <-- CAMBIO
  */
-function notifyNewHandoffRequest(sessionId: string, initialMessage: Message) {
+function notifyNewHandoffRequest(
+    workspaceId: string,
+    requestData: { sessionId: string; initialMessage: Message }
+) {
     if (socket.connected) {
-        // El evento que el Dashboard está escuchando
+        // El payload del evento ahora incluye el workspaceId
+        // para que el servidor de sockets sepa a qué "carril" de agentes notificar.
         socket.emit('new_handoff_request', {
-            sessionId,
-            initialMessage
-        })
-        console.log(`[NotificationService] Notificación de handoff enviada para la sesión: ${sessionId}`);
+            workspaceId,
+            requestData
+        });
+        console.log(`[NotificationService] Notificación de handoff enviada para workspace: ${workspaceId}, sesión: ${requestData.sessionId}`);
     } else {
-    console.error('[NotificationService] No se pudo enviar la notificación: Socket no conectado.');
-  }
+        console.error('[NotificationService] No se pudo enviar la notificación: Socket no conectado.');
+    }
 }
 
 export const notificationService = {

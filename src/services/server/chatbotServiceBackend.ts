@@ -94,7 +94,7 @@ function generateAIContext(): string {
  * @param {string} sessionId - The unique ID of the chat session.
  * @returns {Promise<string>} The generated or retrieved response.
  */
-async function generateChatbotResponse(userPrompt: string, sessionId: string): Promise<string | { handoff: true }> {
+async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string): Promise<string | { handoff: true }> {
 
   console.log(`[Backend] Generating response for session: ${sessionId}`);
 

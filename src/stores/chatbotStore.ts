@@ -18,6 +18,7 @@ interface ChatState {
     isLoading: boolean;
     sessionId?: string | null;
     status: ChatSessionStatus;
+    workspaceId: string | null;
 
     // ACTIONS
 
@@ -57,6 +58,9 @@ interface ChatState {
      * Resets the chat state, clearing all messages and resetting the session ID
      */
     resetChat: () => void;
+
+
+    setWorkspaceId: (workspaceId: string) => void;
 }
 
 /**
@@ -79,6 +83,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     isLoading: false,
     sessionId: null,
     status: 'bot',
+    workspaceId: null,
 
     toggleChat: () => set((state) => ({
         isOpen: !state.isOpen
@@ -113,6 +118,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         sessionId: null,
         status: 'bot',
         isLoading: false,
-    })
+    }),
+
+    setWorkspaceId: (workspaceId) => set({workspaceId})
 
 }))

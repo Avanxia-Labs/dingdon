@@ -1,63 +1,143 @@
 // app/api/auth/[...nextauth]/route.ts
 
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
+import { AppRole } from "@/types/chatbot";
 import CredentialsProvider from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google";
+import { supabase } from "@/lib/supabase/client"; 
+import { supabaseAdmin } from "@/lib/supabase/server"; 
 
-
-// Base de datos temporal de agentes autorizados
-const authorizedAgents = [
-    { id: "1", email: "agent1@example.com", password: "password123", name: "Agent Smith" },
-    { id: "2", email: "agent2@example.com", password: "password123", name: "Agent Jones" },
-]
-
-const handler = NextAuth({
-
+export const authOptions: NextAuthOptions = {
     providers: [
-        // Opcion 1: Login con Email y Contraseña
+        // --- Proveedor de Google ---
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+
+        // --- Proveedor de Credenciales (Email/Password) ---
         CredentialsProvider({
             name: "Credentials",
-            
             credentials: {
-                email: { label: "Email", type: "text"},
+                email: {label: "Email", type: "text"},
                 password: {label: "Password", type: "password"}
             },
-            
             async authorize(credentials) {
-                if (!credentials) return null;
-
-                const agent = authorizedAgents.find(a => a.email === credentials.email);
-
-                if (agent && agent.password === credentials.password) {
-                    // Devuelve el objeto del usuario si la autenticacion es exitosa
-                    return {
-                        id: agent.id,
-                        name: agent.name,
-                        email: agent.email
-                    }
+                // --- Validamos que las credenciales no estén vacías ---
+                if (!credentials?.email || !credentials?.password) {
+                    return null;
                 }
 
-                // Devuelve null si las credenciales son incorrectas
-                return null
+                // 1. Usamos el cliente PÚBLICO para el intento de login.
+                const {data: authData, error: authError} = await supabase.auth.signInWithPassword({
+                    email: credentials.email,
+                    password: credentials.password
+                })
+                
+                if (authError || !authData.user) {
+                    console.error("Fallo el login en Supabase:", authError?.message);
+                    return null
+                }
+
+                // 2. Usamos el cliente de SERVICIO para leer el perfil de forma segura.
+                // const {data: profile} = await supabaseAdmin
+                //     .from('profiles')            // Leemos la tabla de perfiles
+                //     .select('app_role')          // Seleccionamos el rol de la aplicación
+                //     .eq('id', authData.user.id)  // Filtramos por el ID del usuario
+                //     .single();                   // Obtenemos un único perfil
+
+                const {data: profileData, error: profileError} = await supabaseAdmin
+                        .from('profiles')
+                        .select(`app_role,
+                                 workspace_members (
+                                    workspace_id,
+                                    role
+                                 )`)
+                        .eq('id', authData.user.id)
+                        .limit(1)
+                        .single();
+
+                // Validamos que el perfil exista
+                if (profileError || !profileData) {
+                    console.error("No se encontró perfil o membresía para el usuario:", profileError?.message);
+                    return null;
+                }
+
+                // La membresía puede no existir (ej. para un superadmin)
+                const membership = profileData.workspace_members[0];
+
+                // 3. Retornamos el usuario y su rol
+                return {
+                    id: authData.user.id,
+                    email: authData.user.email!,
+                    name: authData.user.user_metadata.name || authData.user.email,
+                    role: profileData.app_role,
+                    workspaceId: membership?.workspace_id,
+                    workspaceRole: membership?.role
+                }
+
             }
-        }),
-    
-        // Opción 2: Login con Google
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!
         })
     ],
 
-    // Opcional: definir una pagina de login personalizada
+    // Los callbacks se ejecutan en diferentes puntos del ciclo de vida de la autenticación
+    callbacks: {
+         // Se ejecuta después de un inicio de sesión exitoso con cualquier proveedor
+         async signIn({user, account}) {
+            // Si el login es con un proveedor OAuth como Google, nos aseguramos de que su perfil exista en nuestra DB
+            if (account?.provider === 'google' && user.email) {
+                try {
+                    // Usamos el cliente de Admin para esta operación de backend
+                    await supabaseAdmin
+                        .from('profiles')
+                        .upsert({
+                            id: user.id,
+                            email: user.email,
+                            name: user.name
+                        }, {onConflict: 'id'}) // 'upsert' crea el perfil si no existe
+                } catch (error) {
+                    console.error("Error al crear/actualizar perfil de Google:", error);
+                    return false; // Bloquear el inicio de sesión si hay un error de base de datos
+                }
+            }
+
+            return true;
+         },
+
+         // Se ejecuta al crear o actualizar un JSON Web Token (JWT)
+        async jwt({ token, user }) {
+            // Si es el primer login (el objeto `user` está disponible), añadimos nuestros datos al token
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+                token.workspaceId = user.workspaceId;
+                token.workspaceRole = user.workspaceRole;
+            }
+            return token;
+        },
+
+        // Se ejecuta para crear o actualizar la sesión del cliente a partir del token JWT
+        async session({ session, token }) {
+            // Pasamos las propiedades personalizadas del token a la sesión que usa el cliente
+            session.user.id = token.id;
+            session.user.role = token.role;
+            session.user.workspaceId = token.workspaceId;
+            session.user.workspaceRole = token.workspaceRole;
+            return session;
+        },
+    },
+
+    // Configuración de páginas y sesión
     pages: {
-        signIn: '/login',
+        signIn: '/login', // Ruta a nuestra página de login personalizada
     },
     session: {
-        strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60, // 30 días
-        // maxAge: 60 * 60, // Solo 1 hora
-    }
-});
+        strategy: "jwt", // Usar JWT para gestionar las sesiones (sin estado en el servidor)
+    },
+    secret: process.env.NEXTAUTH_SECRET, // Clave secreta para firmar los JWT
+}
+
+// Exportamos el manejador de NextAuth
+const handler = NextAuth(authOptions);
 
 export {handler as GET, handler as POST}

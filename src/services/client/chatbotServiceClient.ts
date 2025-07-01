@@ -18,10 +18,10 @@ import { ChatApiResponse, Message } from "@/types/chatbot";
  * @returns A promise that resolves to the AI's reply string, fetched from our backend.
  * @throws Will throw an error if the API call to our backend fails.
  */
-async function postChatMessage(message: string, sessionId: string, history: Message[]): Promise<string> {
+async function postChatMessage(workspaceId: string, message: string, sessionId: string, history: Message[]): Promise<string> {
   try {
     // Uses the pre-configured apiClient to make the request to '/api/chat'
-    const response = await apiClient.post<ChatApiResponse>('/chat', { message, sessionId, history });
+    const response = await apiClient.post<ChatApiResponse>('/chat', { workspaceId, message, sessionId, history });
 
     // Axios wraps the response data in a 'data' property.
     if (response.data && response.data.reply) {

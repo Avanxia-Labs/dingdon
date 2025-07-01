@@ -21,7 +21,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await req.json();
-    const { message, sessionId, history } = body;
+    const { workspaceId, message, sessionId, history } = body;
+
+    if (!workspaceId) {
+        return NextResponse.json({ error: 'Workspace ID is required.' }, { status: 400 });
+    }
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       return NextResponse.json({ error: 'Message is required and must be a non-empty string.' }, { status: 400 });
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     
     
-    const aiResponse = await chatbotServiceBackend.generateChatbotResponse(message, sessionId);
+    const aiResponse = await chatbotServiceBackend.generateChatbotResponse(workspaceId, message, sessionId);
 
     // Call the backend service to get the AI-generated response
     if (typeof aiResponse === 'object' && aiResponse.handoff) {
@@ -40,13 +44,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       console.log(`[API Route] Handoff initiated for session ${sessionId}.`);
 
       // We get the initial message to provide context to the agent.
-      const firstUserMessage = history.find(
+      const firstUserMessage = history?.find(
         (msg: Message) => msg.role === 'user'
       )
 
       // We call the service to send the notification to the agent dashboard.
       if (firstUserMessage) {
-        notificationService.notifyNewHandoffRequest(sessionId, firstUserMessage)
+        notificationService.notifyNewHandoffRequest(workspaceId, {
+                sessionId: sessionId,
+                initialMessage: firstUserMessage
+        });
       }
 
       return NextResponse.json({

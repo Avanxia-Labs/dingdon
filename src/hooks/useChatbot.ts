@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
-import {io, Socket} from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 
 /**
@@ -22,7 +22,7 @@ import {io, Socket} from 'socket.io-client';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat  } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -31,16 +31,32 @@ export const useChatbot = () => {
       toggleChat: state.toggleChat,
       isOpen: state.isOpen,
       isLoading: state.isLoading,
-      status: state.status, 
-      sessionId: state.sessionId, 
-      startSession: state.startSession, 
+      status: state.status,
+      sessionId: state.sessionId,
+      startSession: state.startSession,
       setSessionStatus: state.setSessionStatus,
       resetChat: state.resetChat,
+      workspaceId: state.workspaceId,
+      setWorkspaceId: state.setWorkspaceId
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.chatbotConfig?.workspaceId) {
+      const id = window.chatbotConfig.workspaceId;
+      if (id && !workspaceId) {
+        console.log(`[Chatbot] Workspace ID detectado: ${id}`);
+        setWorkspaceId(id);
+      }
+    } else {
+      if (isOpen) {
+        console.warn('[Chatbot] No se encontró chatbotConfig.workspaceId en el objeto window.');
+      }
+    }
+  }, [isOpen, setWorkspaceId, workspaceId]);
 
   // --- EFECTO PARA GESTIONAR LA CONEXIÓN WEBSOCKET ---
   useEffect(() => {
@@ -62,13 +78,13 @@ export const useChatbot = () => {
       socket.on('agent_message', (message: Message) => {
         addMessage(message);
       })
-    
+
       // Listen for session status changes
       socket.on('status_change', (newStatus: ChatSessionStatus) => {
         setSessionStatus(newStatus);
       })
     }
-  
+
     // Cleanup function to disconnect the socket when the component unmounts
     return () => {
       if (socketRef.current) {
@@ -76,14 +92,19 @@ export const useChatbot = () => {
         socketRef.current = null; // Clear the reference to prevent memory leaks
       }
     }
-  
+
   }, [isOpen, sessionId, startSession, setSessionStatus, addMessage])
 
 
 
-   const mutation = useMutation({
-    // The mutation function now calls our clean client service
-    mutationFn: (variables: {message: string, sessionId: string, history: Message[]}) => chatbotServiceClient.postChatMessage(variables.message, variables.sessionId, variables.history),
+  const mutation = useMutation({
+
+    mutationFn: (variables: {
+      workspaceId: string,
+      message: string,
+      sessionId: string,
+      history: Message[],
+    }) => chatbotServiceClient.postChatMessage(variables.workspaceId, variables.message, variables.sessionId, variables.history),
 
     onMutate: () => {
       setIsLoading(true);
@@ -100,8 +121,8 @@ export const useChatbot = () => {
       addMessage(assistantMessage);
 
       // Send the bot's message to save it
-      if(socketRef.current && sessionId) {
-        socketRef.current.emit('user_message', {sessionId, message: assistantMessage})
+      if (socketRef.current && sessionId && workspaceId) {
+        socketRef.current.emit('user_message', { workspaceId, sessionId, message: assistantMessage })
       }
     },
 
@@ -129,7 +150,7 @@ export const useChatbot = () => {
    * @param {string} content - The text content of the user's message.
    */
   const sendMessage = (content: string) => {
-    if (!content.trim() || mutation.isPending || !sessionId) return;
+    if (!content.trim() || mutation.isPending || !sessionId || !workspaceId) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -137,24 +158,24 @@ export const useChatbot = () => {
       role: 'user',
       timestamp: new Date(),
     };
+
     addMessage(userMessage);
 
-    // Send the user message to save it
-    if (socketRef.current && sessionId) {
-      socketRef.current.emit('user_message', {sessionId, message: userMessage})
+    // Siempre enviamos el mensaje del usuario al servidor para que se guarde y/o reenvíe
+    if (socketRef.current) {
+      // --- CAMBIO: Añadimos workspaceId al payload ---
+      socketRef.current.emit('user_message', { workspaceId, sessionId, message: userMessage });
     }
 
-    // We create an updated history to send it
-    const updatedHistory = [...messages, userMessage]
-
+    // Solo llamamos a la IA si el estado es 'bot'
     if (status === 'bot') {
-      mutation.mutate({message: content, sessionId, history: updatedHistory});
-    } else if (status === 'in_progress' && socketRef.current) {
-      socketRef.current.emit('user_message', { sessionId, message: userMessage})
-    }   
+      const updatedHistory = [...messages, userMessage];
+      // --- CAMBIO: Pasamos el workspaceId a la mutación ---
+      mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory });
+    }
   };
 
-   
+
 
 
   /**
@@ -162,7 +183,7 @@ export const useChatbot = () => {
    */
   const startNewChat = () => {
     // Disconnect the current socket if it exists
-    if(socketRef.current) {
+    if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
@@ -174,7 +195,7 @@ export const useChatbot = () => {
     messages,
     isOpen,
     status,
-    isLoading: mutation.isPending, 
+    isLoading: mutation.isPending,
     toggleChat,
     sendMessage,
     startNewChat,

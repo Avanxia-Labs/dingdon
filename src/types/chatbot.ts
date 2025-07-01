@@ -3,11 +3,19 @@
  * @description These types are used across the frontend and backend to ensure consistency.
  */
 
+// Represents the roles that can be assigned to messages in the chat.
 type Roles = 
   'user'      | // The user who interacts with the chatbot
   'assistant' | // The chatbot itself, providing responses
   'system'    | // System messages, typically for internal use
   'agent'       // An agent who can take over the conversation
+
+
+/**
+ *  Defines the application roles for user management.
+ */
+export type AppRole = 'superadmin' | 'admin' | 'agent';
+ 
 
 /**
  * Represents a single message in the chat conversation.
@@ -51,5 +59,21 @@ export interface ChatSession {
   messages: Message[];
   status: ChatSessionStatus;
   assignedAgentId?: string;
+}
+
+
+/**
+ * Representa el rol de un miembro dentro de un workspace.
+ */
+export type WorkspaceRole = 'admin' | 'agent';
+
+/**
+ * Representa un miembro del equipo (agente o admin) en la UI.
+ */
+export interface TeamMember {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: WorkspaceRole;
 }
 
