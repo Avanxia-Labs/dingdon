@@ -1,0 +1,200 @@
+// // app/api/workspaces/[workspaceId]/invite/route.ts
+
+// import { NextResponse } from 'next/server';
+// import { getServerSession } from 'next-auth';
+// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+// import { supabaseAdmin } from '@/lib/supabase/server';
+
+// export async function POST(
+//     request: Request,
+//     { params }: { params: { workspaceId: string } }
+// ) {
+//     const session = await getServerSession(authOptions);
+//     const { workspaceId } = params;
+
+//     // 1. Verificación de Seguridad:
+//     // Solo un 'admin' de este workspace puede invitar a nuevos miembros.
+//     if (session?.user?.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {
+//         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+//     }
+
+//     const { name, email, password, role } = await request.json();
+
+//     if (!name || !email || !password || !role) {
+//         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+//     }
+
+//     try {
+//         // 2. Crear el nuevo usuario en Supabase Auth
+//         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+//             email: email,
+//             password: password,
+//             email_confirm: true,
+//             user_metadata: { full_name: name }
+//         });
+
+//         if (authError) {
+//             throw new Error(`Failed to create user in Auth: ${authError.message}`);
+//         }
+//         const newUser = authData.user;
+
+//         // El trigger ya ha creado el perfil. Ahora lo actualizamos con su rol de aplicación.
+//         // Todos los usuarios creados por un admin son 'agent' a nivel de aplicación.
+//         await supabaseAdmin
+//             .from('profiles')
+//             .update({ app_role: 'agent' })
+//             .eq('id', newUser.id);
+
+//         // 3. Añadir el nuevo usuario como miembro del workspace
+//         const { error: memberError } = await supabaseAdmin
+//             .from('workspace_members')
+//             .insert({
+//                 workspace_id: workspaceId,
+//                 user_id: newUser.id,
+//                 role: role // 'admin' o 'agent', según lo que elija el admin que invita
+//             });
+
+//         if (memberError) {
+//             // Rollback: si falla la inserción de miembro, borramos el usuario creado.
+//             await supabaseAdmin.auth.admin.deleteUser(newUser.id);
+//             throw new Error(`Failed to add member to workspace: ${memberError.message}`);
+//         }
+
+//         return NextResponse.json({ success: true, message: 'Agent invited successfully.' });
+
+//     } catch (error: any) {
+//         return NextResponse.json({ error: error.message }, { status: 500 });
+//     }
+// }
+
+
+// app/api/workspaces/[workspaceId]/invite/route.ts
+// app/api/workspaces/[workspaceId]/invite/route.ts
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { supabaseAdmin } from '@/lib/supabase/server';
+
+export async function POST(
+    request: Request,
+    { params }: { params: { workspaceId: string } }
+) {
+    try {
+        const session = await getServerSession(authOptions);
+        const { workspaceId } = params;
+
+        // 1. Verificación de permisos
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        }
+
+        if (session.user.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        }
+
+        const { name, email, password, role } = await request.json();
+        if (!name || !email || !password || !role) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Validar que el rol sea válido
+        if (!['admin', 'agent'].includes(role)) {
+            return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+        }
+
+        // 2. Crear el usuario en Supabase Auth
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: { 
+                full_name: name,
+                name: name 
+            }
+        });
+
+        if (authError) {
+            if (authError.message.includes("User already registered")) {
+                return NextResponse.json({ error: 'A user with this email already exists.' }, { status: 400 });
+            }
+            throw new Error(authError.message);
+        }
+
+        if (!authData.user) {
+            return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+        }
+
+        // 3. Actualizar el perfil creado por el trigger con datos adicionales
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+                name: name,
+                app_role: 'agent' // Todos los invitados son 'agent' a nivel de aplicación
+            })
+            .eq('id', authData.user.id);
+
+        if (profileError) {
+            console.error('Error updating profile:', profileError);
+            // Si falla la actualización del perfil, intentamos eliminar el usuario creado
+            await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+            return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
+        }
+
+        // 4. Verificar si ya existe la membresía (por si acaso)
+        const { data: existingMembership } = await supabaseAdmin
+            .from('workspace_members')
+            .select('*')
+            .eq('workspace_id', workspaceId)
+            .eq('user_id', authData.user.id)
+            .single();
+
+        if (existingMembership) {
+            // Si ya existe, actualizamos en lugar de insertar
+            const { error: membershipError } = await supabaseAdmin
+                .from('workspace_members')
+                .update({ role: role })
+                .eq('workspace_id', workspaceId)
+                .eq('user_id', authData.user.id);
+
+            if (membershipError) {
+                console.error('Error updating workspace membership:', membershipError);
+                await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
+                await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+                return NextResponse.json({ error: 'Failed to update workspace membership' }, { status: 500 });
+            }
+        } else {
+            // Si no existe, creamos nueva membresía
+            const { error: membershipError } = await supabaseAdmin
+                .from('workspace_members')
+                .insert({
+                    workspace_id: workspaceId,
+                    user_id: authData.user.id,
+                    role: role
+                });
+
+            if (membershipError) {
+                console.error('Error creating workspace membership:', membershipError);
+                await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
+                await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+                return NextResponse.json({ error: 'Failed to create workspace membership' }, { status: 500 });
+            }
+        }
+
+        // 5. Respuesta exitosa
+        return NextResponse.json({ 
+            success: true, 
+            user: {
+                id: authData.user.id,
+                email: authData.user.email,
+                name: name,
+                role: role
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error in invite route:', error);
+        return NextResponse.json({ 
+            error: error.message || 'Internal server error' 
+        }, { status: 500 });
+    }
+}

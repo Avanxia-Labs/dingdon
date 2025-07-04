@@ -1,4 +1,4 @@
-import {create} from 'zustand'
+import { create } from 'zustand'
 import { ChatSessionStatus, Message } from '@/types/chatbot'
 
 /**
@@ -6,6 +6,12 @@ import { ChatSessionStatus, Message } from '@/types/chatbot'
  * @description This store holds the chat messages, the open/closed state of the
  * chat window, and the loading status. Actions are provided to manipulate this state.
  */
+
+
+interface ChatbotConfigState {
+    botName: string;
+    botColor: string;
+}
 
 /**
  * Interface for the chatbot's state.
@@ -19,6 +25,7 @@ interface ChatState {
     sessionId?: string | null;
     status: ChatSessionStatus;
     workspaceId: string | null;
+    config: ChatbotConfigState;
 
     // ACTIONS
 
@@ -47,7 +54,7 @@ interface ChatState {
      * Requests an agent handoff, indicating that the user needs human assistance
      */
     requestAgentHandoff: () => void;
-    
+
     /**
      * Sets the current session status, which can be 'bot', 'pending_agent', 'in_progress', or 'closed'
      * @param status - The new status of the chat session
@@ -61,6 +68,8 @@ interface ChatState {
 
 
     setWorkspaceId: (workspaceId: string) => void;
+
+    setConfig: (config: Partial<ChatbotConfigState>) => void;
 }
 
 /**
@@ -84,6 +93,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     sessionId: null,
     status: 'bot',
     workspaceId: null,
+    config: {
+        botName: 'Virtual Assistant',
+        botColor: '#007bff'
+    },
 
     toggleChat: () => set((state) => ({
         isOpen: !state.isOpen
@@ -105,12 +118,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const currentState = get();
 
         if (currentState.status === 'bot') {
-            set({status: 'pending_agent' });
+            set({ status: 'pending_agent' });
         }
     },
 
     setSessionStatus: (status: ChatSessionStatus) => set({
-        status: status  
+        status: status
     }),
 
     resetChat: () => set({
@@ -120,6 +133,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false,
     }),
 
-    setWorkspaceId: (workspaceId) => set({workspaceId})
+    setWorkspaceId: (workspaceId) => set({ workspaceId }),
+
+    setConfig: (newConfig) => set((state) => ({
+        config: { ...state.config, ...newConfig }
+    })),
 
 }))

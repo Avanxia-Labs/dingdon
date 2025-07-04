@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatbot } from '@/hooks/useChatbot';
-import { stat } from 'fs';
+import { User, Send, SendHorizonal, LucideSend, SendIcon, User2 } from 'lucide-react';
 
 /**
  * @file Renders the complete user interface for the chatbot.
@@ -11,7 +11,7 @@ import { stat } from 'fs';
  * to get all its state and logic. Its sole responsibility is presentation.
  */
 export const ChatbotUI: React.FC = () => {
-  const { messages, isOpen, isLoading, toggleChat, sendMessage, status, startNewChat } = useChatbot();
+  const { messages, isOpen, isLoading, toggleChat, sendMessage, status, startNewChat, config } = useChatbot();
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -45,12 +45,18 @@ export const ChatbotUI: React.FC = () => {
     }
   };
 
+  const botColor = `bg-[${config.botColor}]`
+
+  console.log("CONFIG: ", config.botColor)
+  console.log("COLOR: ", botColor)
+
   return (
     <>
       {/* Floating Action Button */}
       <button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 z-[1000] bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        style={{ backgroundColor: config.botColor }}
+        className={`fixed bottom-6 right-6 z-[1000] hover:opacity-90 text-white rounded-full p-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300`}
         aria-label={isOpen ? "Close Chat" : "Open Chat"}
       >
         {isOpen ? (
@@ -63,8 +69,11 @@ export const ChatbotUI: React.FC = () => {
       {/* Chat Panel */}
       <div className={`fixed bottom-24 right-6 z-[999] w-full max-w-sm h-[70vh] max-h-[500px] bg-white rounded-lg shadow-2xl flex flex-col transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         {/* Header */}
-        <div className="bg-blue-600 text-white p-4 rounded-t-lg flex-shrink-0">
-          <h3 className="font-semibold text-lg">GYB Connect Assistant</h3>
+        <div
+          className={`text-white p-4 rounded-t-lg flex-shrink-0`}
+          style={{ backgroundColor: config.botColor }}
+        >
+          <h3 className="font-semibold text-lg">{config.botName}</h3>
           <p className="text-sm opacity-90">How can I help you today?</p>
         </div>
 
@@ -75,12 +84,26 @@ export const ChatbotUI: React.FC = () => {
               key={message.id}
               className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'user' ? 'bg-blue-500 text-white' :
-                  message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
-                    'bg-red-100 text-red-800 border border-red-200' // System/Error message style
+              {/* <div className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'user' ? 'bg-blue-500 text-white' :
+                message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
+                  'bg-red-100 text-red-800 border border-red-200' // System/Error message style
                 }`}>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              </div> */}
+
+              <div className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'user' ? 'bg-blue-500 text-white' :
+                message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
+                  'bg-red-100 text-red-800 border border-red-200' // System/Error message style
+                }`}
+                style={
+                  message.role === 'user'
+                    ? { backgroundColor: config.botColor }
+                    : undefined
+                }
+              >
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
+
             </div>
           ))}
           {isLoading && (
@@ -102,14 +125,15 @@ export const ChatbotUI: React.FC = () => {
         <div className="p-3 border-t bg-white rounded-b-lg flex-shrink-0">
           {status === 'closed' ? (
             <div className="text-center p-2">
-                <p className="text-sm text-gray-600 mb-2">This chat session has ended.</p>
-                {/* --- ¡EL NUEVO BOTÓN! --- */}
-                <button
-                    onClick={startNewChat}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-                >
-                    Start New Chat
-                </button>
+              <p className="text-sm text-gray-600 mb-2">This chat session has ended.</p>
+              {/* --- ¡EL NUEVO BOTÓN! --- */}
+              <button
+                onClick={startNewChat}
+                style={{ backgroundColor: config.botColor }}
+                className={`px-4 py-2 text-white rounded-lg text-sm hover:opacity-90`}
+              >
+                Start New Chat
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
@@ -119,8 +143,8 @@ export const ChatbotUI: React.FC = () => {
                 onKeyDown={handleKeyPress}
                 placeholder={
                   status === 'in_progress' ? 'Reply to the agent' :
-                  status === 'pending_agent' ? 'Waiting for an agent to take over...' :
-                  'Ask about our services...'
+                    status === 'pending_agent' ? 'Waiting for an agent to take over...' :
+                      'Ask about our services...'
                 }
                 className="text-black flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg resize-none focus:outline-none"
                 rows={1}
@@ -129,10 +153,12 @@ export const ChatbotUI: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading || !inputMessage.trim() || status === 'pending_agent'}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors flex items-center justify-center aspect-square"
+                style={{ backgroundColor: config.botColor }}
+                className={`hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors flex items-center justify-center aspect-square`}
                 aria-label="Send Message"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                {/* <Send /> */}
               </button>
             </form>
           )}

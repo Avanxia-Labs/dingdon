@@ -22,7 +22,7 @@ import { io, Socket } from 'socket.io-client';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -37,7 +37,9 @@ export const useChatbot = () => {
       setSessionStatus: state.setSessionStatus,
       resetChat: state.resetChat,
       workspaceId: state.workspaceId,
-      setWorkspaceId: state.setWorkspaceId
+      setWorkspaceId: state.setWorkspaceId,
+      config: state.config,
+      setConfig: state.setConfig,
     }))
   );
 
@@ -96,6 +98,26 @@ export const useChatbot = () => {
   }, [isOpen, sessionId, startSession, setSessionStatus, addMessage])
 
 
+  // --- USEEFFECT PARA CARGAR LA CONFIG DEL BOT! ---
+    useEffect(() => {
+        if (workspaceId) {
+            const fetchConfig = async () => {
+                try {
+                    const response = await fetch(`/api/public/config/${workspaceId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setConfig({
+                            botName: data.bot_name || 'Virtual Assistant',
+                            botColor: data.bot_color || '#007bff',
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch public bot config:", error);
+                }
+            };
+            fetchConfig();
+        }
+    }, [workspaceId, setConfig]);
 
   const mutation = useMutation({
 
@@ -196,6 +218,7 @@ export const useChatbot = () => {
     isOpen,
     status,
     isLoading: mutation.isPending,
+    config,
     toggleChat,
     sendMessage,
     startNewChat,

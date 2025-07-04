@@ -1,7 +1,6 @@
 // app/api/auth/[...nextauth]/route.ts
 
 import NextAuth, { NextAuthOptions } from "next-auth";
-import { AppRole } from "@/types/chatbot";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { supabase } from "@/lib/supabase/client"; 
@@ -38,13 +37,6 @@ export const authOptions: NextAuthOptions = {
                     console.error("Fallo el login en Supabase:", authError?.message);
                     return null
                 }
-
-                // 2. Usamos el cliente de SERVICIO para leer el perfil de forma segura.
-                // const {data: profile} = await supabaseAdmin
-                //     .from('profiles')            // Leemos la tabla de perfiles
-                //     .select('app_role')          // Seleccionamos el rol de la aplicación
-                //     .eq('id', authData.user.id)  // Filtramos por el ID del usuario
-                //     .single();                   // Obtenemos un único perfil
 
                 const {data: profileData, error: profileError} = await supabaseAdmin
                         .from('profiles')
