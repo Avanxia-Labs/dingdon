@@ -6,67 +6,57 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { TeamMember, WorkspaceRole } from '@/types/chatbot';
 
-/**
- * Maneja las peticiones GET para obtener los miembros de un workspace específico.
- * Realiza una consulta a la base de datos uniendo las tablas 'workspace_members' y 'profiles'
- * para devolver una lista completa de los miembros del equipo.
- * 
- * @param request - El objeto de la petición entrante (no se usa directamente).
- * @param params - Un objeto que contiene los parámetros de la ruta, en este caso { workspaceId: string }.
- * @returns Una respuesta JSON con la lista de miembros o un objeto de error.
- */
+
+// Describe la forma exacta de los datos que devuelve la consulta
+interface MemberFromDB {
+    role: WorkspaceRole;
+    profiles: { 
+        id: string;
+        name: string | null;
+        email: string | null;
+    } | null; // Puede ser nulo si el join no encuentra nada (aunque !inner lo previene)
+}
+
 export async function GET(
     request: Request,
     { params }: { params: { workspaceId: string } }
 ) {
     try {
-        // 1. Obtener la sesión del servidor para verificar la autenticación y autorización.
         const session = await getServerSession(authOptions);
         const { workspaceId } = params;
 
-        // 2. Comprobación de seguridad:
-        // El usuario debe estar logueado y solo puede solicitar los miembros de su propio workspace.
         if (!session || session.user.workspaceId !== workspaceId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        // 3. Consulta a Supabase para obtener los miembros del workspace.
-        // Hacemos un "join" implícito gracias a las claves foráneas que hemos definido.
+        // --- CONSULTA CON TIPADO GENÉRICO ---
+        // Le decimos a Supabase qué forma esperamos que tengan los datos.
         const { data, error } = await supabaseAdmin
             .from('workspace_members')
-            .select(`
+            .select<string, MemberFromDB>(`
                 role,
-                profiles ( id, name, email )
-            `)
+                profiles!inner ( id, name, email )
+            `) // Usamos .select<string, MemberFromDB>(...)
             .eq('workspace_id', workspaceId);
 
-        // Si hay un error en la consulta a la base de datos, lo registramos y devolvemos un error 500.
         if (error) {
             console.error("Error fetching workspace members:", error);
             return NextResponse.json({ error: 'Failed to fetch members' }, { status: 500 });
         }
 
-        // 4. Formatear los datos de la respuesta para que coincidan con nuestro tipo `TeamMember`.
+        // Ahora, TypeScript sabe que 'data' es un array de 'MemberFromDB'
         const members: TeamMember[] = data
-            // Filtramos por si algún perfil asociado fue borrado o si la relación devuelve un array vacío.
-            .filter(item => item.profiles && Array.isArray(item.profiles) && item.profiles.length > 0) 
-            .map(item => {
-                // Supabase devuelve la relación como un array, accedemos al primer (y único) elemento.
-                const profile = item.profiles[0]; 
-                
-                return {
-                    id: profile.id,
-                    name: profile.name,
-                    email: profile.email,
-                    role: item.role as WorkspaceRole, // Aseguramos el tipo para el rol.
-                };
-            });
+            .filter(item => item.profiles !== null) // Filtro de seguridad
+            .map(item => ({
+                id: item.profiles!.id,
+                name: item.profiles!.name,
+                email: item.profiles!.email,
+                role: item.role,
+            }));
 
-        // 5. Devolver la lista de miembros formateada con un estado 200 OK.
         return NextResponse.json(members);
 
     } catch (e) {
-        // Captura de cualquier error inesperado durante el proceso.
         console.error("Unexpected error in GET /api/workspaces/[workspaceId]/members:", e);
         return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
     }

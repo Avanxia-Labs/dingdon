@@ -1,32 +1,82 @@
+// // app/api/public/config/[workspaceId]/route.ts
+
+// import { NextResponse } from 'next/server';
+// import { supabaseAdmin } from '@/lib/supabase/server';
+
+// export async function GET(
+//     request: Request,
+//     { params }: { params: { workspaceId: string } }
+// ) {
+//     const { workspaceId } = params;
+
+//     if (!workspaceId) {
+//         return NextResponse.json({ error: 'Workspace ID is required' }, { status: 400 });
+//     }
+
+//     try {
+//         const { data, error } = await supabaseAdmin
+//             .from('workspaces')
+//             .select('bot_name, bot_color')
+//             .eq('id', workspaceId)
+//             .single();
+
+//         if (error || !data) {
+//             return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
+//         }
+
+//         return NextResponse.json(data);
+
+//     } catch (e) {
+//         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+//     }
+// }
+
+
 // app/api/public/config/[workspaceId]/route.ts
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
-    request: Request,
-    { params }: { params: { workspaceId: string } }
+    request: NextRequest,
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
-    const { workspaceId } = params;
-
-    if (!workspaceId) {
-        return NextResponse.json({ error: 'Workspace ID is required' }, { status: 400 });
-    }
-
+    console.log('[API Route] GET /api/public/config/[workspaceId] called');
+    
     try {
+        // 🔧 CAMBIO PRINCIPAL: Await params antes de destructuring
+        const { workspaceId } = await params;
+        console.log('[API Route] workspaceId:', workspaceId);
+
+        if (!workspaceId) {
+            console.log('[API Route] No workspaceId provided');
+            return NextResponse.json({ error: 'Workspace ID is required' }, { status: 400 });
+        }
+
+        console.log('[API Route] Querying Supabase for workspace:', workspaceId);
+        
         const { data, error } = await supabaseAdmin
             .from('workspaces')
             .select('bot_name, bot_color')
             .eq('id', workspaceId)
             .single();
 
-        if (error || !data) {
+        if (error) {
+            console.error('[API Route] Supabase error:', error);
             return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
         }
 
+        if (!data) {
+            console.log('[API Route] No data found for workspace:', workspaceId);
+            return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
+        }
+
+        console.log('[API Route] Successfully retrieved config:', data);
         return NextResponse.json(data);
 
     } catch (e) {
+        console.error('[API Route] Unexpected error:', e);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+

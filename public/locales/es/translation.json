@@ -1,0 +1,154 @@
+{
+  "common": {
+    "english": "Inglés",
+    "spanish": "Español",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "errorPrefix": "Error",
+    "successPrefix": "Éxito",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "cancel": "Cancelar",
+    "actions": "Acciones",
+    "role": "Rol",
+    "name": "Nombre",
+    "email": "Email"
+  },
+  "login": {
+    "title": "Bot de Servicio al Cliente",
+    "subtitle": "Accede a tu panel de control",
+    "agentLogin": "Login de Agente",
+    "googleButton": "Continuar con Google",
+    "divider": "o continuar con email",
+    "emailLabel": "Dirección de email",
+    "emailPlaceholder": "agente@empresa.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Introduce tu contraseña",
+    "signInButton": "Iniciar Sesión en el Panel",
+    "signingInButton": "Iniciando sesión...",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "invalidCredentialsError": "Email o contraseña inválidos.",
+    "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+  },
+  "dashboardLayout": {
+    "liveChats": "Chats en Vivo",
+    "teamMembers": "Miembros",
+    "chatHistory": "Historial de Chats",
+    "settingsAndBot": "Ajustes y Bot",
+    "signOut": "Cerrar Sesión"
+  },
+  "superadmin": {
+    "pageTitle": "Gestionar Workspaces de Clientes",
+    "createTitle": "Crear Nuevo Workspace",
+    "companyNameLabel": "Nombre de la Empresa",
+    "adminNameLabel": "Nombre Completo del Admin",
+    "adminEmailLabel": "Email del Admin",
+    "adminPasswordLabel": "Contraseña Inicial del Admin",
+    "createButton": "Crear Workspace y Admin",
+    "updateButton": "Guardar Cambios",
+    "editModalTitle": "Editar Nombre del Workspace",
+    "newNameLabel": "Nuevo Nombre",
+    "tableHeaderName": "Nombre del Workspace",
+    "tableHeaderDate": "Fecha de Creación",
+    "feedback": {
+      "creating": "Creando...",
+      "createdSuccess": "¡Workspace creado con éxito!",
+      "deleting": "Eliminando...",
+      "deletedSuccess": "Workspace \"{{name}}\" eliminado con éxito.",
+      "updating": "Actualizando...",
+      "updatedSuccess": "¡Workspace actualizado con éxito!"
+    },
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar el workspace \"{{name}}\"? Esta acción es irreversible."
+  },
+  "agents": {
+    "pageTitle": "Miembros del Equipo",
+    "inviteTitle": "Invitar Nuevo Miembro",
+    "fullNameLabel": "Nombre Completo",
+    "initialPasswordLabel": "Contraseña Inicial",
+    "inviteButton": "Invitar Miembro",
+    "invitingButton": "Enviando...",
+    "roleAdmin": "Admin",
+    "roleAgent": "Agente",
+    "feedback": {
+      "inviting": "Enviando invitación...",
+      "invitedSuccess": "¡Agente invitado con éxito!",
+      "removing": "Eliminando agente...",
+      "removedSuccess": "¡Agente eliminado con éxito!"
+    },
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar a {{name}} de este workspace? Esto borrará su cuenta."
+  },
+  "history": {
+    "pageTitle": "Historial de Chats",
+    "deleteAllButton": "Eliminar Todo el Historial",
+    "tableHeaderDate": "Fecha",
+    "tableHeaderAgent": "Agente",
+    "tableHeaderPreview": "Vista Previa",
+    "tableHeaderMessages": "Mensajes",
+    "modalTitle": "Historial del Chat",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este historial de chat para siempre?",
+    "deleteAllConfirm": "Esto eliminará TODOS los {{count}} historiales de chat para este workspace permanentemente. Esta acción no se puede deshacer. Por favor, escribe \"DELETE\" para confirmar.",
+    "deleteCancelled": "Eliminación cancelada.",
+    "feedback": {
+      "deletingAll": "Eliminando todos los historiales...",
+      "deletedAllSuccess": "Todos los historiales de chat han sido eliminados."
+    }
+  },
+  "chatPanel": {
+    "notifications": {
+      "title": "Activar Alertas",
+      "description": "Recibe notificaciones de escritorio y sonido.",
+      "button": "Activar"
+    },
+    "connection": {
+      "connected": "Conectado",
+      "reconnecting": "Reconectando...",
+      "disconnected": "Desconectado",
+      "reconnect": "Reconectar"
+    },
+    "requestsTitle": "Solicitudes de Chat",
+    "noRequests": "No hay solicitudes pendientes.",
+    "activeChatTitle": "Chat Activo: {{id}}",
+    "closeChatButton": "Cerrar Chat",
+    "inputPlaceholder": "Escribe tu respuesta...",
+    "inputPlaceholderDisconnected": "Esperando conexión...",
+    "selectChatPrompt": "Selecciona un chat para comenzar",
+    "chatClosed": "El chat fue cerrado"
+  },
+  "chatbotUI": {
+    "headerTitle": "¿Cómo puedo ayudarte hoy?",
+    "errorMessage": "¡Vaya! Algo salió mal.",
+    "agentInstruction": "Si quieres hablar con una persona, por favor escribe:",
+    "agentKeyword": "Quiero hablar con un agente",
+    "typing": "Escribiendo",
+    "sessionEnded": "Esta sesión de chat ha finalizado.",
+    "newChatButton": "Iniciar Nuevo Chat",
+    "inputPlaceholder": "Pregunta sobre nuestros servicios...",
+    "inputPlaceholderAgent": "Responde al agente",
+    "inputPlaceholderPending": "Esperando que un agente se conecte..."
+  },
+  "settings": {
+    "pageTitle": "Configuración del Bot",
+    "pageSubtitle": "Personaliza tu chatbot y gestiona las integraciones",
+    "feedback": {
+      "saving": "Guardando...",
+      "savedSuccess": "¡Configuración guardada con éxito!",
+      "uploading": "Subiendo y procesando archivo...",
+      "uploadSuccess": "¡Base de conocimiento actualizada con éxito!",
+      "copied": "¡Código copiado al portapapeles!"
+    },
+    "customization": {
+      "title": "Personalización del Bot",
+      "subtitle": "Personaliza la apariencia y comportamiento de tu chatbot"
+    },
+    "botName": {
+      "label": "Nombre del Chatbot",
+      "description": "Este nombre aparecerá en la cabecera del chat",
+      "placeholder": "Introduce el nombre del bot"
+    },
+    "primaryColor": {
+      "label": "Color Principal",
+      "description": "Usado para cabeceras y mensajes de usuario"
+    },
+    "saveButton": "Guardar Configuración"
+  }
+}

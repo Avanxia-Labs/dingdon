@@ -1,0 +1,154 @@
+{
+  "common": {
+    "english": "English",
+    "spanish": "Spanish",
+    "loading": "Loading...",
+    "save": "Save",
+    "errorPrefix": "Error",
+    "successPrefix": "Success",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "actions": "Actions",
+    "role": "Role",
+    "name": "Name",
+    "email": "Email"
+  },
+  "login": {
+    "title": "Customer Service Bot",
+    "subtitle": "Access your control panel",
+    "agentLogin": "Agent Login",
+    "googleButton": "Continue with Google",
+    "divider": "or continue with email",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "agent@company.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "signInButton": "Sign in to Dashboard",
+    "signingInButton": "Signing in...",
+    "forgotPassword": "Forgot your password?",
+    "invalidCredentialsError": "Invalid email or password.",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  },
+  "dashboardLayout": {
+    "liveChats": "Live Chats",
+    "teamMembers": "Team Members",
+    "chatHistory": "Chat History",
+    "settingsAndBot": "Settings & Bot",
+    "signOut": "Sign Out"
+  },
+  "superadmin": {
+    "pageTitle": "Manage Client Workspaces",
+    "createTitle": "Create New Workspace",
+    "companyNameLabel": "Company Name",
+    "adminNameLabel": "Admin Full Name",
+    "adminEmailLabel": "Admin Email",
+    "adminPasswordLabel": "Admin Initial Password",
+    "createButton": "Create Workspace & Admin",
+    "updateButton": "Save Changes",
+    "editModalTitle": "Edit Workspace Name",
+    "newNameLabel": "New Name",
+    "tableHeaderName": "Workspace Name",
+    "tableHeaderDate": "Created At",
+    "feedback": {
+      "creating": "Creating...",
+      "createdSuccess": "Workspace created successfully!",
+      "deleting": "Deleting...",
+      "deletedSuccess": "Workspace \"{{name}}\" deleted successfully.",
+      "updating": "Updating...",
+      "updatedSuccess": "Workspace updated successfully!"
+    },
+    "deleteConfirm": "Are you sure you want to delete the workspace \"{{name}}\"? This action is irreversible."
+  },
+  "agents": {
+    "pageTitle": "Team Members",
+    "inviteTitle": "Invite New Member",
+    "fullNameLabel": "Full Name",
+    "initialPasswordLabel": "Initial Password",
+    "inviteButton": "Invite Member",
+    "invitingButton": "Sending...",
+    "roleAdmin": "Admin",
+    "roleAgent": "Agent",
+    "feedback": {
+      "inviting": "Sending invitation...",
+      "invitedSuccess": "Agent invited successfully!",
+      "removing": "Removing agent...",
+      "removedSuccess": "Agent removed successfully!"
+    },
+    "deleteConfirm": "Are you sure you want to remove {{name}} from this workspace? This will delete their account."
+  },
+  "history": {
+    "pageTitle": "Chat History",
+    "deleteAllButton": "Delete All Histories",
+    "tableHeaderDate": "Date",
+    "tableHeaderAgent": "Agent",
+    "tableHeaderPreview": "Preview",
+    "tableHeaderMessages": "Messages",
+    "modalTitle": "Chat History",
+    "deleteConfirm": "Are you sure you want to delete this chat history forever?",
+    "deleteAllConfirm": "This will delete ALL {{count}} chat histories for this workspace permanently. This action cannot be undone. Please type \"DELETE\" to confirm.",
+    "deleteCancelled": "Deletion cancelled.",
+    "feedback": {
+      "deletingAll": "Deleting all histories...",
+      "deletedAllSuccess": "All chat histories have been deleted."
+    }
+  },
+  "chatPanel": {
+    "notifications": {
+      "title": "Enable Alerts",
+      "description": "Get desktop and sound notifications.",
+      "button": "Enable"
+    },
+    "connection": {
+      "connected": "Connected",
+      "reconnecting": "Reconnecting...",
+      "disconnected": "Disconnected",
+      "reconnect": "Reconnect"
+    },
+    "requestsTitle": "Chat Requests",
+    "noRequests": "No pending requests.",
+    "activeChatTitle": "Active Chat: {{id}}",
+    "closeChatButton": "Close Chat",
+    "inputPlaceholder": "Type your response...",
+    "inputPlaceholderDisconnected": "Waiting for connection...",
+    "selectChatPrompt": "Select a chat to begin",
+    "chatClosed": "Chat was closed"
+  },
+  "chatbotUI": {
+    "headerTitle": "How can I help you today?",
+    "errorMessage": "Oops! Something went wrong.",
+    "agentInstruction": "If you want to talk to a human please type:",
+    "agentKeyword": "I want to talk to an agent",
+    "typing": "Typing",
+    "sessionEnded": "This chat session has ended.",
+    "newChatButton": "Start New Chat",
+    "inputPlaceholder": "Ask about our services...",
+    "inputPlaceholderAgent": "Reply to the agent",
+    "inputPlaceholderPending": "Waiting for an agent to take over..."
+  },
+  "settings": {
+    "pageTitle": "Bot Settings",
+    "pageSubtitle": "Customize your chatbot and manage integrations",
+    "feedback": {
+      "saving": "Saving...",
+      "savedSuccess": "Settings saved successfully!",
+      "uploading": "Uploading and processing file...",
+      "uploadSuccess": "Knowledge base updated successfully!",
+      "copied": "Code copied to clipboard!"
+    },
+    "customization": {
+      "title": "Bot Customization",
+      "subtitle": "Personalize your chatbot's appearance and behavior"
+    },
+    "botName": {
+      "label": "Chatbot Name",
+      "description": "This name will appear in the chat header",
+      "placeholder": "Enter bot name"
+    },
+    "primaryColor": {
+      "label": "Primary Color",
+      "description": "Used for headers and user messages"
+    },
+    "saveButton": "Save Settings"
+  }
+}

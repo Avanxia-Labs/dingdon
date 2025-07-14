@@ -7,6 +7,7 @@ import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
 import { io, Socket } from 'socket.io-client';
+import { v4 as uuidv4 } from 'uuid';
 
 
 /**
@@ -22,7 +23,7 @@ import { io, Socket } from 'socket.io-client';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, isOpen, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -40,84 +41,110 @@ export const useChatbot = () => {
       setWorkspaceId: state.setWorkspaceId,
       config: state.config,
       setConfig: state.setConfig,
+      error: state.error,
+      setError: state.setError,
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
 
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.chatbotConfig?.workspaceId) {
-      const id = window.chatbotConfig.workspaceId;
-      if (id && !workspaceId) {
-        console.log(`[Chatbot] Workspace ID detectado: ${id}`);
+    if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
+      const id = (window as any).chatbotConfig.workspaceId;
+      if (id) {
         setWorkspaceId(id);
-      }
-    } else {
-      if (isOpen) {
-        console.warn('[Chatbot] No se encontró chatbotConfig.workspaceId en el objeto window.');
+        setError(null); // Limpiar cualquier error anterior al encontrar un ID
+      } else {
+        // Si el ID está vacío, establecemos un error
+        setError("Configuration error: Workspace ID is missing.");
       }
     }
-  }, [isOpen, setWorkspaceId, workspaceId]);
+  }, [setWorkspaceId, setError]);
 
-  // --- EFECTO PARA GESTIONAR LA CONEXIÓN WEBSOCKET ---
+
+  // - useEffect de WebSocket 
+
   useEffect(() => {
-
-    if (isOpen && !sessionId) {
-      const newSessionId = `session-${Date.now()}`;
-      startSession(newSessionId);
+    
+    if (workspaceId && !sessionId) {
+        console.log('[Chatbot] Workspace ID presente. Iniciando nueva sesión...');
+        startSession();
     }
 
     if (sessionId && !socketRef.current) {
-      // Initialize the socket connection only if we have a sessionId and no existing socket
+      // Initialize the socket connection
       const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001')
       socketRef.current = socket;
 
-      // Join the session room using the sessionId
-      socket.emit('join_session', sessionId);
-
-      // Listen from new messages of the agent
+      // 🔧 CAMBIO 1: Configurar listeners ANTES de hacer join
       socket.on('agent_message', (message: Message) => {
+        console.log(`[Chatbot] Agent message received:`, message);
         addMessage(message);
-      })
+      });
 
-      // Listen for session status changes
       socket.on('status_change', (newStatus: ChatSessionStatus) => {
+        console.log(`[Chatbot] Status change to: ${newStatus}`);
         setSessionStatus(newStatus);
-      })
+
+        // 🔧 CAMBIO 2: Re-join INMEDIATAMENTE cuando cambia el status
+        if (newStatus === 'in_progress' && sessionId) {
+          socket.emit('join_session', sessionId);
+          console.log(`[Chatbot] Re-joined session ${sessionId} for agent chat`);
+        }
+      });
+
+      // 🔧 CAMBIO 3: Join inicial después de configurar listeners
+      socket.emit('join_session', sessionId);
+      console.log(`[Chatbot] Joined session ${sessionId}`);
+
+      // 🔧 CAMBIO 4: Listener para confirmar que estamos en la sala
+      socket.on('connect', () => {
+        console.log(`[Chatbot] Socket connected, re-joining session ${sessionId}`);
+        socket.emit('join_session', sessionId);
+      });
+
+      // 🔧 CAMBIO 5: Listener para reconexión
+      socket.on('disconnect', () => {
+        console.log(`[Chatbot] Socket disconnected`);
+      });
+
+      socket.on('reconnect', () => {
+        console.log(`[Chatbot] Socket reconnected, re-joining session ${sessionId}`);
+        socket.emit('join_session', sessionId);
+      });
     }
 
-    // Cleanup function to disconnect the socket when the component unmounts
+    // Cleanup function
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
-        socketRef.current = null; // Clear the reference to prevent memory leaks
+        socketRef.current = null;
       }
     }
-
-  }, [isOpen, sessionId, startSession, setSessionStatus, addMessage])
-
+  }, [workspaceId, sessionId, startSession, setSessionStatus, addMessage]);
 
   // --- USEEFFECT PARA CARGAR LA CONFIG DEL BOT! ---
-    useEffect(() => {
-        if (workspaceId) {
-            const fetchConfig = async () => {
-                try {
-                    const response = await fetch(`/api/public/config/${workspaceId}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        setConfig({
-                            botName: data.bot_name || 'Virtual Assistant',
-                            botColor: data.bot_color || '#007bff',
-                        });
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch public bot config:", error);
-                }
-            };
-            fetchConfig();
+  useEffect(() => {
+    if (workspaceId) {
+      const fetchConfig = async () => {
+        try {
+          const response = await fetch(`/api/public/config/${workspaceId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setConfig({
+              botName: data.bot_name || 'Virtual Assistant',
+              botColor: data.bot_color || '#007bff',
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch public bot config:", error);
         }
-    }, [workspaceId, setConfig]);
+      };
+      fetchConfig();
+    }
+  }, [workspaceId, setConfig]);
 
   const mutation = useMutation({
 
@@ -172,6 +199,39 @@ export const useChatbot = () => {
    * @param {string} content - The text content of the user's message.
    */
   const sendMessage = (content: string) => {
+
+    console.log('🔍 [useChatbot] sendMessage called with:', {
+      content,
+      contentTrim: content.trim(),
+      mutationPending: mutation.isPending,
+      sessionId,
+      workspaceId,
+      status,
+      messagesCount: messages.length
+    });
+
+    if (!content.trim()) {
+      console.log('❌ [useChatbot] Message rejected: content is empty');
+      return;
+    }
+
+    if (mutation.isPending) {
+      console.log('❌ [useChatbot] Message rejected: mutation is pending');
+      return;
+    }
+
+    if (!sessionId) {
+      console.log('❌ [useChatbot] Message rejected: no sessionId');
+      return;
+    }
+
+    if (!workspaceId) {
+      console.log('❌ [useChatbot] Message rejected: no workspaceId');
+      return;
+    }
+
+    console.log('✅ [useChatbot] All checks passed, creating user message');
+
     if (!content.trim() || mutation.isPending || !sessionId || !workspaceId) return;
 
     const userMessage: Message = {
@@ -199,7 +259,6 @@ export const useChatbot = () => {
 
 
 
-
   /**
    * Function to resets the chat state if the chat is being closed.
    */
@@ -215,12 +274,13 @@ export const useChatbot = () => {
 
   return {
     messages,
-    isOpen,
     status,
     isLoading: mutation.isPending,
     config,
     toggleChat,
     sendMessage,
     startNewChat,
+    error
   };
 };
+
