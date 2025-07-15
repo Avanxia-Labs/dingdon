@@ -1,151 +1,3 @@
-// import { create } from 'zustand'
-// import { ChatSessionStatus, Message } from '@/types/chatbot'
-// import { v4 as uuidv4 } from 'uuid';
-// import { persist } from 'zustand/middleware';
-
-// /**
-//  * @file Defines the state management for the chatbot using Zustand.
-//  * @description This store holds the chat messages, the open/closed state of the
-//  * chat window, and the loading status. Actions are provided to manipulate this state.
-//  */
-
-
-// interface ChatbotConfigState {
-//     botName: string;
-//     botColor: string;
-// }
-
-// /**
-//  * Interface for the chatbot's state.
-//  */
-// interface ChatState {
-
-//     // STATE
-//     messages: Message[];
-//     isOpen: boolean;
-//     isLoading: boolean;
-//     sessionId?: string | null;
-//     status: ChatSessionStatus;
-//     workspaceId: string | null;
-//     config: ChatbotConfigState;
-
-//     // ACTIONS
-
-//     /** Toggles the chat window's visivility */
-//     toggleChat: () => void;
-
-//     /**
-//      * Adds a new message to the conversation history
-//      * @param message - The message object to add
-//      */
-//     addMessage: (message: Message) => void;
-
-//     /**
-//      * Sets the loading state, typically used when waiting for an assistance response
-//      * @param isLoading - The new loading state
-//      */
-//     setIsLoading: (isLoading: boolean) => void;
-
-//     /**
-//      * Sets the current session ID, which is used to track the conversation
-//      * @param sessionId  - The unique identifier for the chat session
-//      */
-//     //startSession: (sessionId: string) => void;
-//     startSession: () => void;
-
-//     /**
-//      * Requests an agent handoff, indicating that the user needs human assistance
-//      */
-//     requestAgentHandoff: () => void;
-
-//     /**
-//      * Sets the current session status, which can be 'bot', 'pending_agent', 'in_progress', or 'closed'
-//      * @param status - The new status of the chat session
-//      * */
-//     setSessionStatus: (status: ChatSessionStatus) => void;
-
-//     /**
-//      * Resets the chat state, clearing all messages and resetting the session ID
-//      */
-//     resetChat: () => void;
-
-
-//     setWorkspaceId: (workspaceId: string) => void;
-
-//     setConfig: (config: Partial<ChatbotConfigState>) => void;
-// }
-
-// /**
-//  * The initial welcome message for the chatbot.
-//  */
-// const initialMessage: Message = {
-//     id: 'init-1',
-//     content: "Hi! I'm the virtual assistant. How can I help you today?",
-//     role: 'assistant',
-//     timestamp: new Date()
-// };
-
-// /**
-//  * Zustand store for managing the chatbot's state.
-//  */
-// export const useChatStore = create<ChatState>((set, get) => ({
-
-//     messages: [initialMessage],
-//     isOpen: false,
-//     isLoading: false,
-//     sessionId: null,
-//     status: 'bot',
-//     workspaceId: null,
-//     config: {
-//         botName: 'Virtual Assistant',
-//         botColor: '#007bff'
-//     },
-
-//     toggleChat: () => set((state) => ({
-//         isOpen: !state.isOpen
-//     })),
-
-//     addMessage: (message) => set((state) => ({
-//         messages: [...state.messages, message]
-//     })),
-
-//     setIsLoading: (isLoading) => set({ isLoading }),
-
-//     startSession: () => set({
-//         sessionId: uuidv4(), // Generar el UUID aquí
-//         status: 'bot',
-//         messages: [initialMessage],
-//     }),
-
-//     requestAgentHandoff: () => {
-//         const currentState = get();
-
-//         if (currentState.status === 'bot') {
-//             set({ status: 'pending_agent' });
-//         }
-//     },
-
-//     setSessionStatus: (status: ChatSessionStatus) => set({
-//         status: status
-//     }),
-
-//     resetChat: () => set({
-//         messages: [initialMessage],
-//         sessionId: null,
-//         status: 'bot',
-//         isLoading: false,
-//     }),
-
-//     setWorkspaceId: (workspaceId) => set({ workspaceId }),
-
-//     setConfig: (newConfig) => set((state) => ({
-//         config: { ...state.config, ...newConfig }
-//     })),
-
-// }))
-
-
-
 // stores/useChatStore.ts
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -175,9 +27,8 @@ interface ChatState {
     status: ChatSessionStatus;
     workspaceId: string | null;
     config: ChatbotConfigState;
-
-
     error: string | null;
+    language: string;
 
     // ACTIONS
     /** Toggles the chat window's visibility */
@@ -225,8 +76,9 @@ interface ChatState {
 
     setConfig: (config: Partial<ChatbotConfigState>) => void;
 
-
     setError: (error: string | null) => void;
+
+    setLanguage: (language: string) => void;
 }
 
 /**
@@ -259,6 +111,7 @@ export const useChatStore = create<ChatState>()(
                 workspaceId: null,
                 config: initialConfig,
                 error: null,
+                language: 'en',
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
@@ -320,6 +173,7 @@ export const useChatStore = create<ChatState>()(
 
 
                 setError: (error) => set({ error }),
+                setLanguage: (language) => set({ language }),
             };
         },
         {
@@ -330,7 +184,8 @@ export const useChatStore = create<ChatState>()(
                 sessionId: state.sessionId,
                 status: state.status,
                 workspaceId: state.workspaceId,
-                config: state.config
+                config: state.config,
+                language: state.language,
             })
         }
     )

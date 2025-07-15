@@ -23,6 +23,9 @@ interface DashboardState {
     
     // Estado de notificaciones
     notificationsEnabled: boolean;
+
+    // Estado del idioma
+    language: string;
     
     // Acciones para las solicitudes
     addRequest: (request: ChatRequest) => void;
@@ -36,6 +39,9 @@ interface DashboardState {
     
     // Acciones para notificaciones
     setNotificationsEnabled: (enabled: boolean) => void;
+
+    // Acciones para el idioma
+    setLanguage: (language: string) => void;
     
     // Utilidades
     resetDashboard: () => void;
@@ -47,6 +53,7 @@ export const useDashboardStore = create<DashboardState>()(
             requests: [],
             activeChat: null,
             notificationsEnabled: false,
+            language: 'en',
             
             addRequest: (request) => set((state) => ({
                 requests: state.requests.some(r => r.sessionId === request.sessionId) 
@@ -95,6 +102,8 @@ export const useDashboardStore = create<DashboardState>()(
             })),
             
             setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
+
+            setLanguage: (language) => set({ language }),
             
             resetDashboard: () => set({
                 requests: [],
@@ -108,7 +117,8 @@ export const useDashboardStore = create<DashboardState>()(
                 // Solo persistir lo que realmente necesitamos
                 requests: state.requests,
                 activeChat: state.activeChat,
-                notificationsEnabled: state.notificationsEnabled
+                notificationsEnabled: state.notificationsEnabled,
+                language: state.language,
             })
         }
     )

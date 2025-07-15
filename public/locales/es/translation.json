@@ -124,7 +124,8 @@
     "newChatButton": "Iniciar Nuevo Chat",
     "inputPlaceholder": "Pregunta sobre nuestros servicios...",
     "inputPlaceholderAgent": "Responde al agente",
-    "inputPlaceholderPending": "Esperando que un agente se conecte..."
+    "inputPlaceholderPending": "Esperando que un agente se conecte...",
+    "handoffMessage": "Entendido. Estoy buscando un agente para ayudarte. Por favor, espera."
   },
   "settings": {
     "pageTitle": "Configuración del Bot",
@@ -134,7 +135,8 @@
       "savedSuccess": "¡Configuración guardada con éxito!",
       "uploading": "Subiendo y procesando archivo...",
       "uploadSuccess": "¡Base de conocimiento actualizada con éxito!",
-      "copied": "¡Código copiado al portapapeles!"
+      "copied": "¡Código copiado al portapapeles!",
+      "selectFile": "Por favor, selecciona un archivo primero."
     },
     "customization": {
       "title": "Personalización del Bot",
@@ -149,6 +151,45 @@
       "label": "Color Principal",
       "description": "Usado para cabeceras y mensajes de usuario"
     },
-    "saveButton": "Guardar Configuración"
+    "saveButton": "Guardar Configuración",
+    "installation": {
+      "title": "Instalación",
+      "subtitle": "Añade tu chatbot a tu sitio web",
+      "embedTitle": "Código para Incrustar",
+      "embedDescription": "Copia y pega este fragmento de código justo antes de la etiqueta de cierre </body> en tu sitio web.",
+      "copyButton": "Copiar",
+      "wpTitle": "Sitios WordPress",
+      "wpDescription": "Para sitios web de WordPress, sigue estos pasos:",
+      "wpStep1": "1. Ve a <strong>Apariencia → Editor de Temas</strong>",
+      "wpStep2": "2. Selecciona tu tema activo",
+      "wpStep3": "3. Busca y edita <strong>footer.php</strong>",
+      "wpStep4": "4. Pega el código justo antes de la etiqueta <strong>body</strong> de cierre",
+      "wpStep5": "5. Haz clic en <strong>Actualizar Archivo</strong>",
+      "wpAlternative": "<strong>Alternativa:</strong> Usa un plugin como \"Insert Headers and Footers\" para añadir el código sin editar los archivos del tema.",
+      "customTitle": "Sitios con Código Personalizado",
+      "customDescription": "Para sitios web con código personalizado:",
+      "customStep1": "1. Abre tu archivo HTML principal (<strong>index.html</strong>)",
+      "customStep2": "2. Para React/Vue: Edita tu componente de layout principal",
+      "customStep3": "3. Pega el código antes de la etiqueta <strong>body</strong> de cierre",
+      "customStep4": "4. Guarda y despliega tus cambios",
+      "customNote": "<strong>Nota:</strong> El chatbot aparecerá automáticamente en todas las páginas donde se incluya el script."
+    },
+    "knowledge": {
+      "title": "Base de Conocimiento",
+      "subtitle": "Sube documentos para entrenar a tu chatbot",
+      "description": "Sube archivos PDF, TXT o DOCX que contengan la información de tu empresa, FAQs, políticas o cualquier otro contenido relevante.",
+      "uploadLabel": "Sube un archivo o arrástralo aquí",
+      "uploadHint": "PDF, TXT, DOCX hasta 10MB",
+      "removeButton": "Quitar",
+      "processingButton": "Procesando...",
+      "uploadButton": "Subir y Procesar"
+    },
+    "comingSoon": {
+      "title": "Entrenamiento con Sitio Web",
+      "tag": "PRÓXIMAMENTE",
+      "subtitle": "Entrena a tu bot automáticamente desde el contenido del sitio web",
+      "description": "Introduce la URL de tu sitio web para rastrear y extraer contenido automáticamente para la base de conocimiento de tu chatbot.",
+      "crawlButton": "Rastrear y Entrenar"
+    }
   }
 }

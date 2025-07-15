@@ -124,7 +124,8 @@
     "newChatButton": "Start New Chat",
     "inputPlaceholder": "Ask about our services...",
     "inputPlaceholderAgent": "Reply to the agent",
-    "inputPlaceholderPending": "Waiting for an agent to take over..."
+    "inputPlaceholderPending": "Waiting for an agent to take over...",
+    "handoffMessage": "Understood. I'm finding an agent to help you. Please wait."
   },
   "settings": {
     "pageTitle": "Bot Settings",
@@ -134,7 +135,8 @@
       "savedSuccess": "Settings saved successfully!",
       "uploading": "Uploading and processing file...",
       "uploadSuccess": "Knowledge base updated successfully!",
-      "copied": "Code copied to clipboard!"
+      "copied": "Code copied to clipboard!",
+      "selectFile": "Please select a file first."
     },
     "customization": {
       "title": "Bot Customization",
@@ -149,6 +151,45 @@
       "label": "Primary Color",
       "description": "Used for headers and user messages"
     },
-    "saveButton": "Save Settings"
+    "saveButton": "Save Settings",
+    "installation": {
+      "title": "Installation",
+      "subtitle": "Add your chatbot to your website",
+      "embedTitle": "Embed Code",
+      "embedDescription": "Copy and paste this code snippet just before the closing </body> tag on your website.",
+      "copyButton": "Copy",
+      "wpTitle": "WordPress Sites",
+      "wpDescription": "For WordPress websites, follow these steps:",
+      "wpStep1": "1. Go to <strong>Appearance → Theme Editor</strong>",
+      "wpStep2": "2. Select your active theme",
+      "wpStep3": "3. Find and edit <strong>footer.php</strong>",
+      "wpStep4": "4. Paste the code just before the closing <strong>body</strong> tag",
+      "wpStep5": "5. Click <strong>Update File</strong>",
+      "wpAlternative": "<strong>Alternative:</strong> Use a plugin like \"Insert Headers and Footers\" to add the code without editing theme files.",
+      "customTitle": "Custom Code Sites",
+      "customDescription": "For websites with custom code:",
+      "customStep1": "1. Open your main HTML file (<strong>index.html</strong>)",
+      "customStep2": "2. For React/Vue: Edit your main layout component",
+      "customStep3": "3. Paste the code before the closing <strong>body</strong> tag",
+      "customStep4": "4. Save and deploy your changes",
+      "customNote": "<strong>Note:</strong> The chatbot will automatically appear on all pages where the script is included."
+    },
+    "knowledge": {
+      "title": "Knowledge Base",
+      "subtitle": "Upload documents to train your chatbot",
+      "description": "Upload PDF, TXT, or DOCX files containing your company's information, FAQs, policies, or any other relevant content.",
+      "uploadLabel": "Upload a file or drag and drop",
+      "uploadHint": "PDF, TXT, DOCX up to 10MB",
+      "removeButton": "Remove",
+      "processingButton": "Processing...",
+      "uploadButton": "Upload & Process"
+    },
+    "comingSoon": {
+      "title": "Website Training",
+      "tag": "COMING SOON",
+      "subtitle": "Automatically train your bot from website content",
+      "description": "Enter your website URL to automatically crawl and extract content for your chatbot's knowledge base.",
+      "crawlButton": "Crawl & Train"
+    }
   }
 }

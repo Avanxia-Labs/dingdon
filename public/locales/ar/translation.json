@@ -1,0 +1,198 @@
+{
+    "common": {
+        "english": "English",
+        "spanish": "Spanish",
+        "russian": "Русский",
+        "chinese": "中文",
+        "arabic": "العربية",
+        "loading": "جاري التحميل...",
+        "save": "حفظ",
+        "errorPrefix": "خطأ",
+        "successPrefix": "نجح",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "cancel": "إلغاء",
+        "actions": "الإجراءات",
+        "role": "الدور",
+        "name": "الاسم",
+        "email": "البريد الإلكتروني"
+    },
+    "login": {
+        "title": "بوت خدمة العملاء",
+        "subtitle": "الوصول إلى لوحة التحكم الخاصة بك",
+        "agentLogin": "تسجيل دخول الوكيل",
+        "googleButton": "المتابعة بواسطة Google",
+        "divider": "أو المتابعة بالبريد الإلكتروني",
+        "emailLabel": "عنوان البريد الإلكتروني",
+        "emailPlaceholder": "agent@company.com",
+        "passwordLabel": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة المرور",
+        "signInButton": "تسجيل الدخول إلى لوحة التحكم",
+        "signingInButton": "جاري تسجيل الدخول...",
+        "forgotPassword": "نسيت كلمة المرور؟",
+        "invalidCredentialsError": "بريد إلكتروني أو كلمة مرور غير صحيحة.",
+        "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+    },
+    "dashboardLayout": {
+        "liveChats": "المحادثات المباشرة",
+        "teamMembers": "أعضاء الفريق",
+        "chatHistory": "سجل المحادثات",
+        "settingsAndBot": "الإعدادات والبوت",
+        "signOut": "تسجيل الخروج"
+    },
+    "superadmin": {
+        "pageTitle": "إدارة مساحات عمل العملاء",
+        "createTitle": "إنشاء مساحة عمل جديدة",
+        "companyNameLabel": "اسم الشركة",
+        "adminNameLabel": "الاسم الكامل للمدير",
+        "adminEmailLabel": "بريد المدير الإلكتروني",
+        "adminPasswordLabel": "كلمة المرور الأولية للمدير",
+        "createButton": "إنشاء مساحة العمل والمدير",
+        "updateButton": "حفظ التغييرات",
+        "editModalTitle": "تعديل اسم مساحة العمل",
+        "newNameLabel": "الاسم الجديد",
+        "tableHeaderName": "اسم مساحة العمل",
+        "tableHeaderDate": "تاريخ الإنشاء",
+        "feedback": {
+            "creating": "جاري الإنشاء...",
+            "createdSuccess": "تم إنشاء مساحة العمل بنجاح!",
+            "deleting": "جاري الحذف...",
+            "deletedSuccess": "تم حذف مساحة العمل \"{{name}}\" بنجاح.",
+            "updating": "جاري التحديث...",
+            "updatedSuccess": "تم تحديث مساحة العمل بنجاح!"
+        },
+        "deleteConfirm": "هل أنت متأكد من رغبتك في حذف مساحة العمل \"{{name}}\"؟ هذا الإجراء لا يمكن التراجع عنه."
+    },
+    "agents": {
+        "pageTitle": "أعضاء الفريق",
+        "inviteTitle": "دعوة عضو جديد",
+        "fullNameLabel": "الاسم الكامل",
+        "initialPasswordLabel": "كلمة المرور الأولية",
+        "inviteButton": "دعوة عضو",
+        "invitingButton": "جاري الإرسال...",
+        "roleAdmin": "مدير",
+        "roleAgent": "وكيل",
+        "feedback": {
+            "inviting": "جاري إرسال الدعوة...",
+            "invitedSuccess": "تم دعوة الوكيل بنجاح!",
+            "removing": "جاري إزالة الوكيل...",
+            "removedSuccess": "تم إزالة الوكيل بنجاح!"
+        },
+        "deleteConfirm": "هل أنت متأكد من رغبتك في إزالة {{name}} من مساحة العمل هذه؟ سيؤدي هذا إلى حذف حسابهم."
+    },
+    "history": {
+        "pageTitle": "سجل المحادثات",
+        "deleteAllButton": "حذف جميع السجلات",
+        "tableHeaderDate": "التاريخ",
+        "tableHeaderAgent": "الوكيل",
+        "tableHeaderPreview": "معاينة",
+        "tableHeaderMessages": "الرسائل",
+        "modalTitle": "سجل المحادثة",
+        "deleteConfirm": "هل أنت متأكد من رغبتك في حذف سجل المحادثة هذا نهائياً؟",
+        "deleteAllConfirm": "سيؤدي هذا إلى حذف جميع سجلات المحادثات الـ {{count}} لمساحة العمل هذه نهائياً. لا يمكن التراجع عن هذا الإجراء. يرجى كتابة \"DELETE\" للتأكيد.",
+        "deleteCancelled": "تم إلغاء الحذف.",
+        "feedback": {
+            "deletingAll": "جاري حذف جميع السجلات...",
+            "deletedAllSuccess": "تم حذف جميع سجلات المحادثات."
+        }
+    },
+    "chatPanel": {
+        "notifications": {
+            "title": "تفعيل التنبيهات",
+            "description": "احصل على إشعارات سطح المكتب والصوت.",
+            "button": "تفعيل"
+        },
+        "connection": {
+            "connected": "متصل",
+            "reconnecting": "إعادة الاتصال...",
+            "disconnected": "منقطع",
+            "reconnect": "إعادة الاتصال"
+        },
+        "requestsTitle": "طلبات المحادثة",
+        "noRequests": "لا توجد طلبات معلقة.",
+        "activeChatTitle": "محادثة نشطة: {{id}}",
+        "closeChatButton": "إغلاق المحادثة",
+        "inputPlaceholder": "اكتب ردك...",
+        "inputPlaceholderDisconnected": "في انتظار الاتصال...",
+        "selectChatPrompt": "اختر محادثة للبدء",
+        "chatClosed": "تم إغلاق المحادثة"
+    },
+    "chatbotUI": {
+        "headerTitle": "كيف يمكنني مساعدتك اليوم؟",
+        "errorMessage": "عفوًا! حدث خطأ ما.",
+        "agentInstruction": "إذا كنت ترغب في التحدث مع شخص، يرجى كتابة:",
+        "agentKeyword": "أريد التحدث مع وكيل",
+        "typing": "يكتب",
+        "sessionEnded": "انتهت جلسة الدردشة هذه.",
+        "newChatButton": "بدء دردشة جديدة",
+        "inputPlaceholder": "اسأل عن خدماتنا...",
+        "inputPlaceholderAgent": "الرد على الوكيل",
+        "inputPlaceholderPending": "في انتظار تولي وكيل...",
+        "handoffMessage": "مفهوم. أنا أبحث عن وكيل لمساعدتك. يرجى الانتظار."
+    },
+    "settings": {
+        "pageTitle": "إعدادات البوت",
+        "pageSubtitle": "تخصيص الشات بوت الخاص بك وإدارة التكاملات",
+        "feedback": {
+            "saving": "جاري الحفظ...",
+            "savedSuccess": "تم حفظ الإعدادات بنجاح!",
+            "uploading": "جاري الرفع ومعالجة الملف...",
+            "uploadSuccess": "تم تحديث قاعدة المعرفة بنجاح!",
+            "copied": "تم نسخ الكود إلى الحافظة!",
+            "selectFile": "يرجى اختيار ملف أولاً."
+        },
+        "customization": {
+            "title": "تخصيص البوت",
+            "subtitle": "تخصيص مظهر وسلوك الشات بوت الخاص بك"
+        },
+        "botName": {
+            "label": "اسم الشات بوت",
+            "description": "سيظهر هذا الاسم في رأس المحادثة",
+            "placeholder": "أدخل اسم البوت"
+        },
+        "primaryColor": {
+            "label": "اللون الأساسي",
+            "description": "يُستخدم للرؤوس ورسائل المستخدم"
+        },
+        "saveButton": "حفظ الإعدادات",
+        "installation": {
+            "title": "التثبيت",
+            "subtitle": "أضف الشات بوت الخاص بك إلى موقعك الإلكتروني",
+            "embedTitle": "كود التضمين",
+            "embedDescription": "انسخ والصق مقطع الكود هذا قبل علامة الإغلاق </body> في موقعك الإلكتروني.",
+            "copyButton": "نسخ",
+            "wpTitle": "مواقع WordPress",
+            "wpDescription": "لمواقع WordPress، اتبع هذه الخطوات:",
+            "wpStep1": "1. اذهب إلى <strong>المظهر ← محرر القوالب</strong>",
+            "wpStep2": "2. اختر القالب النشط الخاص بك",
+            "wpStep3": "3. ابحث عن <strong>footer.php</strong> وقم بتعديله",
+            "wpStep4": "4. الصق الكود قبل علامة إغلاق <strong>body</strong>",
+            "wpStep5": "5. انقر على <strong>تحديث الملف</strong>",
+            "wpAlternative": "<strong>البديل:</strong> استخدم مكون إضافي مثل \"Insert Headers and Footers\" لإضافة الكود دون تعديل ملفات القالب.",
+            "customTitle": "مواقع الكود المخصص",
+            "customDescription": "للمواقع ذات الكود المخصص:",
+            "customStep1": "1. افتح ملف HTML الرئيسي الخاص بك (<strong>index.html</strong>)",
+            "customStep2": "2. لـ React/Vue: عدّل مكون التخطيط الرئيسي",
+            "customStep3": "3. الصق الكود قبل علامة إغلاق <strong>body</strong>",
+            "customStep4": "4. احفظ ونشر تغييراتك",
+            "customNote": "<strong>ملاحظة:</strong> سيظهر الشات بوت تلقائياً في جميع الصفحات التي تحتوي على السكريبت."
+        },
+        "knowledge": {
+            "title": "قاعدة المعرفة",
+            "subtitle": "ارفع المستندات لتدريب الشات بوت الخاص بك",
+            "description": "ارفع ملفات PDF أو TXT أو DOCX تحتوي على معلومات شركتك أو الأسئلة الشائعة أو السياسات أو أي محتوى ذي صلة.",
+            "uploadLabel": "ارفع ملفاً أو اسحب وأفلت",
+            "uploadHint": "PDF، TXT، DOCX حتى 10 ميجابايت",
+            "removeButton": "إزالة",
+            "processingButton": "جاري المعالجة...",
+            "uploadButton": "رفع ومعالجة"
+        },
+        "comingSoon": {
+            "title": "تدريب الموقع الإلكتروني",
+            "tag": "قريباً",
+            "subtitle": "درّب البوت تلقائياً من محتوى الموقع الإلكتروني",
+            "description": "أدخل رابط موقعك الإلكتروني للزحف التلقائي واستخراج المحتوى لقاعدة معرفة الشات بوت الخاص بك.",
+            "crawlButton": "زحف وتدريب"
+        }
+    }
+}
