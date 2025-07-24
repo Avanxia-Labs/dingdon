@@ -90,9 +90,9 @@ import { Globe } from 'lucide-react';
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    // { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    // { code: 'zh', name: '中文', flag: '🇨🇳' },
+    // { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
 interface LanguageSwitcherProps {

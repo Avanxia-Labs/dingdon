@@ -118,6 +118,8 @@
         "chatClosed": "تم إغلاق المحادثة"
     },
     "chatbotUI": {
+        "botLabel": "بوت",
+        "agentLabel": "وكيل",
         "headerTitle": "كيف يمكنني مساعدتك اليوم؟",
         "errorMessage": "عفوًا! حدث خطأ ما.",
         "agentInstruction": "إذا كنت ترغب في التحدث مع شخص، يرجى كتابة:",

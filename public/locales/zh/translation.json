@@ -117,6 +117,8 @@
         "chatClosed": "对话已关闭"
     },
     "chatbotUI": {
+        "botLabel": "机器人",
+        "agentLabel": "客服",
         "headerTitle": "今天我能如何帮助您？",
         "errorMessage": "哎呀！出错了。",
         "agentInstruction": "如果您想与人工客服交谈，请输入：",

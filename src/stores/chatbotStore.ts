@@ -81,15 +81,22 @@ interface ChatState {
     setLanguage: (language: string) => void;
 }
 
+// Developer Note: Initial messages are now managed in a multilingual dictionary.
+const initialMessages: Record<string, (botName: string) => Message> = {
+    en: (botName) => ({ id: 'init-1', content: `Hi! I'm ${botName}. How can I help you today?`, role: 'assistant', timestamp: new Date() }),
+    es: (botName) => ({ id: 'init-1', content: `¡Hola! Soy ${botName}. ¿Cómo puedo ayudarte hoy?`, role: 'assistant', timestamp: new Date() }),
+    ru: (botName) => ({ id: 'init-1', content: `Привет! Я ${botName}. Чем я могу вам помочь сегодня?`, role: 'assistant', timestamp: new Date() }),
+    ar: (botName) => ({ id: 'init-1', content: `مرحبًا! أنا ${botName}. كيف يمكنني مساعدتك اليوم؟`, role: 'assistant', timestamp: new Date() }),
+    zh: (botName) => ({ id: 'init-1', content: `你好！我是${botName}。今天我能如何帮助您？`, role: 'assistant', timestamp: new Date() }),
+};
+
 /**
  * The initial welcome message for the chatbot.
  */
-const createInitialMessage = (botName: string): Message => ({
-    id: 'init-1',
-    content: `Hi! I'm ${botName}. How can I help you today?`,
-    role: 'assistant',
-    timestamp: new Date()
-});
+const createInitialMessage = (botName: string, lang: string): Message => {
+    const messageFn = initialMessages[lang] || initialMessages.en
+    return messageFn(botName)
+};
 
 /**
  * Zustand store for managing the chatbot's state with persistence.
@@ -101,9 +108,10 @@ export const useChatStore = create<ChatState>()(
                 botName: 'Virtual Assistant',
                 botColor: '#007bff'
             };
+            const initialLanguage = 'en';
 
             return {
-                messages: [createInitialMessage(initialConfig.botName)],
+                messages: [createInitialMessage(initialConfig.botName, initialLanguage)],
                 isOpen: false,
                 isLoading: false,
                 sessionId: null,
@@ -111,7 +119,7 @@ export const useChatStore = create<ChatState>()(
                 workspaceId: null,
                 config: initialConfig,
                 error: null,
-                language: 'en',
+                language: initialLanguage,
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
@@ -126,7 +134,7 @@ export const useChatStore = create<ChatState>()(
                 startSession: () => set((state) => ({
                     sessionId: uuidv4(),
                     status: 'bot',
-                    messages: [createInitialMessage(state.config.botName)],
+                    messages: [createInitialMessage(state.config.botName, state.language)],
                 })),
 
                 requestAgentHandoff: () => {
@@ -141,14 +149,14 @@ export const useChatStore = create<ChatState>()(
                 }),
 
                 resetChat: () => set((state) => ({
-                    messages: [createInitialMessage(state.config.botName)],
+                    messages: [createInitialMessage(state.config.botName, state.language)],
                     sessionId: uuidv4(),
                     status: 'bot',
                     isLoading: false,
                 })),
 
                 startNewChat: () => set((state) => ({
-                    messages: [createInitialMessage(state.config.botName)],
+                    messages: [createInitialMessage(state.config.botName, state.language)],
                     sessionId: uuidv4(),
                     status: 'bot',
                     isLoading: false,
@@ -159,10 +167,8 @@ export const useChatStore = create<ChatState>()(
                 setConfig: (newConfig) => set((state) => {
                     const updatedConfig = { ...state.config, ...newConfig };
                     // Si cambió el nombre del bot, actualizar el mensaje inicial
-                    const updatedMessages = state.messages.map(msg => 
-                        msg.id === 'init-1' 
-                            ? { ...msg, content: `Hi! I'm ${updatedConfig.botName}. How can I help you today?` }
-                            : msg
+                    const updatedMessages = state.messages.map(msg =>
+                        msg.id === 'init-1' ? createInitialMessage(updatedConfig.botName, state.language) : msg
                     );
                     
                     return {
@@ -173,7 +179,14 @@ export const useChatStore = create<ChatState>()(
 
 
                 setError: (error) => set({ error }),
-                setLanguage: (language) => set({ language }),
+                //setLanguage: (language) => set({ language }),
+                setLanguage: (language) => set((state) => {
+                    // Developer Note: When language changes, update the initial message if it exists.
+                    const updatedMessages = state.messages.map(msg => 
+                        msg.id === 'init-1' ? createInitialMessage(state.config.botName, language) : msg
+                    );
+                    return { language, messages: updatedMessages };
+                }),
             };
         },
         {

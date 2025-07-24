@@ -115,6 +115,8 @@
     "chatClosed": "Chat was closed"
   },
   "chatbotUI": {
+    "botLabel": "Bot",
+    "agentLabel": "Agent",
     "headerTitle": "How can I help you today?",
     "errorMessage": "Oops! Something went wrong.",
     "agentInstruction": "If you want to talk to a human please type:",

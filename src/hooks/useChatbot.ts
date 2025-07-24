@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -43,6 +43,7 @@ export const useChatbot = () => {
       setConfig: state.setConfig,
       error: state.error,
       setError: state.setError,
+      language: state.language,
     }))
   );
 
@@ -153,7 +154,8 @@ export const useChatbot = () => {
       message: string,
       sessionId: string,
       history: Message[],
-    }) => chatbotServiceClient.postChatMessage(variables.workspaceId, variables.message, variables.sessionId, variables.history),
+      language: string,
+    }) => chatbotServiceClient.postChatMessage(variables.workspaceId, variables.message, variables.sessionId, variables.history, variables.language),
 
     onMutate: () => {
       setIsLoading(true);
@@ -253,7 +255,7 @@ export const useChatbot = () => {
     if (status === 'bot') {
       const updatedHistory = [...messages, userMessage];
       // --- CAMBIO: Pasamos el workspaceId a la mutación ---
-      mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory });
+      mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory, language });
     }
   };
 

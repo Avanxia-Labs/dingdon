@@ -13,7 +13,7 @@ i18n
     ns: ['translation'],
     defaultNS: 'translation',
     backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      loadPath: '/locales/{{lng}}/translation.json', // Ruta simplificada
     },
     interpolation: {
       escapeValue: false, // React ya se encarga de la protección contra XSS

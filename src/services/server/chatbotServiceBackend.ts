@@ -153,7 +153,7 @@
 //     } else {
 //       console.error('Generic error calling Gemini API:', error);
 //     }
-    
+
 //     return "I'm sorry, I seem to be having some technical difficulties at the moment. Please try again in a little while.";
 
 
@@ -193,18 +193,18 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
  * @returns {Promise<ChatbotConfig | null>} La configuración o null si no se encuentra.
  */
 async function getWorkspaceConfig(workspaceId: string): Promise<ChatbotConfig | null> {
-    const { data, error } = await supabaseAdmin
-        .from('workspaces')
-        .select('knowledge_base')
-        .eq('id', workspaceId)
-        .single();
+  const { data, error } = await supabaseAdmin
+    .from('workspaces')
+    .select('knowledge_base')
+    .eq('id', workspaceId)
+    .single();
 
-    if (error || !data?.knowledge_base) {
-        console.error(`No se pudo obtener la configuración para el workspace ${workspaceId}:`, error);
-        return null;
-    }
-    // La columna 'knowledge_base' es de tipo JSONB, por lo que es un objeto directamente.
-    return data.knowledge_base as ChatbotConfig;
+  if (error || !data?.knowledge_base) {
+    console.error(`No se pudo obtener la configuración para el workspace ${workspaceId}:`, error);
+    return null;
+  }
+  // La columna 'knowledge_base' es de tipo JSONB, por lo que es un objeto directamente.
+  return data.knowledge_base as ChatbotConfig;
 }
 
 /**
@@ -230,13 +230,31 @@ function findLocalAnswer(userQuery: string, config: ChatbotConfig): string | nul
  * @param {string} userPrompt - La pregunta del usuario.
  * @returns {string} El prompt completo para la IA.
  */
-function generateAIContext(config: ChatbotConfig, userPrompt: string): string {
+function generateAIContext(config: ChatbotConfig, userPrompt: string, language: string): string {
   const formattedQA = config.commonQuestions.map(qa => `Q: ${qa.question}\nA: ${qa.answer}`).join('\n\n');
-  
+
+  const languageInstructions: Record<string, string> = {
+    en: `You are a professional and friendly virtual assistant for ${config.companyName}. Your goal is to provide excellent customer support in English.`,
+    es: `Eres un asistente virtual profesional y amigable para ${config.companyName}. Tu objetivo es proporcionar un excelente soporte al cliente en Español.`,
+    ru: `Вы — профессиональный и дружелюбный виртуальный ассистент для ${config.companyName}. Ваша цель — оказывать превосходную поддержку клиентам на русском языке.`,
+    ar: `أنت مساعد افتراضي محترف وودود لشركة ${config.companyName}. هدفك هو تقديم دعم عملاء ممتاز باللغة العربية.`,
+    zh: `您是${config.companyName}的专业友好虚拟助手。您的目标是用中文提供卓越的客户支持。`,
+  };
+
+  const languageResponseInstruction: Record<string, string> = {
+    en: "Your Answer (in English):",
+    es: "Tu Respuesta (en Español):",
+    ru: "Ваш Ответ (на русском языке):",
+    ar: "إجابتك (باللغة العربية):",
+    zh: "您的回答 (用中文):",
+  };
+
+  const selectedInstruction = languageInstructions[language] || languageInstructions.en;
+  const selectedResponseInstruction = languageResponseInstruction[language] || languageResponseInstruction.en;
+
   // Este es el prompt principal que guía a la IA.
   return `
-    You are a professional and friendly virtual assistant for ${config.companyName}. 
-    Your goal is to provide excellent customer support using the information available in our knowledge base.
+    ${selectedInstruction}
 
     Our services include:
     ${config.services.map(service => `- ${service}`).join('\n')}
@@ -245,7 +263,7 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string): string {
     ${formattedQA}
     --- END KNOWLEDGE BASE ---
 
-    BEHAVIORAL INSTRUCTIONS:
+    BEHAVIORAL INSTRUCTIONS (Examples for english but take into account the other language is applies):
     
     1. **Be natural and conversational**: Respond in a friendly and professional manner, like an experienced human agent would.
 
@@ -278,58 +296,73 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string): string {
 
     User Question: "${userPrompt}"
     
-    Your Answer:
+    ${selectedResponseInstruction};
   `;
 }
 
 /**
  * Genera una respuesta al prompt del usuario, usando la configuración dinámica del workspace.
  */
-async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string): Promise<string | { handoff: true }> {
-    console.log(`[Backend] Iniciando respuesta para workspace: ${workspaceId}`);
+async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string, language: string): Promise<string | { handoff: true }> {
+  console.log(`[Backend] Generating response for workspace: ${workspaceId} in language: ${language}`);
 
-    // --- Detección de Handoff ---
-    const normalizedQuery = userPrompt.toLowerCase();
-    const handOffKeywords = ['agent', 'human', 'speak to', 'talk to', 'representative'];
-    if (handOffKeywords.some(keyword => normalizedQuery.includes(keyword))) {
-        return { handoff: true };
+  // --- Detección de Handoff ---
+  const normalizedQuery = userPrompt.toLowerCase();
+  const handOffKeywords: Record<string, string[]> = {
+    en: ['agent', 'human', 'speak to', 'talk to', 'representative'],
+    es: ['agente', 'persona', 'humano', 'hablar con', 'representante'],
+    ru: ['агент', 'человек', 'поговорить с', 'оператор'],
+    ar: ['وكيل', 'شخص', 'أتحدث مع', 'إنسان', 'ممثل خدمة'],
+    zh: ['人工', '客服', '真人', '谈谈', '接线员'],
+  };
+  const keywordsForLang = handOffKeywords[language] || handOffKeywords.en;
+  if (keywordsForLang.some(keyword => normalizedQuery.includes(keyword))) {
+    return { handoff: true };
+  }
+
+  // 1. Cargar la configuración específica para este workspace desde la base de datos.
+  const config = await getWorkspaceConfig(workspaceId);
+  const errorMessages: Record<string, string> = {
+    en: "I'm sorry, I'm having some technical difficulties. Please try again later.",
+    es: "Lo siento, estoy teniendo algunas dificultades técnicas. Por favor, inténtalo de nuevo más tarde.",
+    ru: "Извините, у меня возникли технические трудности. Пожалуйста, повторите попытку позже.",
+    ar: "أنا آسف، أواجه بعض الصعوبات الفنية. يرجى المحاولة مرة أخرى لاحقًا.",
+    zh: "抱歉，我遇到了一些技术问题。请稍后再试。",
+  };
+  const selectedErrorMessage = errorMessages[language] || errorMessages.en;
+  if (!config) {
+    return selectedErrorMessage;
+  }
+
+  // 2. Búsqueda local usando la configuración dinámica.
+  const localAnswer = findLocalAnswer(userPrompt, config);
+  if (localAnswer) {
+    console.log(`[Local Answer] Respuesta encontrada en la configuración del workspace ${workspaceId}.`);
+    return localAnswer;
+  }
+
+  // 3. Si no hay respuesta local, llamar a la IA con el contexto dinámico.
+  console.log(`[AI Fallback] Llamando a Gemini para workspace ${workspaceId}.`);
+  if (!GEMINI_API_KEY) {
+    return selectedErrorMessage;
+  }
+
+  const fullPrompt = generateAIContext(config, userPrompt, language);
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(fullPrompt);
+    const response = result.response;
+    const textResponse = response.text();
+
+    if (textResponse) {
+      return textResponse.trim();
     }
-
-    // 1. Cargar la configuración específica para este workspace desde la base de datos.
-    const config = await getWorkspaceConfig(workspaceId);
-    if (!config) {
-        return "I'm sorry, but I'm not configured for this workspace. Please contact support.";
-    }
-
-    // 2. Búsqueda local usando la configuración dinámica.
-    const localAnswer = findLocalAnswer(userPrompt, config);
-    if (localAnswer) {
-        console.log(`[Local Answer] Respuesta encontrada en la configuración del workspace ${workspaceId}.`);
-        return localAnswer;
-    }
-
-    // 3. Si no hay respuesta local, llamar a la IA con el contexto dinámico.
-    console.log(`[AI Fallback] Llamando a Gemini para workspace ${workspaceId}.`);
-    if (!GEMINI_API_KEY) {
-        return "I'm having a configuration issue and can't connect to my core intelligence.";
-    }
-
-    const fullPrompt = generateAIContext(config, userPrompt);
-
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-        const result = await model.generateContent(fullPrompt);
-        const response = result.response;
-        const textResponse = response.text();
-        
-        if (textResponse) {
-            return textResponse.trim();
-        }
-        throw new Error('Invalid response structure from Gemini API');
-    } catch (error) {
-        console.error('Error llamando a la API de Gemini:', error);
-        return "I'm sorry, I'm having some technical difficulties at the moment. Please try again later.";
-    }
+    throw new Error('Invalid response structure from Gemini API');
+  } catch (error) {
+    console.error('Error llamando a la API de Gemini:', error);
+    return selectedErrorMessage;
+  }
 }
 
 /**

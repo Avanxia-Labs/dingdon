@@ -4,6 +4,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chatbotServiceBackend } from '@/services/server/chatbotServiceBackend';
 import { notificationService } from '@/lib/server/notificationService';
 import { Message } from '@/types/chatbot';
+import path from 'path';
+import fs from 'fs';
+import { readFile } from 'fs/promises';
+
+
+// --- Helper para cargar traducciones en el servidor ---
+// Developer Note: This function manually loads translation files from the filesystem.
+// This is the correct way to handle i18n in a server-side-only context like an API Route,
+// as it avoids importing React-specific libraries.
+async function getServerTranslations(language: string, namespace: string = 'chatbotUI') {
+    const fallbackLang = 'en';
+    let langToTry = language;
+
+    try {
+        const filePath = path.resolve(process.cwd(), `public/locales/${langToTry}/translation.json`);
+        console.log("RUTA1: ", filePath)
+        const data = await readFile(filePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        // If the requested language file doesn't exist, fall back to English.
+        console.warn(`Translation file for language '${language}' not found. Falling back to '${fallbackLang}'.`);
+        try {
+            const fallbackPath = path.resolve(process.cwd(), `public/locales/${fallbackLang}/translation.json`);
+            console.log("RUTA: ", fallbackPath)
+            const data = await readFile(fallbackPath, 'utf-8');
+            return JSON.parse(data);
+        } catch (fallbackError) {
+            console.error(`FATAL: Could not load fallback English translation file.`);
+            // Return a hardcoded object as a last resort
+            return { handoffMessage: "Understood. I'm finding an agent to help you. Please wait." };
+        }
+    }
+}
 
 /**
  * @file API route for handling chat messages.
@@ -21,7 +54,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await req.json();
-    const { workspaceId, message, sessionId, history } = body;
+    const { workspaceId, message, sessionId, history, language } = body;
 
     if (!workspaceId) {
         return NextResponse.json({ error: 'Workspace ID is required.' }, { status: 400 });
@@ -36,7 +69,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     
     
-    const aiResponse = await chatbotServiceBackend.generateChatbotResponse(workspaceId, message, sessionId);
+    const aiResponse = await chatbotServiceBackend.generateChatbotResponse(workspaceId, message, sessionId, language);
 
     // Call the backend service to get the AI-generated response
     if (typeof aiResponse === 'object' && aiResponse.handoff) {
@@ -56,8 +89,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         });
       }
 
+      // Load the appropriate translation file on the server.
+      const translations = await getServerTranslations(language);
+      console.log("Translation: ", translations)
+      // Get the translated message.
+      const handoffReply = translations.chatbotUI?.handoffMessage || "Understood. I'm finding an agent to help you. Please wait.";
+      console.log("REPLY: ", handoffReply)
       return NextResponse.json({
-        reply: "Understood. I'm finding an agent to help you. Please wait."
+        reply: handoffReply
       });
     } else if (typeof aiResponse === 'string') {
       // This is a standard AI-generated response.
