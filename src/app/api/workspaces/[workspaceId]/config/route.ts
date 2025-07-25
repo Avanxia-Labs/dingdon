@@ -8,18 +8,24 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 // --- FUNCIÓN GET: Obtener la configuración actual del workspace ---
 export async function GET(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
+
+    const { workspaceId } = await context.params;
+
     // Seguridad: Solo un miembro del workspace puede ver su configuración.
-    if (!session || session.user.workspaceId !== params.workspaceId) {
+    if (!session || session.user.workspaceId !== workspaceId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const { data, error } = await supabaseAdmin
         .from('workspaces')
         .select('bot_name, bot_color')
-        .eq('id', params.workspaceId)
+        .eq('id', workspaceId)
         .single();
 
     if (error) {
@@ -33,11 +39,17 @@ export async function GET(
 // --- FUNCIÓN PUT: Actualizar la configuración del workspace ---
 export async function PUT(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
+
+    const { workspaceId } = await context.params;
+
     // Seguridad: Solo un admin del workspace puede cambiar la configuración.
-    if (session?.user?.workspaceId !== params.workspaceId || session.user.workspaceRole !== 'admin') {
+    if (session?.user?.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -51,7 +63,7 @@ export async function PUT(
     const { data, error } = await supabaseAdmin
         .from('workspaces')
         .update({ bot_name, bot_color })
-        .eq('id', params.workspaceId)
+        .eq('id', workspaceId)
         .select()
         .single();
 

@@ -6,11 +6,14 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function POST(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        const { workspaceId } = params;
+        const { workspaceId } = await context.params;
 
         // 1. Verificación de permisos
         if (!session?.user?.id) {

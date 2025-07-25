@@ -8,7 +8,10 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 // --- FUNCIÓN PUT: Actualizar un workspace específico ---
 export async function PUT(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'superadmin') {
@@ -17,7 +20,7 @@ export async function PUT(
 
     try {
         const { name } = await request.json();
-        const { workspaceId } = params;
+        const { workspaceId } = await context.params;
 
         if (!name) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -42,14 +45,16 @@ export async function PUT(
 // --- FUNCIÓN DELETE: Eliminar un workspace y todos sus datos asociados ---
 export async function DELETE(
     request: Request, 
-    { params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'superadmin') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
 
     try {
         // --- INICIAMOS UNA TRANSACCIÓN LÓGICA ---

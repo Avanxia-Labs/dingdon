@@ -5,13 +5,14 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ workspaceId: string }> }
+    //{ params }: { params: Promise<{ workspaceId: string }> }
+    context: { params: Promise<{ workspaceId: string }> }
 ) {
     console.log('[API Route] GET /api/public/config/[workspaceId] called');
     
     try {
         // 🔧 CAMBIO PRINCIPAL: Await params antes de destructuring
-        const { workspaceId } = await params;
+        const { workspaceId } = await context.params;
         console.log('[API Route] workspaceId:', workspaceId);
 
         if (!workspaceId) {

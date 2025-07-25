@@ -7,11 +7,14 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { workspaceId: string, memberId: string } }
+    // { params }: { params: { workspaceId: string, memberId: string } }
+    context: {
+        params: Promise<{ workspaceId: string, memberId: string }>
+    }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        const { workspaceId, memberId } = params;
+        const { workspaceId, memberId } = await context.params;
 
         // 1. Verificación de Seguridad:
         // - El usuario que hace la petición debe ser un 'admin' de este workspace.

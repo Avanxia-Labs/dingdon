@@ -19,11 +19,14 @@ interface MemberFromDB {
 
 export async function GET(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        const { workspaceId } = params;
+        const { workspaceId } = await context.params;
 
         if (!session || session.user.workspaceId !== workspaceId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });

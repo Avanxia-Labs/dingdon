@@ -7,10 +7,13 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
 
     // Seguridad: Solo un admin de este workspace puede ver el historial
     if (session?.user?.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {
@@ -57,11 +60,14 @@ export async function GET(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        const { workspaceId } = params;
+        const { workspaceId } = await context.params;
 
         // Seguridad: Solo un admin del workspace puede borrar todo el historial
         if (session?.user?.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {

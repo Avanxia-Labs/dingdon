@@ -7,11 +7,14 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        const { workspaceId } = params;
+        const { workspaceId } = await context.params;
 
         // Verificación de Seguridad: El usuario logueado solo puede pedir datos de su propio workspace.
         if (!session || session.user.workspaceId !== workspaceId) {

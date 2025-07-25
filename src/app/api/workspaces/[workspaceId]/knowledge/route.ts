@@ -13,10 +13,13 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(
     request: Request,
-    { params }: { params: { workspaceId: string } }
+    //{ params }: { params: { workspaceId: string } }
+    context: {
+        params: Promise<{ workspaceId: string }>
+    }
 ) {
     const session = await getServerSession(authOptions);
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
 
     if (session?.user?.workspaceId !== workspaceId || session.user.workspaceRole !== 'admin') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
