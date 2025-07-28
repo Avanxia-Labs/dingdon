@@ -461,16 +461,19 @@ nextApp.prepare().then(() => {
             return res.status(401).send('Unauthorized');
         }
 
-        if (!workspaceId || !requestData) {
+        if (!workspaceId || !sessionId || !initialMessage) {
             return res.status(400).send('Missing workspaceId or requestData');
         }
 
-        // Usamos la instancia REAL de 'io' para emitir
-        // La estructura que el frontend espera es { sessionId, initialMessage }
+        // Usamos la instancia REAL de 'io' para emitir al dashboard
+        // El objeto que el frontend espera es { sessionId, initialMessage }
         io.to(`dashboard_${workspaceId}`).emit('new_chat_request', { sessionId, initialMessage });
 
+        // --- CORRECCIÓN CLAVE ---
+        // Usamos 'sessionId' directamente, no 'requestData.sessionId'
         console.log(`[Handoff Notifier] Notificación enviada para workspace: ${workspaceId}, sesión: ${sessionId}`);
-        res.status(200).send('Notification sent');
+
+        res.status(200).send('Notification sent'); 
     });
 
     // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
