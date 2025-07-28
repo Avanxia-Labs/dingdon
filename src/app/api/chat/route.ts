@@ -8,6 +8,14 @@ import path from 'path';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
 
+// --- AÑADIDO: Helper para crear respuestas con cabeceras CORS ---
+function createCorsResponse(body: any, status: number = 200) {
+    const response = NextResponse.json(body, { status });
+    response.headers.set('Access-Control-Allow-Origin', '*'); // Permite cualquier origen
+    response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Métodos permitidos
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Cabeceras permitidas
+    return response;
+}
 
 // --- Helper para cargar traducciones en el servidor ---
 // Developer Note: This function manually loads translation files from the filesystem.
@@ -57,15 +65,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const { workspaceId, message, sessionId, history, language } = body;
 
     if (!workspaceId) {
-        return NextResponse.json({ error: 'Workspace ID is required.' }, { status: 400 });
+        return createCorsResponse({ error: 'Workspace ID is required.' }, 400);
     }
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
-      return NextResponse.json({ error: 'Message is required and must be a non-empty string.' }, { status: 400 });
+      return createCorsResponse({ error: 'Message is required and must be a non-empty string.' }, 400);
     }
 
     if (!sessionId || typeof sessionId !== 'string') {
-      return NextResponse.json({ error: 'Session ID is required.' }, { status: 400 });
+      return createCorsResponse({ error: 'Session ID is required.' }, 400);
     }
     
     
@@ -95,21 +103,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       // Get the translated message.
       const handoffReply = translations.chatbotUI?.handoffMessage || "Understood. I'm finding an agent to help you. Please wait.";
       console.log("REPLY: ", handoffReply)
-      return NextResponse.json({
+      return createCorsResponse({
         reply: handoffReply
       });
     } else if (typeof aiResponse === 'string') {
       // This is a standard AI-generated response.
-      return NextResponse.json({ reply: aiResponse })
+      return createCorsResponse({ reply: aiResponse })
     }
 
     // Fallback for an unexpected response type from the service.
     console.error(`[API Route] Invalid response type from backend service for session: ${sessionId}`);
-    return NextResponse.json({ error: 'Invalid response type from backend service.' }, { status: 500 });
+    return createCorsResponse({ error: 'Invalid response type from backend service.' }, 500);
 
   } catch (error) {
     // This catches potential JSON parsing errors or other unexpected issues.
     console.error('[CHAT_API_ROUTE_ERROR]', error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    return createCorsResponse({ error: 'An internal server error occurred.' }, 500);
   }
 }

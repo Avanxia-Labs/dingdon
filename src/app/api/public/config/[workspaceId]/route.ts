@@ -3,6 +3,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
+// --- AÑADIDO: Helper para crear respuestas con cabeceras CORS ---
+function createCorsResponse(body: any, status: number = 200) {
+    const response = NextResponse.json(body, { status });
+    response.headers.set('Access-Control-Allow-Origin', '*'); // Permite cualquier origen
+    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Métodos permitidos
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type'); // Cabeceras permitidas
+    return response;
+}
+
 export async function GET(
     request: NextRequest,
     //{ params }: { params: Promise<{ workspaceId: string }> }
@@ -17,7 +26,7 @@ export async function GET(
 
         if (!workspaceId) {
             console.log('[API Route] No workspaceId provided');
-            return NextResponse.json({ error: 'Workspace ID is required' }, { status: 400 });
+            return createCorsResponse({ error: 'Workspace ID is required' }, 400);
         }
 
         console.log('[API Route] Querying Supabase for workspace:', workspaceId);
@@ -30,20 +39,20 @@ export async function GET(
 
         if (error) {
             console.error('[API Route] Supabase error:', error);
-            return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
+            return createCorsResponse({ error: 'Configuration not found' }, 400);
         }
 
         if (!data) {
             console.log('[API Route] No data found for workspace:', workspaceId);
-            return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
+            return createCorsResponse({ error: 'Configuration not found' }, 400);
         }
 
         console.log('[API Route] Successfully retrieved config:', data);
-        return NextResponse.json(data);
+        return createCorsResponse(data);
 
     } catch (e) {
         console.error('[API Route] Unexpected error:', e);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return createCorsResponse({ error: 'Internal server error' }, 400);
     }
 }
 
