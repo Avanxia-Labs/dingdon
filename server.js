@@ -779,10 +779,10 @@ nextApp.prepare().then(() => {
     // 4. La ruta "catch-all". Debe ser la última ruta que Express maneja.
     // Pasa cualquier petición que no haya sido manejada antes (como tu API)
     // al manejador de Next.js para que sirva las páginas de tu frontend.
-    app.all('*', (req, res) => {
+    app.all('/{*splat}', (req, res) => {
         return handle(req, res);
     });
-
+ 
     server.listen(PORT, () => {
         console.log(`🚀 Servidor de WebSockets escuchando en el puerto ${PORT}`);
         console.log(`📡 Permitidas conexiones desde el origen: ${CLIENT_ORIGIN_URL}`);
