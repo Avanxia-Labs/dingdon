@@ -50,61 +50,27 @@ export const useChatbot = () => {
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
 
-  // --- useEffect PRINCIPAL DE CONFIGURACIÓN Y RESETEO ---
   useEffect(() => {
-    // 1. Obtener el nuevo workspaceId desde la configuración global
-    const newWorkspaceId = (window as any).chatbotConfig?.workspaceId;
-
-    if (!newWorkspaceId) {
-      setError("Configuration error: Workspace ID is missing.");
-      return; // Salir si no hay ID
-    }
-
-    // 2. DETECTAR SI EL WORKSPACE HA CAMBIADO
-    if (workspaceId && workspaceId !== newWorkspaceId) {
-      console.log(`[useChatbot] Workspace ID ha cambiado de ${workspaceId} a ${newWorkspaceId}. Reseteando chat...`);
-      // Si el ID ha cambiado, desconectamos el socket viejo y reseteamos TODO el estado.
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
+    if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
+      const id = (window as any).chatbotConfig.workspaceId;
+      if (id) {
+        setWorkspaceId(id);
+        setError(null); // Limpiar cualquier error anterior al encontrar un ID
+      } else {
+        // Si el ID está vacío, establecemos un error
+        setError("Configuration error: Workspace ID is missing.");
       }
-      resetChat(); // Esto limpia mensajes, sessionId, status, etc.
     }
-
-    // 3. Establecer el nuevo workspaceId (o el inicial)
-    setWorkspaceId(newWorkspaceId);
-    setError(null); // Limpiar errores
-
-  }, [workspaceId, resetChat, setWorkspaceId, setError]);
-
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
-  //     const id = (window as any).chatbotConfig.workspaceId;
-  //     if (id) {
-  //       setWorkspaceId(id);
-  //       setError(null); // Limpiar cualquier error anterior al encontrar un ID
-  //     } else {
-  //       // Si el ID está vacío, establecemos un error
-  //       setError("Configuration error: Workspace ID is missing.");
-  //     }
-  //   }
-  // }, [setWorkspaceId, setError]);
+  }, [setWorkspaceId, setError]);
 
 
   // - useEffect de WebSocket 
 
   useEffect(() => {
     
-    // if (workspaceId && !sessionId) {
-    //     console.log('[Chatbot] Workspace ID presente. Iniciando nueva sesión...');
-    //     startSession();
-    // }
-
-    // Solo iniciar una sesión si tenemos un workspaceId y NO tenemos un sessionId
     if (workspaceId && !sessionId) {
-        console.log('[useChatbot] Workspace ID presente. Iniciando nueva sesión...');
-        startSession(); // Esto generará un nuevo sessionId y disparará la reconexión de este efecto
-        return; // Salimos para esperar el nuevo render con el sessionId
+        console.log('[Chatbot] Workspace ID presente. Iniciando nueva sesión...');
+        startSession();
     }
 
     if (sessionId && !socketRef.current) {
