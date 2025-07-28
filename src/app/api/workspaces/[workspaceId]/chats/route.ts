@@ -42,6 +42,11 @@ export async function GET(
 
         if (error) throw error;
 
+        
+        const mappeoData = data.map(chat => ({
+            
+        }))
+        
         // Formatear los datos para que sean más fáciles de usar en el frontend
         const formattedData = data.map(chat => ({
             id: chat.id,
@@ -52,6 +57,18 @@ export async function GET(
             messageCount: chat.history?.length || 0,
             firstMessage: chat.history?.[0]?.content || 'No messages'
         }));
+
+        // ============= DIAGNÓSTICO ===================
+        for (let i = 0; i < formattedData.length; i++) {
+            console.warn(`[DIAGNÓSTICO] Procesando chat ID: ${formattedData[i].id}. Contenido completo del chat:`, formattedData[i])
+            
+        }
+
+        // ============= DIAGNÓSTICO ===================
+        for (const chat of formattedData) {
+            // Usamos JSON.stringify para asegurarnos de que el objeto se expanda bien en los logs
+            console.warn(`[DIAGNÓSTICO] Objeto formateado:`, JSON.stringify(chat, null, 2));
+        }
 
         return NextResponse.json(formattedData);
 

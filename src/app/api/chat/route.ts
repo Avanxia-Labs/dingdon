@@ -97,6 +97,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         });
       }
 
+      // La URL de nuestro propio servidor. Render se encarga de resolver esto internamente.
+     const internalApiUrl = `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`;
+
+     fetch(internalApiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-internal-secret': process.env.INTERNAL_API_SECRET || ''
+        },
+        body: JSON.stringify({ 
+            workspaceId: workspaceId, 
+            sessionId: sessionId,
+            initialMessage: firstUserMessage 
+        })
+    }).catch(err => {
+        console.error('[API Route] Error llamando al notificador interno de handoff:', err);
+    });
+    
+
       // Load the appropriate translation file on the server.
       const translations = await getServerTranslations(language);
       console.log("Translation: ", translations)

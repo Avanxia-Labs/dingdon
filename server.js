@@ -449,6 +449,30 @@ nextApp.prepare().then(() => {
         res.json({ history: data.history || [] });
     });
 
+    // --- Ruta interna para manejar notificaciones de handoff ---
+    app.post('/api/internal/notify-handoff', express.json(), (req, res) => {
+        // Usamos express.json() solo para esta ruta
+        const { workspaceId, sessionId, initialMessage } = req.body;
+        const secret = req.headers['x-internal-secret'];
+
+        // Medida de seguridad simple
+        if (secret !== process.env.INTERNAL_API_SECRET) {
+            console.warn('[Handoff Notifier] Petición rechazada por secreto inválido.');
+            return res.status(401).send('Unauthorized');
+        }
+
+        if (!workspaceId || !requestData) {
+            return res.status(400).send('Missing workspaceId or requestData');
+        }
+
+        // Usamos la instancia REAL de 'io' para emitir
+        // La estructura que el frontend espera es { sessionId, initialMessage }
+        io.to(`dashboard_${workspaceId}`).emit('new_chat_request', { sessionId, initialMessage });
+
+        console.log(`[Handoff Notifier] Notificación enviada para workspace: ${workspaceId}, sesión: ${sessionId}`);
+        res.status(200).send('Notification sent');
+    });
+
     // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
     // const io = new Server(server, {
     //     cors: { origin: CLIENT_ORIGIN_URL },
@@ -782,7 +806,7 @@ nextApp.prepare().then(() => {
     app.all('/{*splat}', (req, res) => {
         return handle(req, res);
     });
- 
+
     server.listen(PORT, () => {
         console.log(`🚀 Servidor de WebSockets escuchando en el puerto ${PORT}`);
         console.log(`📡 Permitidas conexiones desde el origen: ${CLIENT_ORIGIN_URL}`);
