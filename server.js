@@ -422,7 +422,7 @@ nextApp.prepare().then(() => {
     const server = http.createServer(app);
 
     app.use(cors({ origin: CLIENT_ORIGIN_URL }));
-    app.use(express.json());
+    //app.use(express.json());
 
     // La "DB en memoria" para el estado de las sesiones activas
     const workspacesData = {};
