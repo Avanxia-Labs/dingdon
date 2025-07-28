@@ -12,6 +12,10 @@ export async function GET(
         params: Promise<{ workspaceId: string }>
     }
 ) {
+
+    console.warn('--- INICIANDO GET /CHATS - VERSIÓN DE CÓDIGO 29-JULIO ---');
+
+
     const session = await getServerSession(authOptions);
     const { workspaceId } = await context.params;
 
