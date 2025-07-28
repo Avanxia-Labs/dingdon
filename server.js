@@ -465,6 +465,16 @@ nextApp.prepare().then(() => {
             return res.status(400).send('Missing workspaceId or requestData');
         }
 
+        // =========== AÑADIDO: CREAR LA SESIÓN EN LA MEMORIA ===============
+        if (!workspacesData[workspaceId]) {
+            workspacesData[workspaceId] = {};
+        }
+        workspacesData[workspaceId][sessionId] = {
+            status: 'pending', // ¡El estado inicial correcto!
+            history: [initialMessage],
+            assignedAgentId: null,
+        };
+
         // Usamos la instancia REAL de 'io' para emitir al dashboard
         // El objeto que el frontend espera es { sessionId, initialMessage }
         io.to(`dashboard_${workspaceId}`).emit('new_chat_request', { sessionId, initialMessage });
@@ -473,7 +483,7 @@ nextApp.prepare().then(() => {
         // Usamos 'sessionId' directamente, no 'requestData.sessionId'
         console.log(`[Handoff Notifier] Notificación enviada para workspace: ${workspaceId}, sesión: ${sessionId}`);
 
-        res.status(200).send('Notification sent'); 
+        res.status(200).send('Notification sent');
     });
 
     // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
