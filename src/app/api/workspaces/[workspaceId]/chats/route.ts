@@ -48,7 +48,7 @@ export async function GET(
             startTime: chat.created_at,
             endTime: chat.ended_at,
             // agentName: chat.profiles?.name || 'Unassigned',  25 julio 2025 Tenia esto sin .[0]
-            agentName: chat.profiles?.[0].name || 'Unassigned',
+            agentName: chat.profiles?.[0]?.name || 'Unassigned',
             messageCount: chat.history?.length || 0,
             firstMessage: chat.history?.[0]?.content || 'No messages'
         }));
