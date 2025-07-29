@@ -66,19 +66,20 @@ export const useChatbot = () => {
 
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
+        // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
         const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-        // Si la config no está lista, avisa en la consola y no hagas nada más.
+        // 2. Si la configuración aún no está lista, avisa y espera.
         if (!newWorkspaceIdFromConfig) {
             console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
             return;
         }
 
-        // Si llegamos aquí, la config existe. Llama a la acción del store
-        // para que él decida si debe resetear el estado o usar el persistido.
-        initializeOrSyncWorkspace(newWorkspaceIdFromConfig);
-
-    }, [initializeOrSyncWorkspace]); // La dependencia es la acción del store.
+        // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
+        // El store se encargará de decidir si debe resetear o no.
+        setWorkspaceId(newWorkspaceIdFromConfig);
+        
+    }, [setWorkspaceId]);
 
 
   // - useEffect de WebSocket 

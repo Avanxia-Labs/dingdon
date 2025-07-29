@@ -164,7 +164,30 @@ export const useChatStore = create<ChatState>()(
                     isLoading: false,
                 })),
 
-                setWorkspaceId: (workspaceId) => set({ workspaceId }),
+                // setWorkspaceId: (workspaceId) => set({ workspaceId }),
+
+                setWorkspaceId: (newWorkspaceId) => {
+                    const currentState = get();
+
+                    // Compara el ID real del widget con el ID que está actualmente en el estado
+                    // (que puede ser el que se cargó desde localStorage).
+                    if (currentState.workspaceId !== newWorkspaceId) {
+                        console.warn(`[Zustand] Discrepancia de Workspace detectada. Reseteando. Widget actual: ${newWorkspaceId}, Estado anterior: ${currentState.workspaceId}`);
+                        
+                        // Si no coinciden, forzamos un reseteo completo, creando una sesión nueva.
+                        // Usamos la config y language del estado "viejo" para el mensaje de bienvenida,
+                        // lo cual está bien porque el hook buscará la nueva config inmediatamente después.
+                        set({
+                            workspaceId: newWorkspaceId, // Establecemos el nuevo ID correcto.
+                            sessionId: uuidv4(),         // ¡Generamos un ID de sesión nuevo y único!
+                            status: 'bot',
+                            messages: [createInitialMessage(currentState.config.botName, currentState.language)],
+                            isLoading: false,
+                            error: null
+                        });
+                    }
+                    
+                },
 
                 setConfig: (newConfig) => set((state) => {
                     const updatedConfig = { ...state.config, ...newConfig };
