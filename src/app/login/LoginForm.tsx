@@ -382,7 +382,8 @@ function LoginFormContent() {
                         </form>
                         <div className="text-center">
                             <button
-                                onClick={() => setShowResetModal(true)}
+                                //onClick={() => setShowResetModal(true)}
+                                onClick={()=> {alert('Contact Admin')}}
                                 className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                             >
                                 {t('login.forgotPassword')}
