@@ -172,8 +172,8 @@ export const useChatStore = create<ChatState>()(
                     // Compara el ID real del widget con el ID que está actualmente en el estado
                     // (que puede ser el que se cargó desde localStorage).
                     if (currentState.workspaceId !== newWorkspaceId) {
-                        console.warn(`[Zustand] Discrepancia de Workspace detectada. Reseteando. Widget actual: ${newWorkspaceId}, Estado anterior: ${currentState.workspaceId}`);
-                        
+                        // console.warn(`[Zustand] Discrepancia de Workspace detectada. Reseteando. Widget actual: ${newWorkspaceId}, Estado anterior: ${currentState.workspaceId}`);
+                        console.warn(`Reseteando config de workspace...`)
                         // Si no coinciden, forzamos un reseteo completo, creando una sesión nueva.
                         // Usamos la config y language del estado "viejo" para el mensaje de bienvenida,
                         // lo cual está bien porque el hook buscará la nueva config inmediatamente después.
