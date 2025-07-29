@@ -528,10 +528,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
                 <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm mb-2 ${isConnected
-                        ? "bg-green-100 text-green-800"
-                        : isReconnecting
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-800"
+                            : isReconnecting
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
                         }`}
                 >
                     {isConnected ? (
@@ -564,7 +564,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     {t("chatPanel.requestsTitle")}
                 </h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
-                    {/* {requests.map((req) =>  (
+                    {requests.map((req) =>  (
                         
                         <div
                             key={req.sessionId}
@@ -581,37 +581,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             </p>
                             <p className="text-sm truncate">{req.initialMessage.content}</p>
                         </div>
-                    ))} */}
-                    {requests.map(req => {
-                        // --- INICIO DE LA LÓGICA CLAVE ---
-
-                        // 1. Determina si el agente está actualmente en un chat.
-                        const isAgentBusy = !!activeChat;
-
-                        // 2. Define las clases y si el botón debe estar deshabilitado.
-                        const isDisabled = isAgentBusy || !isConnected;
-                        const buttonClasses = `p-3 rounded-lg transition-colors ${activeChat?.sessionId === req.sessionId
-                                ? 'bg-blue-600 text-white'
-                                : isDisabled
-                                    ? 'bg-gray-50 cursor-not-allowed opacity-50'
-                                    : 'bg-gray-100 hover:bg-gray-200'
-                            }`;
-
-                        return (
-                            <div
-                                key={req.sessionId}
-                                // 3. Solo llama a handleSelectChat si no está deshabilitado.
-                                onClick={() => !isDisabled && handleSelectChat(req)}
-                                className={buttonClasses}
-                                // 4. (Opcional pero recomendado) Añadir un título para explicar por qué está deshabilitado.
-                                title={isAgentBusy ? t('chatPanel.requestDisabledTooltip') : ''}
-                            >
-                                <p className="font-semibold">Session: {req.sessionId.slice(-6)}</p>
-                                <p className="text-sm truncate">{req.initialMessage.content}</p>
-                            </div>
-                        );
-                        // --- FIN DE LA LÓGICA CLAVE ---
-                    })}
+                    ))}
                     {requests.length === 0 && (
                         <p className="text-gray-500 text-sm mt-2">
                             {t("chatPanel.noRequests")}
@@ -632,8 +602,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 onClick={handleCloseChat}
                                 disabled={!isConnected}
                                 className={`px-3 py-1 rounded-lg text-sm ${isConnected
-                                    ? "bg-red-500 text-white hover:bg-red-600"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        ? "bg-red-500 text-white hover:bg-red-600"
+                                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                     }`}
                             >
                                 {t("chatPanel.closeChatButton")}
@@ -651,8 +621,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     >
                                         <div
                                             className={`max-w-[70%] px-4 py-2 rounded-xl ${isOutgoing
-                                                ? "bg-blue-500 text-white"
-                                                : "bg-gray-200 text-gray-800"
+                                                    ? "bg-blue-500 text-white"
+                                                    : "bg-gray-200 text-gray-800"
                                                 }`}
                                         >
                                             <p className="text-sm whitespace-pre-wrap">
@@ -673,8 +643,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                                     disabled={!isConnected}
                                     className={`flex-1 p-2 border rounded-lg ${isConnected
-                                        ? "border-gray-300 focus:border-blue-500"
-                                        : "border-gray-200 bg-gray-50 cursor-not-allowed"
+                                            ? "border-gray-300 focus:border-blue-500"
+                                            : "border-gray-200 bg-gray-50 cursor-not-allowed"
                                         }`}
                                     placeholder={
                                         isConnected
@@ -686,8 +656,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     onClick={handleSendMessage}
                                     disabled={!isConnected || !input.trim()}
                                     className={`px-4 py-2 rounded-lg ${isConnected && input.trim()
-                                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                         }`}
                                 >
                                     <Send size={18} />
