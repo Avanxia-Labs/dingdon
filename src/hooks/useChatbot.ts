@@ -50,18 +50,40 @@ export const useChatbot = () => {
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
-      const id = (window as any).chatbotConfig.workspaceId;
-      if (id) {
-        setWorkspaceId(id);
-        setError(null); // Limpiar cualquier error anterior al encontrar un ID
-      } else {
-        // Si el ID está vacío, establecemos un error
-        setError("Configuration error: Workspace ID is missing.");
-      }
-    }
-  }, [setWorkspaceId, setError]);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
+  //     const id = (window as any).chatbotConfig.workspaceId;
+  //     if (id) {
+  //       setWorkspaceId(id);
+  //       setError(null); // Limpiar cualquier error anterior al encontrar un ID
+  //     } else {
+  //       // Si el ID está vacío, establecemos un error
+  //       setError("Configuration error: Workspace ID is missing.");
+  //     }
+  //   }
+  // }, [setWorkspaceId, setError]);
+
+  // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
+    useEffect(() => {
+        const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+
+        if (!newWorkspaceIdFromConfig) {
+            setError("Configuration error: Workspace ID is missing.");
+            return;
+        }
+
+        // Comprueba si es la primera vez que se carga (workspaceId es null)
+        // O si el ID del config es diferente al que ya teníamos en el estado.
+        if (workspaceId !== newWorkspaceIdFromConfig) {
+            console.log(`[useChatbot] Workspace ID detectado/cambiado a ${newWorkspaceIdFromConfig}. Reseteando chat...`);
+            
+            // Llama a la acción de reseteo del store
+            resetChat(); 
+            
+            // Establece el nuevo ID
+            setWorkspaceId(newWorkspaceIdFromConfig);
+        }
+    }, [workspaceId, setWorkspaceId, resetChat, setError]);
 
 
   // - useEffect de WebSocket 
