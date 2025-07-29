@@ -125,6 +125,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
+
+type Profile = {
+    name: string;
+} | {
+    name: string;
+}[];
+
 export async function GET(
     request: Request,
     //{ params }: { params: { workspaceId: string } }
@@ -154,7 +161,7 @@ export async function GET(
                 ended_at,
                 assigned_agent_id,
                 history,
-                profiles:assigned_agent_id ( * )
+                profiles:assigned_agent_id ( name )
             `)
             .eq('workspace_id', workspaceId)
             .eq('status', 'closed')
@@ -168,15 +175,24 @@ export async function GET(
         }))
 
         // Formatear los datos para que sean más fáciles de usar en el frontend
-        const formattedData = data.map(chat => ({
-            id: chat.id,
-            startTime: chat.created_at,
-            endTime: chat.ended_at,
-            // agentName: chat.profiles?.name || 'Unassigned',  25 julio 2025 Tenia esto sin .[0]
-            agentName: chat.profiles?.[0]?.name || 'Unassigned',
-            messageCount: chat.history?.length || 0,
-            firstMessage: chat.history?.[0]?.content || 'No messages'
-        }));
+        const formattedData = data.map(chat => {
+
+            const profileData = chat.profiles as Profile;
+
+            const agentName = Array.isArray(profileData)
+                ? profileData[0]?.name          // Si es un array, toma el nombre del primer elemento
+                : profileData?.name             // Si es un objeto, toma el nombre directamente
+                || 'Unassigned';                // Si todo lo demás falla, es 'Unassigned'
+
+            return {
+                id: chat.id,
+                startTime: chat.created_at,
+                endTime: chat.ended_at,
+                agentName: agentName,
+                messageCount: chat.history?.length || 0,
+                firstMessage: chat.history?.[0]?.content || 'No messages'
+            };
+        });
 
         // --- AÑADIMOS UN LOG MUY DETALLADO DE LOS DATOS CRUDOS ---
         console.warn("[DIAGNÓSTICO CRUDO] Datos recibidos de Supabase:", JSON.stringify(data, null, 2));
