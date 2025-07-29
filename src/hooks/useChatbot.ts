@@ -64,35 +64,38 @@ export const useChatbot = () => {
   // }, [setWorkspaceId, setError]);
 
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
-    useEffect(() => {
-        const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+  useEffect(() => {
+    const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-        if (!newWorkspaceIdFromConfig) {
-            setError("Configuration error: Workspace ID is missing.");
-            return;
-        }
+    if (!newWorkspaceIdFromConfig) {
+      console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+      return;
+    }
 
-        // Comprueba si es la primera vez que se carga (workspaceId es null)
-        // O si el ID del config es diferente al que ya teníamos en el estado.
-        if (workspaceId !== newWorkspaceIdFromConfig) {
-            console.log(`[useChatbot] Workspace ID detectado/cambiado a ${newWorkspaceIdFromConfig}. Reseteando chat...`);
-            
-            // Llama a la acción de reseteo del store
-            resetChat(); 
-            
-            // Establece el nuevo ID
-            setWorkspaceId(newWorkspaceIdFromConfig);
-        }
-    }, [workspaceId, setWorkspaceId, resetChat, setError]);
+    // Comprueba si es la primera vez que se carga (workspaceId es null)
+    // O si el ID del config es diferente al que ya teníamos en el estado.
+    if (workspaceId !== newWorkspaceIdFromConfig) {
+      console.warn(`[useChatbot] Workspace ID detectado/cambiado a ${newWorkspaceIdFromConfig}. Reseteando chat...`);
+
+      // Limpia cualquier error anterior.
+      setError(null);
+
+      // Llama a la acción de reseteo del store
+      resetChat();
+
+      // Establece el nuevo ID
+      setWorkspaceId(newWorkspaceIdFromConfig);
+    }
+  }, [workspaceId, setWorkspaceId, resetChat, setError]);
 
 
   // - useEffect de WebSocket 
 
   useEffect(() => {
-    
+
     if (workspaceId && !sessionId) {
-        console.log('[Chatbot] Workspace ID presente. Iniciando nueva sesión...');
-        startSession();
+      console.log('[Chatbot] Workspace ID presente. Iniciando nueva sesión...');
+      startSession();
     }
 
     if (sessionId && !socketRef.current) {
