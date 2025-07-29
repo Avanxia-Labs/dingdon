@@ -450,7 +450,7 @@ nextApp.prepare().then(() => {
     });
 
     // --- Ruta interna para manejar notificaciones de handoff ---
-    app.post('/api/internal/notify-handoff', express.json(), (req, res) => {
+    app.post('/api/internal/notify-handoff', express.json(), async (req, res) => {
         // Usamos express.json() solo para esta ruta
         const { workspaceId, sessionId, initialMessage, history } = req.body;
         const secret = req.headers['x-internal-secret'];
@@ -465,13 +465,30 @@ nextApp.prepare().then(() => {
             return res.status(400).send('Missing workspaceId or requestData');
         }
 
+        // --- AÑADIDO: Guardar la sesión en la base de datos INMEDIATAMENTE ---
+        const { error: dbError } = await supabase
+            .from('chat_sessions')
+            .upsert({
+                id: sessionId,
+                workspace_id: workspaceId,
+                status: 'pending', // Estado inicial
+                history: history || [initialMessage], // Guardamos el historial completo
+            }, {
+                onConflict: 'id' // Si ya existe, actualiza
+            });
+
+        if (dbError) {
+            console.error(`[DB Error] Fallo al hacer upsert de la sesión de handoff ${sessionId}:`, dbError.message);
+            // Podríamos devolver un error 500, pero por ahora solo lo logueamos para no detener la notificación
+        }
+
         // =========== AÑADIDO: CREAR LA SESIÓN EN LA MEMORIA ===============
         if (!workspacesData[workspaceId]) {
             workspacesData[workspaceId] = {};
         }
         workspacesData[workspaceId][sessionId] = {
-            status: 'pending', 
-            history: history || [initialMessage], 
+            status: 'pending',
+            history: history || [initialMessage],
             assignedAgentId: null,
         };
 
