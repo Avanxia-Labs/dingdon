@@ -452,7 +452,7 @@ nextApp.prepare().then(() => {
     // --- Ruta interna para manejar notificaciones de handoff ---
     app.post('/api/internal/notify-handoff', express.json(), (req, res) => {
         // Usamos express.json() solo para esta ruta
-        const { workspaceId, sessionId, initialMessage } = req.body;
+        const { workspaceId, sessionId, initialMessage, history } = req.body;
         const secret = req.headers['x-internal-secret'];
 
         // Medida de seguridad simple
@@ -470,8 +470,8 @@ nextApp.prepare().then(() => {
             workspacesData[workspaceId] = {};
         }
         workspacesData[workspaceId][sessionId] = {
-            status: 'pending', // ¡El estado inicial correcto!
-            history: [initialMessage],
+            status: 'pending', 
+            history: history || [initialMessage], 
             assignedAgentId: null,
         };
 

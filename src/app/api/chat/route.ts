@@ -109,6 +109,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         body: JSON.stringify({ 
             workspaceId: workspaceId, 
             sessionId: sessionId,
+            history: history,
             initialMessage: firstUserMessage 
         })
     }).catch(err => {
