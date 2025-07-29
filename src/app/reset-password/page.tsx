@@ -4,7 +4,10 @@
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { I18nProvider } from '@/providers/I18nProvider';
-import { useResetPassword } from '@/hooks/useResetPassword'; 
+import { useResetPassword } from '@/hooks/useResetPassword';
+
+// Force dynamic rendering - this prevents static generation
+export const dynamic = 'force-dynamic';
 
 // Este componente ahora solo se encarga de mostrar la UI.
 // Toda la lógica (estados, useEffects, llamadas a Supabase) vive en el hook useResetPassword.

@@ -16,17 +16,29 @@ export function useResetPassword() {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
-    // --- IMPORTACIÓN DINÁMICA ---
+    // First, check if we're on the client side
     useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // --- IMPORTACIÓN DINÁMICA SOLO EN EL CLIENTE ---
+    useEffect(() => {
+        if (!isMounted) return; // Only run on client side
+        
         // Importamos el cliente de Supabase solo cuando el componente se monta en el navegador
         import('@/lib/supabase/client').then((module) => {
             setSupabase(module.supabase);
+        }).catch((err) => {
+            console.error('Failed to load Supabase client:', err);
+            setStatus('invalid');
+            setError('Failed to initialize authentication');
         });
-    }, []);
+    }, [isMounted]);
 
     useEffect(() => {
-        if (!supabase) return; // No hacer nada hasta que Supabase esté cargado
+        if (!isMounted || !supabase) return; // No hacer nada hasta que estemos en el cliente y Supabase esté cargado
 
         let hasMounted = true;
         
@@ -50,26 +62,32 @@ export function useResetPassword() {
             subscription?.unsubscribe();
             clearTimeout(timer);
         };
-    }, [supabase, status, t]);
+    }, [isMounted, supabase, status, t]);
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!supabase) return; // Guardia de seguridad
+        if (!supabase || !isMounted) return; // Guardia de seguridad
 
         setIsLoading(true);
         setError('');
         
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-        setIsLoading(false);
-        if (error) {
+            setIsLoading(false);
+            if (error) {
+                setStatus('invalid');
+                setError(t('resetPassword.updateError'));
+            } else {
+                setMessage(t('resetPassword.updateSuccess'));
+                setTimeout(() => {
+                    router.push('/login');
+                }, 3000);
+            }
+        } catch (err) {
+            setIsLoading(false);
             setStatus('invalid');
             setError(t('resetPassword.updateError'));
-        } else {
-            setMessage(t('resetPassword.updateSuccess'));
-            setTimeout(() => {
-                router.push('/login');
-            }, 3000);
         }
     };
 
