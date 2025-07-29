@@ -1,198 +1,205 @@
 {
-    "common": {
-        "english": "English",
-        "spanish": "Spanish",
-        "russian": "Русский",
-        "loading": "Загрузка...",
-        "save": "Сохранить",
-        "errorPrefix": "Ошибка",
-        "successPrefix": "Успех",
-        "delete": "Удалить",
-        "edit": "Редактировать",
-        "cancel": "Отмена",
-        "actions": "Действия",
-        "role": "Роль",
-        "name": "Имя",
-        "email": "Email"
+  "common": {
+    "english": "English",
+    "spanish": "Spanish",
+    "russian": "Русский",
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "errorPrefix": "Ошибка",
+    "successPrefix": "Успех",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "cancel": "Отмена",
+    "actions": "Действия",
+    "role": "Роль",
+    "name": "Имя",
+    "email": "Email"
+  },
+  "login": {
+    "title": "Бот службы поддержки",
+    "subtitle": "Доступ к панели управления",
+    "agentLogin": "Вход агента",
+    "googleButton": "Продолжить с Google",
+    "divider": "или продолжить с email",
+    "emailLabel": "Адрес электронной почты",
+    "emailPlaceholder": "agent@company.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "signInButton": "Войти в панель управления",
+    "signingInButton": "Вход...",
+    "forgotPassword": "Забыли пароль?",
+    "invalidCredentialsError": "Неверный email или пароль.",
+    "unexpectedError": "Произошла неожиданная ошибка. Попробуйте еще раз.",
+    "resetPasswordTitle": "Сбросить пароль",
+    "resetPasswordSubtitle": "Введите адрес электронной почты, связанный с вашей учетной записью, и мы отправим вам ссылку для сброса пароля.",
+    "resetPasswordError": "Не удалось отправить ссылку для сброса. Проверьте email и попробуйте еще раз.",
+    "resetPasswordSuccess": "Ссылка для сброса пароля отправлена! Пожалуйста, проверьте свою электронную почту.",
+    "cancelButton": "Отмена",
+    "sendButton": "Отправить ссылку",
+    "sendingButton": "Отправка..."
+  },
+  "dashboardLayout": {
+    "liveChats": "Активные чаты",
+    "teamMembers": "Участники команды",
+    "chatHistory": "История чатов",
+    "settingsAndBot": "Настройки и бот",
+    "signOut": "Выйти"
+  },
+  "superadmin": {
+    "pageTitle": "Управление рабочими пространствами клиентов",
+    "createTitle": "Создать новое рабочее пространство",
+    "companyNameLabel": "Название компании",
+    "adminNameLabel": "Полное имя администратора",
+    "adminEmailLabel": "Email администратора",
+    "adminPasswordLabel": "Начальный пароль администратора",
+    "createButton": "Создать рабочее пространство и администратора",
+    "updateButton": "Сохранить изменения",
+    "editModalTitle": "Редактировать название рабочего пространства",
+    "newNameLabel": "Новое название",
+    "tableHeaderName": "Название рабочего пространства",
+    "tableHeaderDate": "Дата создания",
+    "feedback": {
+      "creating": "Создание...",
+      "createdSuccess": "Рабочее пространство успешно создано!",
+      "deleting": "Удаление...",
+      "deletedSuccess": "Рабочее пространство \"{{name}}\" успешно удалено.",
+      "updating": "Обновление...",
+      "updatedSuccess": "Рабочее пространство успешно обновлено!"
     },
-    "login": {
-        "title": "Бот службы поддержки",
-        "subtitle": "Доступ к панели управления",
-        "agentLogin": "Вход агента",
-        "googleButton": "Продолжить с Google",
-        "divider": "или продолжить с email",
-        "emailLabel": "Адрес электронной почты",
-        "emailPlaceholder": "agent@company.com",
-        "passwordLabel": "Пароль",
-        "passwordPlaceholder": "Введите пароль",
-        "signInButton": "Войти в панель управления",
-        "signingInButton": "Вход...",
-        "forgotPassword": "Забыли пароль?",
-        "invalidCredentialsError": "Неверный email или пароль.",
-        "unexpectedError": "Произошла неожиданная ошибка. Попробуйте еще раз."
+    "deleteConfirm": "Вы уверены, что хотите удалить рабочее пространство \"{{name}}\"? Это действие необратимо."
+  },
+  "agents": {
+    "pageTitle": "Участники команды",
+    "inviteTitle": "Пригласить нового участника",
+    "fullNameLabel": "Полное имя",
+    "initialPasswordLabel": "Начальный пароль",
+    "inviteButton": "Пригласить участника",
+    "invitingButton": "Отправка...",
+    "roleAdmin": "Администратор",
+    "roleAgent": "Агент",
+    "feedback": {
+      "inviting": "Отправка приглашения...",
+      "invitedSuccess": "Агент успешно приглашен!",
+      "removing": "Удаление агента...",
+      "removedSuccess": "Агент успешно удален!"
     },
-    "dashboardLayout": {
-        "liveChats": "Активные чаты",
-        "teamMembers": "Участники команды",
-        "chatHistory": "История чатов",
-        "settingsAndBot": "Настройки и бот",
-        "signOut": "Выйти"
-    },
-    "superadmin": {
-        "pageTitle": "Управление рабочими пространствами клиентов",
-        "createTitle": "Создать новое рабочее пространство",
-        "companyNameLabel": "Название компании",
-        "adminNameLabel": "Полное имя администратора",
-        "adminEmailLabel": "Email администратора",
-        "adminPasswordLabel": "Начальный пароль администратора",
-        "createButton": "Создать рабочее пространство и администратора",
-        "updateButton": "Сохранить изменения",
-        "editModalTitle": "Редактировать название рабочего пространства",
-        "newNameLabel": "Новое название",
-        "tableHeaderName": "Название рабочего пространства",
-        "tableHeaderDate": "Дата создания",
-        "feedback": {
-            "creating": "Создание...",
-            "createdSuccess": "Рабочее пространство успешно создано!",
-            "deleting": "Удаление...",
-            "deletedSuccess": "Рабочее пространство \"{{name}}\" успешно удалено.",
-            "updating": "Обновление...",
-            "updatedSuccess": "Рабочее пространство успешно обновлено!"
-        },
-        "deleteConfirm": "Вы уверены, что хотите удалить рабочее пространство \"{{name}}\"? Это действие необратимо."
-    },
-    "agents": {
-        "pageTitle": "Участники команды",
-        "inviteTitle": "Пригласить нового участника",
-        "fullNameLabel": "Полное имя",
-        "initialPasswordLabel": "Начальный пароль",
-        "inviteButton": "Пригласить участника",
-        "invitingButton": "Отправка...",
-        "roleAdmin": "Администратор",
-        "roleAgent": "Агент",
-        "feedback": {
-            "inviting": "Отправка приглашения...",
-            "invitedSuccess": "Агент успешно приглашен!",
-            "removing": "Удаление агента...",
-            "removedSuccess": "Агент успешно удален!"
-        },
-        "deleteConfirm": "Вы уверены, что хотите удалить {{name}} из этого рабочего пространства? Это удалит их аккаунт."
-    },
-    "history": {
-        "pageTitle": "История чатов",
-        "deleteAllButton": "Удалить всю историю",
-        "tableHeaderDate": "Дата",
-        "tableHeaderAgent": "Агент",
-        "tableHeaderPreview": "Предпросмотр",
-        "tableHeaderMessages": "Сообщения",
-        "modalTitle": "История чатов",
-        "deleteConfirm": "Вы уверены, что хотите удалить эту историю чатов навсегда?",
-        "deleteAllConfirm": "Это удалит ВСЕ {{count}} историй чатов для этого рабочего пространства навсегда. Это действие нельзя отменить. Пожалуйста, введите \"DELETE\" для подтверждения.",
-        "deleteCancelled": "Удаление отменено.",
-        "feedback": {
-            "deletingAll": "Удаление всей истории...",
-            "deletedAllSuccess": "Вся история чатов была удалена."
-        }
-    },
-    "chatPanel": {
-        "notifications": {
-            "title": "Включить уведомления",
-            "description": "Получайте уведомления на рабочем столе и звуковые сигналы.",
-            "button": "Включить"
-        },
-        "connection": {
-            "connected": "Подключено",
-            "reconnecting": "Переподключение...",
-            "disconnected": "Отключено",
-            "reconnect": "Переподключиться"
-        },
-        "requestsTitle": "Запросы на чат",
-        "noRequests": "Нет ожидающих запросов.",
-        "activeChatTitle": "Активный чат: {{id}}",
-        "closeChatButton": "Закрыть чат",
-        "inputPlaceholder": "Введите ваш ответ...",
-        "inputPlaceholderDisconnected": "Ожидание подключения...",
-        "selectChatPrompt": "Выберите чат для начала",
-        "chatClosed": "Чат был закрыт"
-    },
-    "chatbotUI": {
-        "botLabel": "Бот",
-        "agentLabel": "Агент",
-        "headerTitle": "Чем я могу вам помочь сегодня?",
-        "errorMessage": "Ой! Что-то пошло не так.",
-        "agentInstruction": "Если вы хотите поговорить с человеком, пожалуйста, напишите:",
-        "agentKeyword": "Я хочу поговорить с агентом",
-        "typing": "Печатает",
-        "sessionEnded": "Этот сеанс чата завершен.",
-        "newChatButton": "Начать новый чат",
-        "inputPlaceholder": "Спросите о наших услугах...",
-        "inputPlaceholderAgent": "Ответьте агенту",
-        "inputPlaceholderPending": "Ожидание подключения агента...",
-        "handoffMessage": "Понял. Я ищу агента, чтобы помочь вам. Пожалуйста, подождите."
-    },
-    "settings": {
-        "pageTitle": "Настройки бота",
-        "pageSubtitle": "Настройте вашего чат-бота и управляйте интеграциями",
-        "feedback": {
-            "saving": "Сохранение...",
-            "savedSuccess": "Настройки успешно сохранены!",
-            "uploading": "Загрузка и обработка файла...",
-            "uploadSuccess": "База знаний успешно обновлена!",
-            "copied": "Код скопирован в буфер обмена!",
-            "selectFile": "Пожалуйста, сначала выберите файл."
-        },
-        "customization": {
-            "title": "Настройка бота",
-            "subtitle": "Персонализируйте внешний вид и поведение вашего чат-бота"
-        },
-        "botName": {
-            "label": "Имя чат-бота",
-            "description": "Это имя будет отображаться в заголовке чата",
-            "placeholder": "Введите имя бота"
-        },
-        "primaryColor": {
-            "label": "Основной цвет",
-            "description": "Используется для заголовков и сообщений пользователя"
-        },
-        "saveButton": "Сохранить настройки",
-        "installation": {
-            "title": "Установка",
-            "subtitle": "Добавьте вашего чат-бота на ваш веб-сайт",
-            "embedTitle": "Код для встраивания",
-            "embedDescription": "Скопируйте и вставьте этот фрагмент кода прямо перед закрывающим тегом </body> на вашем веб-сайте.",
-            "copyButton": "Копировать",
-            "wpTitle": "Сайты WordPress",
-            "wpDescription": "Для сайтов WordPress выполните следующие шаги:",
-            "wpStep1": "1. Перейдите в <strong>Внешний вид → Редактор тем</strong>",
-            "wpStep2": "2. Выберите вашу активную тему",
-            "wpStep3": "3. Найдите и отредактируйте <strong>footer.php</strong>",
-            "wpStep4": "4. Вставьте код прямо перед закрывающим тегом <strong>body</strong>",
-            "wpStep5": "5. Нажмите <strong>Обновить файл</strong>",
-            "wpAlternative": "<strong>Альтернатива:</strong> Используйте плагин типа \"Insert Headers and Footers\" для добавления кода без редактирования файлов темы.",
-            "customTitle": "Сайты с пользовательским кодом",
-            "customDescription": "Для сайтов с пользовательским кодом:",
-            "customStep1": "1. Откройте ваш основной HTML-файл (<strong>index.html</strong>)",
-            "customStep2": "2. Для React/Vue: Отредактируйте основной компонент макета",
-            "customStep3": "3. Вставьте код перед закрывающим тегом <strong>body</strong>",
-            "customStep4": "4. Сохраните и разверните изменения",
-            "customNote": "<strong>Примечание:</strong> Чат-бот будет автоматически появляться на всех страницах, где включен скрипт."
-        },
-        "knowledge": {
-            "title": "База знаний",
-            "subtitle": "Загрузите документы для обучения вашего чат-бота",
-            "description": "Загрузите файлы PDF, TXT или DOCX, содержащие информацию о вашей компании, FAQ, политики или любой другой релевантный контент.",
-            "uploadLabel": "Загрузите файл или перетащите его",
-            "uploadHint": "PDF, TXT, DOCX до 10 МБ",
-            "removeButton": "Удалить",
-            "processingButton": "Обработка...",
-            "uploadButton": "Загрузить и обработать"
-        },
-        "comingSoon": {
-            "title": "Обучение с веб-сайта",
-            "tag": "СКОРО",
-            "subtitle": "Автоматически обучайте вашего бота на основе контента веб-сайта",
-            "description": "Введите URL вашего веб-сайта для автоматического сканирования и извлечения контента для базы знаний вашего чат-бота.",
-            "crawlButton": "Сканировать и обучить"
-        }
+    "deleteConfirm": "Вы уверены, что хотите удалить {{name}} из этого рабочего пространства? Это удалит их аккаунт."
+  },
+  "history": {
+    "pageTitle": "История чатов",
+    "deleteAllButton": "Удалить всю историю",
+    "tableHeaderDate": "Дата",
+    "tableHeaderAgent": "Агент",
+    "tableHeaderPreview": "Предпросмотр",
+    "tableHeaderMessages": "Сообщения",
+    "modalTitle": "История чатов",
+    "deleteConfirm": "Вы уверены, что хотите удалить эту историю чатов навсегда?",
+    "deleteAllConfirm": "Это удалит ВСЕ {{count}} историй чатов для этого рабочего пространства навсегда. Это действие нельзя отменить. Пожалуйста, введите \"DELETE\" для подтверждения.",
+    "deleteCancelled": "Удаление отменено.",
+    "feedback": {
+      "deletingAll": "Удаление всей истории...",
+      "deletedAllSuccess": "Вся история чатов была удалена."
     }
+  },
+  "chatPanel": {
+    "notifications": {
+      "title": "Включить уведомления",
+      "description": "Получайте уведомления на рабочем столе и звуковые сигналы.",
+      "button": "Включить"
+    },
+    "connection": {
+      "connected": "Подключено",
+      "reconnecting": "Переподключение...",
+      "disconnected": "Отключено",
+      "reconnect": "Переподключиться"
+    },
+    "requestsTitle": "Запросы на чат",
+    "noRequests": "Нет ожидающих запросов.",
+    "activeChatTitle": "Активный чат: {{id}}",
+    "closeChatButton": "Закрыть чат",
+    "inputPlaceholder": "Введите ваш ответ...",
+    "inputPlaceholderDisconnected": "Ожидание подключения...",
+    "selectChatPrompt": "Выберите чат для начала",
+    "chatClosed": "Чат был закрыт"
+  },
+  "chatbotUI": {
+    "botLabel": "Бот",
+    "agentLabel": "Агент",
+    "headerTitle": "Чем я могу вам помочь сегодня?",
+    "errorMessage": "Ой! Что-то пошло не так.",
+    "agentInstruction": "Если вы хотите поговорить с человеком, пожалуйста, напишите:",
+    "agentKeyword": "Я хочу поговорить с агентом",
+    "typing": "Печатает",
+    "sessionEnded": "Этот сеанс чата завершен.",
+    "newChatButton": "Начать новый чат",
+    "inputPlaceholder": "Спросите о наших услугах...",
+    "inputPlaceholderAgent": "Ответьте агенту",
+    "inputPlaceholderPending": "Ожидание подключения агента...",
+    "handoffMessage": "Понял. Я ищу агента, чтобы помочь вам. Пожалуйста, подождите."
+  },
+  "settings": {
+    "pageTitle": "Настройки бота",
+    "pageSubtitle": "Настройте вашего чат-бота и управляйте интеграциями",
+    "feedback": {
+      "saving": "Сохранение...",
+      "savedSuccess": "Настройки успешно сохранены!",
+      "uploading": "Загрузка и обработка файла...",
+      "uploadSuccess": "База знаний успешно обновлена!",
+      "copied": "Код скопирован в буфер обмена!",
+      "selectFile": "Пожалуйста, сначала выберите файл."
+    },
+    "customization": {
+      "title": "Настройка бота",
+      "subtitle": "Персонализируйте внешний вид и поведение вашего чат-бота"
+    },
+    "botName": {
+      "label": "Имя чат-бота",
+      "description": "Это имя будет отображаться в заголовке чата",
+      "placeholder": "Введите имя бота"
+    },
+    "primaryColor": {
+      "label": "Основной цвет",
+      "description": "Используется для заголовков и сообщений пользователя"
+    },
+    "saveButton": "Сохранить настройки",
+    "installation": {
+      "title": "Установка",
+      "subtitle": "Добавьте вашего чат-бота на ваш веб-сайт",
+      "embedTitle": "Код для встраивания",
+      "embedDescription": "Скопируйте и вставьте этот фрагмент кода прямо перед закрывающим тегом </body> на вашем веб-сайте.",
+      "copyButton": "Копировать",
+      "wpTitle": "Сайты WordPress",
+      "wpDescription": "Для сайтов WordPress выполните следующие шаги:",
+      "wpStep1": "1. Перейдите в <strong>Внешний вид → Редактор тем</strong>",
+      "wpStep2": "2. Выберите вашу активную тему",
+      "wpStep3": "3. Найдите и отредактируйте <strong>footer.php</strong>",
+      "wpStep4": "4. Вставьте код прямо перед закрывающим тегом <strong>body</strong>",
+      "wpStep5": "5. Нажмите <strong>Обновить файл</strong>",
+      "wpAlternative": "<strong>Альтернатива:</strong> Используйте плагин типа \"Insert Headers and Footers\" для добавления кода без редактирования файлов темы.",
+      "customTitle": "Сайты с пользовательским кодом",
+      "customDescription": "Для сайтов с пользовательским кодом:",
+      "customStep1": "1. Откройте ваш основной HTML-файл (<strong>index.html</strong>)",
+      "customStep2": "2. Для React/Vue: Отредактируйте основной компонент макета",
+      "customStep3": "3. Вставьте код перед закрывающим тегом <strong>body</strong>",
+      "customStep4": "4. Сохраните и разверните изменения",
+      "customNote": "<strong>Примечание:</strong> Чат-бот будет автоматически появляться на всех страницах, где включен скрипт."
+    },
+    "knowledge": {
+      "title": "База знаний",
+      "subtitle": "Загрузите документы для обучения вашего чат-бота",
+      "description": "Загрузите файлы PDF, TXT или DOCX, содержащие информацию о вашей компании, FAQ, политики или любой другой релевантный контент.",
+      "uploadLabel": "Загрузите файл или перетащите его",
+      "uploadHint": "PDF, TXT, DOCX до 10 МБ",
+      "removeButton": "Удалить",
+      "processingButton": "Обработка...",
+      "uploadButton": "Загрузить и обработать"
+    },
+    "comingSoon": {
+      "title": "Обучение с веб-сайта",
+      "tag": "СКОРО",
+      "subtitle": "Автоматически обучайте вашего бота на основе контента веб-сайта",
+      "description": "Введите URL вашего веб-сайта для автоматического сканирования и извлечения контента для базы знаний вашего чат-бота.",
+      "crawlButton": "Сканировать и обучить"
+    }
+  }
 }

@@ -28,7 +28,14 @@
     "signingInButton": "Signing in...",
     "forgotPassword": "Forgot your password?",
     "invalidCredentialsError": "Invalid email or password.",
-    "unexpectedError": "An unexpected error occurred. Please try again."
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "resetPasswordTitle": "Reset Your Password",
+    "resetPasswordSubtitle": "Enter the email address associated with your account and we'll send you a link to reset your password.",
+    "resetPasswordError": "Failed to send reset link. Please check the email and try again.",
+    "resetPasswordSuccess": "Password reset link sent! Please check your email.",
+    "cancelButton": "Cancel",
+    "sendButton": "Send Link",
+    "sendingButton": "Sending..."
   },
   "dashboardLayout": {
     "liveChats": "Live Chats",

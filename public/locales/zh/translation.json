@@ -1,199 +1,206 @@
 {
-    "common": {
-        "english": "English",
-        "spanish": "Spanish",
-        "russian": "Русский",
-        "chinese": "中文",
-        "loading": "加载中...",
-        "save": "保存",
-        "errorPrefix": "错误",
-        "successPrefix": "成功",
-        "delete": "删除",
-        "edit": "编辑",
-        "cancel": "取消",
-        "actions": "操作",
-        "role": "角色",
-        "name": "姓名",
-        "email": "邮箱"
+  "common": {
+    "english": "English",
+    "spanish": "Spanish",
+    "russian": "Русский",
+    "chinese": "中文",
+    "loading": "加载中...",
+    "save": "保存",
+    "errorPrefix": "错误",
+    "successPrefix": "成功",
+    "delete": "删除",
+    "edit": "编辑",
+    "cancel": "取消",
+    "actions": "操作",
+    "role": "角色",
+    "name": "姓名",
+    "email": "邮箱"
+  },
+  "login": {
+    "title": "客服机器人",
+    "subtitle": "访问您的控制面板",
+    "agentLogin": "客服登录",
+    "googleButton": "使用 Google 继续",
+    "divider": "或使用邮箱继续",
+    "emailLabel": "邮箱地址",
+    "emailPlaceholder": "agent@company.com",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "请输入密码",
+    "signInButton": "登录控制面板",
+    "signingInButton": "登录中...",
+    "forgotPassword": "忘记密码？",
+    "invalidCredentialsError": "邮箱或密码错误。",
+    "unexpectedError": "发生意外错误。请重试。",
+    "resetPasswordTitle": "重置您的密码",
+    "resetPasswordSubtitle": "输入与您帐户关联的电子邮件地址，我们将向您发送重置密码的链接。",
+    "resetPasswordError": "发送重置链接失败。请检查电子邮件地址后重试。",
+    "resetPasswordSuccess": "密码重置链接已发送！请检查您的电子邮件。",
+    "cancelButton": "取消",
+    "sendButton": "发送链接",
+    "sendingButton": "发送中..."
+  },
+  "dashboardLayout": {
+    "liveChats": "实时对话",
+    "teamMembers": "团队成员",
+    "chatHistory": "对话历史",
+    "settingsAndBot": "设置和机器人",
+    "signOut": "退出"
+  },
+  "superadmin": {
+    "pageTitle": "管理客户工作空间",
+    "createTitle": "创建新工作空间",
+    "companyNameLabel": "公司名称",
+    "adminNameLabel": "管理员全名",
+    "adminEmailLabel": "管理员邮箱",
+    "adminPasswordLabel": "管理员初始密码",
+    "createButton": "创建工作空间和管理员",
+    "updateButton": "保存更改",
+    "editModalTitle": "编辑工作空间名称",
+    "newNameLabel": "新名称",
+    "tableHeaderName": "工作空间名称",
+    "tableHeaderDate": "创建时间",
+    "feedback": {
+      "creating": "创建中...",
+      "createdSuccess": "工作空间创建成功！",
+      "deleting": "删除中...",
+      "deletedSuccess": "工作空间 \"{{name}}\" 删除成功。",
+      "updating": "更新中...",
+      "updatedSuccess": "工作空间更新成功！"
     },
-    "login": {
-        "title": "客服机器人",
-        "subtitle": "访问您的控制面板",
-        "agentLogin": "客服登录",
-        "googleButton": "使用 Google 继续",
-        "divider": "或使用邮箱继续",
-        "emailLabel": "邮箱地址",
-        "emailPlaceholder": "agent@company.com",
-        "passwordLabel": "密码",
-        "passwordPlaceholder": "请输入密码",
-        "signInButton": "登录控制面板",
-        "signingInButton": "登录中...",
-        "forgotPassword": "忘记密码？",
-        "invalidCredentialsError": "邮箱或密码错误。",
-        "unexpectedError": "发生意外错误。请重试。"
+    "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。"
+  },
+  "agents": {
+    "pageTitle": "团队成员",
+    "inviteTitle": "邀请新成员",
+    "fullNameLabel": "全名",
+    "initialPasswordLabel": "初始密码",
+    "inviteButton": "邀请成员",
+    "invitingButton": "发送中...",
+    "roleAdmin": "管理员",
+    "roleAgent": "客服",
+    "feedback": {
+      "inviting": "发送邀请中...",
+      "invitedSuccess": "客服邀请成功！",
+      "removing": "移除客服中...",
+      "removedSuccess": "客服移除成功！"
     },
-    "dashboardLayout": {
-        "liveChats": "实时对话",
-        "teamMembers": "团队成员",
-        "chatHistory": "对话历史",
-        "settingsAndBot": "设置和机器人",
-        "signOut": "退出"
-    },
-    "superadmin": {
-        "pageTitle": "管理客户工作空间",
-        "createTitle": "创建新工作空间",
-        "companyNameLabel": "公司名称",
-        "adminNameLabel": "管理员全名",
-        "adminEmailLabel": "管理员邮箱",
-        "adminPasswordLabel": "管理员初始密码",
-        "createButton": "创建工作空间和管理员",
-        "updateButton": "保存更改",
-        "editModalTitle": "编辑工作空间名称",
-        "newNameLabel": "新名称",
-        "tableHeaderName": "工作空间名称",
-        "tableHeaderDate": "创建时间",
-        "feedback": {
-            "creating": "创建中...",
-            "createdSuccess": "工作空间创建成功！",
-            "deleting": "删除中...",
-            "deletedSuccess": "工作空间 \"{{name}}\" 删除成功。",
-            "updating": "更新中...",
-            "updatedSuccess": "工作空间更新成功！"
-        },
-        "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。"
-    },
-    "agents": {
-        "pageTitle": "团队成员",
-        "inviteTitle": "邀请新成员",
-        "fullNameLabel": "全名",
-        "initialPasswordLabel": "初始密码",
-        "inviteButton": "邀请成员",
-        "invitingButton": "发送中...",
-        "roleAdmin": "管理员",
-        "roleAgent": "客服",
-        "feedback": {
-            "inviting": "发送邀请中...",
-            "invitedSuccess": "客服邀请成功！",
-            "removing": "移除客服中...",
-            "removedSuccess": "客服移除成功！"
-        },
-        "deleteConfirm": "您确定要从此工作空间中移除 {{name}} 吗？这将删除他们的账户。"
-    },
-    "history": {
-        "pageTitle": "对话历史",
-        "deleteAllButton": "删除所有历史",
-        "tableHeaderDate": "日期",
-        "tableHeaderAgent": "客服",
-        "tableHeaderPreview": "预览",
-        "tableHeaderMessages": "消息",
-        "modalTitle": "对话历史",
-        "deleteConfirm": "您确定要永久删除此对话历史吗？",
-        "deleteAllConfirm": "这将永久删除此工作空间的所有 {{count}} 条对话历史。此操作无法撤销。请输入 \"DELETE\" 确认。",
-        "deleteCancelled": "删除已取消。",
-        "feedback": {
-            "deletingAll": "删除所有历史中...",
-            "deletedAllSuccess": "所有对话历史已删除。"
-        }
-    },
-    "chatPanel": {
-        "notifications": {
-            "title": "启用提醒",
-            "description": "获取桌面和声音通知。",
-            "button": "启用"
-        },
-        "connection": {
-            "connected": "已连接",
-            "reconnecting": "重连中...",
-            "disconnected": "已断开",
-            "reconnect": "重新连接"
-        },
-        "requestsTitle": "对话请求",
-        "noRequests": "没有待处理的请求。",
-        "activeChatTitle": "活跃对话：{{id}}",
-        "closeChatButton": "关闭对话",
-        "inputPlaceholder": "请输入您的回复...",
-        "inputPlaceholderDisconnected": "等待连接...",
-        "selectChatPrompt": "选择对话开始",
-        "chatClosed": "对话已关闭"
-    },
-    "chatbotUI": {
-        "botLabel": "机器人",
-        "agentLabel": "客服",
-        "headerTitle": "今天我能如何帮助您？",
-        "errorMessage": "哎呀！出错了。",
-        "agentInstruction": "如果您想与人工客服交谈，请输入：",
-        "agentKeyword": "我想和客服谈谈",
-        "typing": "输入中",
-        "sessionEnded": "本次聊天会话已结束。",
-        "newChatButton": "开始新的聊天",
-        "inputPlaceholder": "询问我们的服务...",
-        "inputPlaceholderAgent": "回复客服",
-        "inputPlaceholderPending": "正在等待客服接入...",
-        "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。"
-    },
-    "settings": {
-        "pageTitle": "机器人设置",
-        "pageSubtitle": "自定义您的聊天机器人并管理集成",
-        "feedback": {
-            "saving": "保存中...",
-            "savedSuccess": "设置保存成功！",
-            "uploading": "上传和处理文件中...",
-            "uploadSuccess": "知识库更新成功！",
-            "copied": "代码已复制到剪贴板！",
-            "selectFile": "请先选择文件。"
-        },
-        "customization": {
-            "title": "机器人自定义",
-            "subtitle": "个性化您的聊天机器人外观和行为"
-        },
-        "botName": {
-            "label": "聊天机器人名称",
-            "description": "此名称将显示在聊天标题中",
-            "placeholder": "输入机器人名称"
-        },
-        "primaryColor": {
-            "label": "主要颜色",
-            "description": "用于标题和用户消息"
-        },
-        "saveButton": "保存设置",
-        "installation": {
-            "title": "安装",
-            "subtitle": "将您的聊天机器人添加到您的网站",
-            "embedTitle": "嵌入代码",
-            "embedDescription": "复制并粘贴此代码片段到您网站的 </body> 标签之前。",
-            "copyButton": "复制",
-            "wpTitle": "WordPress 网站",
-            "wpDescription": "对于 WordPress 网站，请按照以下步骤：",
-            "wpStep1": "1. 转到 <strong>外观 → 主题编辑器</strong>",
-            "wpStep2": "2. 选择您的活跃主题",
-            "wpStep3": "3. 找到并编辑 <strong>footer.php</strong>",
-            "wpStep4": "4. 在 <strong>body</strong> 标签关闭前粘贴代码",
-            "wpStep5": "5. 点击 <strong>更新文件</strong>",
-            "wpAlternative": "<strong>替代方案：</strong> 使用 \"Insert Headers and Footers\" 等插件来添加代码，无需编辑主题文件。",
-            "customTitle": "自定义代码网站",
-            "customDescription": "对于使用自定义代码的网站：",
-            "customStep1": "1. 打开您的主 HTML 文件 (<strong>index.html</strong>)",
-            "customStep2": "2. 对于 React/Vue：编辑您的主布局组件",
-            "customStep3": "3. 在 <strong>body</strong> 标签关闭前粘贴代码",
-            "customStep4": "4. 保存并部署您的更改",
-            "customNote": "<strong>注意：</strong> 聊天机器人将自动在所有包含脚本的页面上显示。"
-        },
-        "knowledge": {
-            "title": "知识库",
-            "subtitle": "上传文档来训练您的聊天机器人",
-            "description": "上传包含您公司信息、常见问题、政策或任何其他相关内容的 PDF、TXT 或 DOCX 文件。",
-            "uploadLabel": "上传文件或拖放",
-            "uploadHint": "PDF、TXT、DOCX，最大 10MB",
-            "removeButton": "移除",
-            "processingButton": "处理中...",
-            "uploadButton": "上传并处理"
-        },
-        "comingSoon": {
-            "title": "网站训练",
-            "tag": "即将推出",
-            "subtitle": "自动从网站内容训练您的机器人",
-            "description": "输入您的网站 URL 以自动爬取和提取内容供您的聊天机器人知识库使用。",
-            "crawlButton": "爬取并训练"
-        }
+    "deleteConfirm": "您确定要从此工作空间中移除 {{name}} 吗？这将删除他们的账户。"
+  },
+  "history": {
+    "pageTitle": "对话历史",
+    "deleteAllButton": "删除所有历史",
+    "tableHeaderDate": "日期",
+    "tableHeaderAgent": "客服",
+    "tableHeaderPreview": "预览",
+    "tableHeaderMessages": "消息",
+    "modalTitle": "对话历史",
+    "deleteConfirm": "您确定要永久删除此对话历史吗？",
+    "deleteAllConfirm": "这将永久删除此工作空间的所有 {{count}} 条对话历史。此操作无法撤销。请输入 \"DELETE\" 确认。",
+    "deleteCancelled": "删除已取消。",
+    "feedback": {
+      "deletingAll": "删除所有历史中...",
+      "deletedAllSuccess": "所有对话历史已删除。"
     }
+  },
+  "chatPanel": {
+    "notifications": {
+      "title": "启用提醒",
+      "description": "获取桌面和声音通知。",
+      "button": "启用"
+    },
+    "connection": {
+      "connected": "已连接",
+      "reconnecting": "重连中...",
+      "disconnected": "已断开",
+      "reconnect": "重新连接"
+    },
+    "requestsTitle": "对话请求",
+    "noRequests": "没有待处理的请求。",
+    "activeChatTitle": "活跃对话：{{id}}",
+    "closeChatButton": "关闭对话",
+    "inputPlaceholder": "请输入您的回复...",
+    "inputPlaceholderDisconnected": "等待连接...",
+    "selectChatPrompt": "选择对话开始",
+    "chatClosed": "对话已关闭"
+  },
+  "chatbotUI": {
+    "botLabel": "机器人",
+    "agentLabel": "客服",
+    "headerTitle": "今天我能如何帮助您？",
+    "errorMessage": "哎呀！出错了。",
+    "agentInstruction": "如果您想与人工客服交谈，请输入：",
+    "agentKeyword": "我想和客服谈谈",
+    "typing": "输入中",
+    "sessionEnded": "本次聊天会话已结束。",
+    "newChatButton": "开始新的聊天",
+    "inputPlaceholder": "询问我们的服务...",
+    "inputPlaceholderAgent": "回复客服",
+    "inputPlaceholderPending": "正在等待客服接入...",
+    "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。"
+  },
+  "settings": {
+    "pageTitle": "机器人设置",
+    "pageSubtitle": "自定义您的聊天机器人并管理集成",
+    "feedback": {
+      "saving": "保存中...",
+      "savedSuccess": "设置保存成功！",
+      "uploading": "上传和处理文件中...",
+      "uploadSuccess": "知识库更新成功！",
+      "copied": "代码已复制到剪贴板！",
+      "selectFile": "请先选择文件。"
+    },
+    "customization": {
+      "title": "机器人自定义",
+      "subtitle": "个性化您的聊天机器人外观和行为"
+    },
+    "botName": {
+      "label": "聊天机器人名称",
+      "description": "此名称将显示在聊天标题中",
+      "placeholder": "输入机器人名称"
+    },
+    "primaryColor": {
+      "label": "主要颜色",
+      "description": "用于标题和用户消息"
+    },
+    "saveButton": "保存设置",
+    "installation": {
+      "title": "安装",
+      "subtitle": "将您的聊天机器人添加到您的网站",
+      "embedTitle": "嵌入代码",
+      "embedDescription": "复制并粘贴此代码片段到您网站的 </body> 标签之前。",
+      "copyButton": "复制",
+      "wpTitle": "WordPress 网站",
+      "wpDescription": "对于 WordPress 网站，请按照以下步骤：",
+      "wpStep1": "1. 转到 <strong>外观 → 主题编辑器</strong>",
+      "wpStep2": "2. 选择您的活跃主题",
+      "wpStep3": "3. 找到并编辑 <strong>footer.php</strong>",
+      "wpStep4": "4. 在 <strong>body</strong> 标签关闭前粘贴代码",
+      "wpStep5": "5. 点击 <strong>更新文件</strong>",
+      "wpAlternative": "<strong>替代方案：</strong> 使用 \"Insert Headers and Footers\" 等插件来添加代码，无需编辑主题文件。",
+      "customTitle": "自定义代码网站",
+      "customDescription": "对于使用自定义代码的网站：",
+      "customStep1": "1. 打开您的主 HTML 文件 (<strong>index.html</strong>)",
+      "customStep2": "2. 对于 React/Vue：编辑您的主布局组件",
+      "customStep3": "3. 在 <strong>body</strong> 标签关闭前粘贴代码",
+      "customStep4": "4. 保存并部署您的更改",
+      "customNote": "<strong>注意：</strong> 聊天机器人将自动在所有包含脚本的页面上显示。"
+    },
+    "knowledge": {
+      "title": "知识库",
+      "subtitle": "上传文档来训练您的聊天机器人",
+      "description": "上传包含您公司信息、常见问题、政策或任何其他相关内容的 PDF、TXT 或 DOCX 文件。",
+      "uploadLabel": "上传文件或拖放",
+      "uploadHint": "PDF、TXT、DOCX，最大 10MB",
+      "removeButton": "移除",
+      "processingButton": "处理中...",
+      "uploadButton": "上传并处理"
+    },
+    "comingSoon": {
+      "title": "网站训练",
+      "tag": "即将推出",
+      "subtitle": "自动从网站内容训练您的机器人",
+      "description": "输入您的网站 URL 以自动爬取和提取内容供您的聊天机器人知识库使用。",
+      "crawlButton": "爬取并训练"
+    }
+  }
 }

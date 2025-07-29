@@ -28,7 +28,14 @@
     "signingInButton": "Iniciando sesión...",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "invalidCredentialsError": "Email o contraseña inválidos.",
-    "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+    "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+    "resetPasswordTitle": "Restablecer tu Contraseña",
+    "resetPasswordSubtitle": "Introduce el email asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.",
+    "resetPasswordError": "No se pudo enviar el enlace. Revisa el email e inténtalo de nuevo.",
+    "resetPasswordSuccess": "¡Enlace enviado! Por favor, revisa tu correo electrónico.",
+    "cancelButton": "Cancelar",
+    "sendButton": "Enviar Enlace",
+    "sendingButton": "Enviando..."
   },
   "dashboardLayout": {
     "liveChats": "Chats en Vivo",
