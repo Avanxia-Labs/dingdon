@@ -42,11 +42,11 @@
 
 //         if (error) throw error;
 
-        
+
 //         const mappeoData = data.map(chat => ({
-            
+
 //         }))
-        
+
 //         // Formatear los datos para que sean más fáciles de usar en el frontend
 //         const formattedData = data.map(chat => ({
 //             id: chat.id,
@@ -61,7 +61,7 @@
 //         // ============= DIAGNÓSTICO ===================
 //         for (let i = 0; i < formattedData.length; i++) {
 //             console.warn(`[DIAGNÓSTICO] Procesando chat ID: ${formattedData[i].id}. Contenido completo del chat:`, formattedData[i])
-            
+
 //         }
 
 //         // ============= DIAGNÓSTICO ===================
@@ -154,7 +154,7 @@ export async function GET(
                 ended_at,
                 assigned_agent_id,
                 history,
-                profiles:assigned_agent_id ( name )
+                profiles:assigned_agent_id ( * )
             `)
             .eq('workspace_id', workspaceId)
             .eq('status', 'closed')
@@ -162,11 +162,11 @@ export async function GET(
 
         if (error) throw error;
 
-        
+
         const mappeoData = data.map(chat => ({
-            
+
         }))
-        
+
         // Formatear los datos para que sean más fáciles de usar en el frontend
         const formattedData = data.map(chat => ({
             id: chat.id,
@@ -178,17 +178,8 @@ export async function GET(
             firstMessage: chat.history?.[0]?.content || 'No messages'
         }));
 
-        // ============= DIAGNÓSTICO ===================
-        for (let i = 0; i < formattedData.length; i++) {
-            console.warn(`[DIAGNÓSTICO] Procesando chat ID: ${formattedData[i].id}. Contenido completo del chat:`, formattedData[i])
-            
-        }
-
-        // ============= DIAGNÓSTICO ===================
-        for (const chat of formattedData) {
-            // Usamos JSON.stringify para asegurarnos de que el objeto se expanda bien en los logs
-            console.warn(`[DIAGNÓSTICO] Objeto formateado:`, JSON.stringify(chat, null, 2));
-        }
+        // --- AÑADIMOS UN LOG MUY DETALLADO DE LOS DATOS CRUDOS ---
+        console.warn("[DIAGNÓSTICO CRUDO] Datos recibidos de Supabase:", JSON.stringify(data, null, 2));
 
         return NextResponse.json(formattedData);
 
