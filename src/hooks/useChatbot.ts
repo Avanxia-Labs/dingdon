@@ -66,20 +66,20 @@ export const useChatbot = () => {
 
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
-        // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
-        const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+    // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
+    const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-        // 2. Si la configuración aún no está lista, avisa y espera.
-        if (!newWorkspaceIdFromConfig) {
-            console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
-            return;
-        }
+    // 2. Si la configuración aún no está lista, avisa y espera.
+    if (!newWorkspaceIdFromConfig) {
+      console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+      return;
+    }
 
-        // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
-        // El store se encargará de decidir si debe resetear o no.
-        setWorkspaceId(newWorkspaceIdFromConfig);
-        
-    }, [setWorkspaceId]);
+    // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
+    // El store se encargará de decidir si debe resetear o no.
+    setWorkspaceId(newWorkspaceIdFromConfig);
+
+  }, [setWorkspaceId]);
 
 
   // - useEffect de WebSocket 
@@ -144,6 +144,26 @@ export const useChatbot = () => {
   }, [workspaceId, sessionId, startSession, setSessionStatus, addMessage]);
 
   // --- USEEFFECT PARA CARGAR LA CONFIG DEL BOT! ---
+  // useEffect(() => {
+  //   if (workspaceId) {
+  //     const fetchConfig = async () => {
+  //       try {
+  //         const response = await fetch(`/api/public/config/${workspaceId}`);
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setConfig({
+  //             botName: data.bot_name || 'Virtual Assistant',
+  //             botColor: data.bot_color || '#007bff',
+  //           });
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to fetch public bot config:", error);
+  //       }
+  //     };
+  //     fetchConfig();
+  //   }
+  // }, [workspaceId, setConfig]);
+
   useEffect(() => {
     if (workspaceId) {
       const fetchConfig = async () => {
@@ -151,10 +171,23 @@ export const useChatbot = () => {
           const response = await fetch(`/api/public/config/${workspaceId}`);
           if (response.ok) {
             const data = await response.json();
-            setConfig({
+            const newConfig = {
               botName: data.bot_name || 'Virtual Assistant',
               botColor: data.bot_color || '#007bff',
-            });
+            };
+            setConfig(newConfig);
+
+            // --- INICIO DEL CAMBIO ---
+            // Envía un mensaje a la ventana padre (la página anfitriona)
+            // con el nuevo color.
+            if (window.parent) {
+              window.parent.postMessage({
+                type: 'CHATBOT_COLOR_UPDATE', // Un identificador para nuestro mensaje
+                color: newConfig.botColor
+              }, '*'); // '*' permite enviarlo a cualquier dominio anfitrión.
+            }
+            // --- FIN DEL CAMBIO ---
+
           }
         } catch (error) {
           console.error("Failed to fetch public bot config:", error);

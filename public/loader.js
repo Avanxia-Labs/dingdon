@@ -19,9 +19,9 @@
 //     }
 
 //     const chatbotAppUrl = new URL(scriptTag.src).origin;
-    
+
 //     const iframe = document.createElement('iframe');
-    
+
 //     // --- Estilos del Iframe ---
 //     iframe.id = 'chatbot-iframe';
 //     iframe.src = `${chatbotAppUrl}/chatbot-widget?workspaceId=${workspaceId}`;
@@ -44,7 +44,7 @@
 
 
 // public/loader.js
-(function() {
+(function () {
     if (window.ChatbotLoaded) return;
     window.ChatbotLoaded = true;
 
@@ -56,7 +56,7 @@
 
     const workspaceId = scriptTag.getAttribute('data-workspace-id');
     const chatbotAppUrl = new URL(scriptTag.src).origin;
-    const botColor = scriptTag.getAttribute('data-bot-color') || '#1d4ed8'; // Color por defecto
+    let botColor = scriptTag.getAttribute('data-bot-color') || '#1d4ed8';  // Color por defecto
 
     if (!workspaceId) {
         console.error("Chatbot: 'data-workspace-id' attribute is missing.");
@@ -84,7 +84,7 @@
     iframe.style.opacity = '0';
     iframe.style.transform = 'translateY(10px)';
     iframe.style.marginBottom = '15px'
-    
+
     document.body.appendChild(iframe);
 
     // --- 2. Crear el Botón de Acción Flotante (FAB) ---
@@ -107,17 +107,17 @@
     toggleButton.style.justifyContent = 'center';
     toggleButton.style.zIndex = '2147483647';
     toggleButton.style.transition = 'transform 0.2s ease';
-    
+
     // Iconos SVG para abrir/cerrar
     const openIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-icon lucide-bot"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>';
     const closeIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
     toggleButton.innerHTML = openIcon;
-    
+
     document.body.appendChild(toggleButton);
 
     // --- 3. Lógica para mostrar/ocultar ---
     let isOpen = false;
-    toggleButton.onclick = function() {
+    toggleButton.onclick = function () {
         isOpen = !isOpen;
         if (isOpen) {
             iframe.style.display = 'block';
@@ -137,6 +137,25 @@
             toggleButton.setAttribute('aria-label', 'Open Chat');
         }
     };
+
+    window.addEventListener('message', function (event) {
+        // Medida de seguridad: solo aceptar mensajes del origen de nuestro chatbot
+        if (event.origin !== chatbotAppUrl) {
+            return;
+        }
+
+        // Asegurarnos de que es el mensaje que esperamos
+        if (event.data && event.data.type === 'CHATBOT_COLOR_UPDATE' && event.data.color) {
+            const newColor = event.data.color;
+            console.log('Chatbot Loader: Color updated to', newColor);
+
+            // Actualizar el color de fondo del botón
+            toggleButton.style.backgroundColor = newColor;
+
+            // (Opcional) Actualizar nuestra variable local de color
+            botColor = newColor;
+        }
+    });
 
     toggleButton.onmouseover = () => { toggleButton.style.transform = 'scale(1.1)'; }
     toggleButton.onmouseout = () => { toggleButton.style.transform = 'scale(1)'; }
