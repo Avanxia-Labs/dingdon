@@ -1,31 +1,69 @@
 // app/reset-password/page.tsx
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { I18nProvider } from '@/providers/I18nProvider';
-import { useResetPassword } from '@/hooks/useResetPassword';
 
-// Force dynamic rendering - this prevents static generation
-export const dynamic = 'force-dynamic';
+type PageStatus = 'verifying' | 'valid' | 'invalid';
 
-// Este componente ahora solo se encarga de mostrar la UI.
-// Toda la lógica (estados, useEffects, llamadas a Supabase) vive en el hook useResetPassword.
 function ResetPasswordContent() {
     const { t } = useTranslation();
-    
-    // Usamos el hook para obtener todo el estado y las funciones necesarias.
-    const {
-        status,
-        newPassword,
-        setNewPassword,
-        error,
-        message,
-        isLoading,
-        handleResetPassword
-    } = useResetPassword();
+    const router = useRouter();
+    const [status, setStatus] = useState<PageStatus>('verifying');
+    const [newPassword, setNewPassword] = useState('');
+    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Renderizado condicional basado en el estado que nos da el hook.
+    useEffect(() => {
+        let hasMounted = true;
+        
+        const timer = setTimeout(() => {
+            if (hasMounted && status === 'verifying') {
+                setStatus('invalid');
+                setError(t('resetPassword.invalidLinkSubtitle'));
+            }
+        }, 3000);
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+            if (event === 'PASSWORD_RECOVERY' && hasMounted) {
+                clearTimeout(timer);
+                setStatus('valid');
+                setMessage(t('resetPassword.sessionVerified'));
+            }
+        });
+
+        return () => {
+            hasMounted = false;
+            subscription.unsubscribe();
+            clearTimeout(timer);
+        };
+    }, [status, t]);
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+        setIsLoading(false);
+        if (error) {
+            setStatus('invalid');
+            setError(t('resetPassword.updateError'));
+            console.error("Error updating password:", error.message);
+        } else {
+            setMessage(t('resetPassword.updateSuccess'));
+            setTimeout(() => {
+                router.push('/login');
+            }, 3000);
+        }
+    };
+
     if (status === 'verifying') {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center text-center p-4">
@@ -51,7 +89,6 @@ function ResetPasswordContent() {
         );
     }
 
-    // Si el estado es 'valid', mostramos el formulario.
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
@@ -80,7 +117,6 @@ function ResetPasswordContent() {
     );
 }
 
-// El componente principal no cambia, sigue envolviendo todo en el I18nProvider.
 export default function ResetPasswordPage() {
     return (
         <I18nProvider>
