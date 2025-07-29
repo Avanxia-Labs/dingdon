@@ -79,6 +79,8 @@ interface ChatState {
     setError: (error: string | null) => void;
 
     setLanguage: (language: string) => void;
+
+    initializeOrSyncWorkspace: (workspaceId: string) => void;
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -170,7 +172,7 @@ export const useChatStore = create<ChatState>()(
                     const updatedMessages = state.messages.map(msg =>
                         msg.id === 'init-1' ? createInitialMessage(updatedConfig.botName, state.language) : msg
                     );
-                    
+
                     return {
                         config: updatedConfig,
                         messages: updatedMessages
@@ -182,11 +184,35 @@ export const useChatStore = create<ChatState>()(
                 //setLanguage: (language) => set({ language }),
                 setLanguage: (language) => set((state) => {
                     // Developer Note: When language changes, update the initial message if it exists.
-                    const updatedMessages = state.messages.map(msg => 
+                    const updatedMessages = state.messages.map(msg =>
                         msg.id === 'init-1' ? createInitialMessage(state.config.botName, language) : msg
                     );
                     return { language, messages: updatedMessages };
                 }),
+
+                initializeOrSyncWorkspace: (newWorkspaceId) => {
+                    const currentState = get();
+
+                    // Si el workspaceId del estado persistido no coincide con el nuevo,
+                    // significa que tenemos datos de otra sesión. ¡Hay que resetear!
+                    if (currentState.workspaceId !== newWorkspaceId) {
+                        console.warn(`[Zustand] Workspace cambiado. Reseteando sesión de ${currentState.workspaceId} a ${newWorkspaceId}.`)
+
+                        // Obtenemos la config actual para el mensaje de bienvenida
+                        const config = currentState.config;
+                        const language = currentState.language;
+
+                        set({
+                            workspaceId: newWorkspaceId,
+                            sessionId: uuidv4(), // <-- Nuevo y único sessionId
+                            status: 'bot',
+                            messages: [createInitialMessage(config.botName, language)],
+                            error: null,
+                        })
+                    }
+                    // Si los workspaceId coinciden, no hacemos nada. Significa que el usuario
+                    // refrescó la página y la rehidratación desde localStorage es correcta.
+                },
             };
         },
         {

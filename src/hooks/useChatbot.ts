@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -44,6 +44,7 @@ export const useChatbot = () => {
       error: state.error,
       setError: state.setError,
       language: state.language,
+      initializeOrSyncWorkspace: state.initializeOrSyncWorkspace
     }))
   );
 
@@ -65,28 +66,19 @@ export const useChatbot = () => {
 
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
-    const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+        const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-    if (!newWorkspaceIdFromConfig) {
-      console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
-      return;
-    }
+        // Si la config no está lista, avisa en la consola y no hagas nada más.
+        if (!newWorkspaceIdFromConfig) {
+            console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+            return;
+        }
 
-    // Comprueba si es la primera vez que se carga (workspaceId es null)
-    // O si el ID del config es diferente al que ya teníamos en el estado.
-    if (workspaceId !== newWorkspaceIdFromConfig) {
-      console.warn(`[useChatbot] Workspace ID detectado/cambiado a ${newWorkspaceIdFromConfig}. Reseteando chat...`);
+        // Si llegamos aquí, la config existe. Llama a la acción del store
+        // para que él decida si debe resetear el estado o usar el persistido.
+        initializeOrSyncWorkspace(newWorkspaceIdFromConfig);
 
-      // Limpia cualquier error anterior.
-      setError(null);
-
-      // Llama a la acción de reseteo del store
-      resetChat();
-
-      // Establece el nuevo ID
-      setWorkspaceId(newWorkspaceIdFromConfig);
-    }
-  }, [workspaceId, setWorkspaceId, resetChat, setError]);
+    }, [initializeOrSyncWorkspace]); // La dependencia es la acción del store.
 
 
   // - useEffect de WebSocket 
