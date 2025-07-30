@@ -96,7 +96,7 @@ const initialMessages: Record<string, (botName: string) => Message> = {
  * The initial welcome message for the chatbot.
  */
 const createInitialMessage = (botName: string, lang: string): Message => {
-    const messageFn = initialMessages[lang] || initialMessages.en
+    const messageFn = initialMessages[lang] || initialMessages.es
     return messageFn(botName)
 };
 
@@ -107,10 +107,10 @@ export const useChatStore = create<ChatState>()(
     persist(
         (set, get) => {
             const initialConfig = {
-                botName: 'Virtual Assistant',
+                botName: 'Asistente Virtual',
                 botColor: '#007bff'
             };
-            const initialLanguage = 'en';
+            const initialLanguage = 'es';
 
             return {
                 messages: [createInitialMessage(initialConfig.botName, initialLanguage)],
