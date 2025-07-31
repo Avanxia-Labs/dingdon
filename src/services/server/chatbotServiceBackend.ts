@@ -1,7 +1,7 @@
 // app/lib/chatbot/chatbotServiceBackend.ts
 
 import axios from 'axios';
-import { ChatbotConfig } from '@/types/chatbot';
+import { ChatbotConfig, Message } from '@/types/chatbot';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -56,8 +56,16 @@ function findLocalAnswer(userQuery: string, config: ChatbotConfig): string | nul
  * @param {string} userPrompt - La pregunta del usuario.
  * @returns {string} El prompt completo para la IA.
  */
-function generateAIContext(config: ChatbotConfig, userPrompt: string, language: string): string {
+function generateAIContext(config: ChatbotConfig, userPrompt: string, language: string, history: Message[]): string {
   const formattedQA = config.commonQuestions.map(qa => `Q: ${qa.question}\nA: ${qa.answer}`).join('\n\n');
+
+  const conversationHistory = history.map(msg => {
+      if (msg.role === 'user') return `User: ${msg.content}`;
+      if (msg.role === 'assistant') return `Assistant: ${msg.content}`;
+      return ''; // Ignorar otros roles
+  }).filter(Boolean).join(`\n`);
+
+  console.log("HISTORY:", conversationHistory)
 
   const languageInstructions: Record<string, string> = {
     en: `You are a professional and friendly virtual assistant for ${config.companyName}. Your goal is to provide excellent customer support in English.`,
@@ -89,28 +97,36 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
     ${formattedQA}
     --- END KNOWLEDGE BASE ---
 
-    BEHAVIORAL INSTRUCTIONS (Examples for english but take into account the other language is applies):
+    --- CURRENT CONVERSATION HISTORY ---
+        ${conversationHistory}
+    --- END CONVERSATION HISTORY ---
+
+    BEHAVIORAL INSTRUCTIONS (Examples for english but take into account the other language if applies):
+
+    1. **Analyze the FULL conversation history**: Your primary goal is to provide a relevant and contextual response. The user's latest question might be a direct follow-up to your previous answer.
+
+    2. **Maintain the thread**: If the user's question is "yes," "why?," or a short phrase, look at your last message to understand the context and answer accordingly. Do not say you don't understand.
     
-    1. **Be natural and conversational**: Respond in a friendly and professional manner, like an experienced human agent would.
+    3. **Be natural and conversational**: Respond in a friendly and professional manner, like an experienced human agent would.
 
-    2. **Interpret intent**: If a user says "hi," "hello," "good afternoon," or similar greetings, respond cordially and offer help. Do not say you don't have that information.
+    4. **Interpret intent**: If a user says "hi," "hello," "good afternoon," or similar greetings, respond cordially and offer help. Do not say you don't have that information. But do not respond hi or hello, etc in every message you send
 
-    3. **Use your knowledge base intelligently**:
+    5. **Use your knowledge base intelligently**:
         - Paraphrase and adapt information without copying it verbatim.
         - Connect related concepts from different parts of the knowledge base.
         - Provide additional context when helpful.
 
-    4. **Be proactive in your guidance**:
+    6. **Be proactive in your guidance**:
         - Anticipate follow-up questions.
         - Suggest relevant next steps.
         - Offer supplementary information that might be useful.
 
-    5. **Acknowledge limitations appropriately**:
+    7. **Acknowledge limitations appropriately**:
         - For very specific, technical, or personalized details.
         - For cases that require access to internal systems.
         - For unique situations not covered in the documentation.
 
-    6. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
+    8. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
 
     APPROPRIATE RESPONSE EXAMPLES:
       - User: "Hi" → "Hello! Welcome to ${config.companyName}. How can I help you today?"
@@ -129,7 +145,7 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
 /**
  * Genera una respuesta al prompt del usuario, usando la configuración dinámica del workspace.
  */
-async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string, language: string): Promise<string | { handoff: true }> {
+async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string, language: string, history: Message[] = []): Promise<string | { handoff: true }> {
   console.log(`[Backend] Generating response for workspace: ${workspaceId} in language: ${language}`);
 
   // --- Detección de Handoff ---
@@ -173,7 +189,7 @@ async function generateChatbotResponse(workspaceId: string, userPrompt: string, 
     return selectedErrorMessage;
   }
 
-  const fullPrompt = generateAIContext(config, userPrompt, language);
+  const fullPrompt = generateAIContext(config, userPrompt, language, history);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
