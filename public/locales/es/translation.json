@@ -42,7 +42,25 @@
     "teamMembers": "Miembros",
     "chatHistory": "Historial de Chats",
     "settingsAndBot": "Ajustes y Bot",
-    "signOut": "Cerrar Sesión"
+    "signOut": "Cerrar Sesión",
+    "leads": "Leads"
+  },
+  "leads": {
+    "pageTitle": "Leads Recolectados",
+    "deleteAllButton": "Eliminar Todos los Leads",
+    "tableHeaderName": "Nombre",
+    "tableHeaderEmail": "Email",
+    "tableHeaderPhone": "Teléfono",
+    "tableHeaderDate": "Fecha",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este lead?",
+    "deleteAllConfirm": "Esto eliminará TODOS los {{count}} leads permanentemente. Esta acción no se puede deshacer. Por favor, escribe \"DELETE\" para confirmar.",
+    "deleteCancelled": "Eliminación cancelada.",
+    "noLeads": "Aún no se han recolectado leads.",
+    "feedback": {
+      "deletedSuccess": "Lead eliminado con éxito.",
+      "deletingAll": "Eliminando todos los leads...",
+      "deletedAllSuccess": "Todos los leads han sido eliminados."
+    }
   },
   "superadmin": {
     "pageTitle": "Gestionar Workspaces de Clientes",
@@ -134,7 +152,14 @@
     "inputPlaceholder": "Pregunta sobre nuestros servicios...",
     "inputPlaceholderAgent": "Responde al agente",
     "inputPlaceholderPending": "Esperando que un agente se conecte...",
-    "handoffMessage": "Entendido. Estoy buscando un agente para ayudarte. Por favor, espera."
+    "handoffMessage": "Entendido. Estoy buscando un agente para ayudarte. Por favor, espera.",
+    "leadFormTitle": "Antes de comenzar...",
+    "leadFormSubtitle": "Por favor, danos tus datos de contacto para poder ayudarte mejor.",
+    "leadFormName": "Nombre Completo",
+    "leadFormEmail": "Dirección de Email",
+    "leadFormPhone": "Teléfono (Opcional)",
+    "leadFormButton": "Iniciar Chat",
+    "leadFormLoading": "Iniciando..."
   },
   "settings": {
     "pageTitle": "Configuración del Bot",

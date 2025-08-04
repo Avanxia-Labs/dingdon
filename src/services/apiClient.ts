@@ -16,7 +16,7 @@ import axios from "axios";
  * development, staging, and production environments without needing
  * to configure different absolute URLs.
  */
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api` || 'http://localhost:3000';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api` || 'http://localhost:3000'; 
 
 /**
  * EN MODO DEV QUITAR /api DE LA URL DE ARRIBA

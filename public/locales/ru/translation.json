@@ -43,7 +43,25 @@
     "teamMembers": "Участники команды",
     "chatHistory": "История чатов",
     "settingsAndBot": "Настройки и бот",
-    "signOut": "Выйти"
+    "signOut": "Выйти",
+    "leads": "Лиды"
+  },
+  "leads": {
+    "pageTitle": "Собранные лиды",
+    "deleteAllButton": "Удалить все лиды",
+    "tableHeaderName": "Имя",
+    "tableHeaderEmail": "Email",
+    "tableHeaderPhone": "Телефон",
+    "tableHeaderDate": "Дата",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот лид?",
+    "deleteAllConfirm": "Это навсегда удалит ВСЕ {{count}} лидов. Это действие нельзя отменить. Пожалуйста, введите \"DELETE\" для подтверждения.",
+    "deleteCancelled": "Удаление отменено.",
+    "noLeads": "Лиды еще не собраны.",
+    "feedback": {
+      "deletedSuccess": "Лид успешно удален.",
+      "deletingAll": "Удаление всех лидов...",
+      "deletedAllSuccess": "Все лиды были удалены."
+    }
   },
   "superadmin": {
     "pageTitle": "Управление рабочими пространствами клиентов",
@@ -135,7 +153,14 @@
     "inputPlaceholder": "Спросите о наших услугах...",
     "inputPlaceholderAgent": "Ответьте агенту",
     "inputPlaceholderPending": "Ожидание подключения агента...",
-    "handoffMessage": "Понял. Я ищу агента, чтобы помочь вам. Пожалуйста, подождите."
+    "handoffMessage": "Понял. Я ищу агента, чтобы помочь вам. Пожалуйста, подождите.",
+    "leadFormTitle": "Прежде чем мы начнем...",
+    "leadFormSubtitle": "Пожалуйста, предоставьте свои контактные данные, чтобы мы могли лучше вам помочь.",
+    "leadFormName": "Полное имя",
+    "leadFormEmail": "Адрес электронной почты",
+    "leadFormPhone": "Номер телефона (необязательно)",
+    "leadFormButton": "Начать чат",
+    "leadFormLoading": "Запуск..."
   },
   "settings": {
     "pageTitle": "Настройки бота",

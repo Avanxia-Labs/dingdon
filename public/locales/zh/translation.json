@@ -44,7 +44,25 @@
     "teamMembers": "团队成员",
     "chatHistory": "对话历史",
     "settingsAndBot": "设置和机器人",
-    "signOut": "退出"
+    "signOut": "退出",
+    "leads": "潜在客户"
+  },
+  "leads": {
+    "pageTitle": "收集的潜在客户",
+    "deleteAllButton": "删除所有潜在客户",
+    "tableHeaderName": "姓名",
+    "tableHeaderEmail": "邮箱",
+    "tableHeaderPhone": "电话",
+    "tableHeaderDate": "日期",
+    "deleteConfirm": "您确定要删除此潜在客户吗？",
+    "deleteAllConfirm": "这将永久删除所有 {{count}} 个潜在客户。此操作无法撤销。请输入 \"DELETE\" 确认。",
+    "deleteCancelled": "删除已取消。",
+    "noLeads": "尚未收集任何潜在客户。",
+    "feedback": {
+      "deletedSuccess": "潜在客户删除成功。",
+      "deletingAll": "正在删除所有潜在客户...",
+      "deletedAllSuccess": "所有潜在客户已删除。"
+    }
   },
   "superadmin": {
     "pageTitle": "管理客户工作空间",
@@ -136,7 +154,14 @@
     "inputPlaceholder": "询问我们的服务...",
     "inputPlaceholderAgent": "回复客服",
     "inputPlaceholderPending": "正在等待客服接入...",
-    "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。"
+    "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。",
+    "leadFormTitle": "在我们开始之前...",
+    "leadFormSubtitle": "请提供您的联系方式，以便我们更好地为您提供帮助。",
+    "leadFormName": "全名",
+    "leadFormEmail": "电子邮件地址",
+    "leadFormPhone": "电话号码（可选）",
+    "leadFormButton": "开始聊天",
+    "leadFormLoading": "正在开始..."
   },
   "settings": {
     "pageTitle": "机器人设置",

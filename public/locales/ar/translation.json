@@ -45,7 +45,25 @@
     "teamMembers": "أعضاء الفريق",
     "chatHistory": "سجل المحادثات",
     "settingsAndBot": "الإعدادات والبوت",
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "leads": "العملاء المحتملون"
+  },
+  "leads": {
+    "pageTitle": "العملاء المحتملون الذين تم جمعهم",
+    "deleteAllButton": "حذف جميع العملاء المحتملين",
+    "tableHeaderName": "الاسم",
+    "tableHeaderEmail": "البريد الإلكتروني",
+    "tableHeaderPhone": "الهاتف",
+    "tableHeaderDate": "التاريخ",
+    "deleteConfirm": "هل أنت متأكد من أنك تريد حذف هذا العميل المحتمل؟",
+    "deleteAllConfirm": "سيؤدي هذا إلى حذف جميع العملاء المحتملين البالغ عددهم {{count}} بشكل دائم. لا يمكن التراجع عن هذا الإجراء. يرجى كتابة \"DELETE\" للتأكيد.",
+    "deleteCancelled": "تم إلغاء الحذف.",
+    "noLeads": "لم يتم جمع أي عملاء محتملين بعد.",
+    "feedback": {
+      "deletedSuccess": "تم حذف العميل المحتمل بنجاح.",
+      "deletingAll": "جاري حذف جميع العملاء المحتملين...",
+      "deletedAllSuccess": "تم حذف جميع العملاء المحتملين."
+    }
   },
   "superadmin": {
     "pageTitle": "إدارة مساحات عمل العملاء",
@@ -137,7 +155,14 @@
     "inputPlaceholder": "اسأل عن خدماتنا...",
     "inputPlaceholderAgent": "الرد على الوكيل",
     "inputPlaceholderPending": "في انتظار تولي وكيل...",
-    "handoffMessage": "مفهوم. أنا أبحث عن وكيل لمساعدتك. يرجى الانتظار."
+    "handoffMessage": "مفهوم. أنا أبحث عن وكيل لمساعدتك. يرجى الانتظار.",
+    "leadFormTitle": "قبل أن نبدأ...",
+    "leadFormSubtitle": "يرجى تقديم تفاصيل الاتصال الخاصة بك حتى نتمكن من مساعدتك بشكل أفضل.",
+    "leadFormName": "الاسم الكامل",
+    "leadFormEmail": "عنوان البريد الإلكتروني",
+    "leadFormPhone": "رقم الهاتف (اختياري)",
+    "leadFormButton": "ابدأ الدردشة",
+    "leadFormLoading": "جار البدء..."
   },
   "settings": {
     "pageTitle": "إعدادات البوت",
