@@ -34,11 +34,13 @@
     iframe.style.borderRadius = '15px';
     iframe.style.boxShadow = '0 5px 40px rgba(0,0,0,.16)';
     iframe.style.overflow = 'hidden';
-    iframe.style.display = 'none'; // Clave: Empieza oculto
+    //iframe.style.display = 'none'; 
+    iframe.style.visibility = 'hidden';
+
     iframe.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
     iframe.style.opacity = '0';
     iframe.style.transform = 'translateY(10px)';
-    iframe.style.marginBottom = '15px'
+    iframe.style.marginBottom = '15px';
 
     document.body.appendChild(iframe);
 
@@ -75,7 +77,8 @@
     toggleButton.onclick = function () {
         isOpen = !isOpen;
         if (isOpen) {
-            iframe.style.display = 'block';
+            //iframe.style.display = 'block';
+            iframe.style.visibility = 'visible'; 
             setTimeout(() => { // Pequeño delay para que la transición funcione
                 iframe.style.opacity = '1';
                 iframe.style.transform = 'translateY(0)';
