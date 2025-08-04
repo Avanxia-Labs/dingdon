@@ -34,7 +34,7 @@
     iframe.style.borderRadius = '15px';
     iframe.style.boxShadow = '0 5px 40px rgba(0,0,0,.16)';
     iframe.style.overflow = 'hidden';
-    //iframe.style.display = 'none'; 
+    iframe.style.display = 'none'; 
     iframe.style.visibility = 'hidden';
 
     iframe.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
@@ -77,7 +77,7 @@
     toggleButton.onclick = function () {
         isOpen = !isOpen;
         if (isOpen) {
-            //iframe.style.display = 'block';
+            iframe.style.display = 'block';
             iframe.style.visibility = 'visible'; 
             setTimeout(() => { // Pequeño delay para que la transición funcione
                 iframe.style.opacity = '1';

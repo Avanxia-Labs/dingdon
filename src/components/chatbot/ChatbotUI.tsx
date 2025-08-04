@@ -99,6 +99,7 @@ const ChatInterface = () => {
         }
     };
 
+    const isHidden = leadCollected ? '': 'hidden';
 
     return (
         <div className={`h-full w-full bg-white rounded-lg flex flex-col overflow-hidden ${language === 'ar' ? 'rtl' : 'ltr'}`}>
@@ -199,7 +200,7 @@ const ChatInterface = () => {
                                 <button onClick={startNewChat} style={{ backgroundColor: config.botColor }} className="px-4 py-2 text-white rounded-lg text-sm hover:opacity-90">{t('chatbotUI.newChatButton')}</button>
                             </div>
                         ) : (
-                            <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+                            <form onSubmit={handleSendMessage} className={`flex items-center space-x-2 ${isHidden}`}>
                                 <textarea
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
@@ -207,11 +208,11 @@ const ChatInterface = () => {
                                     placeholder={t(`chatbotUI.${status === 'in_progress' ? 'inputPlaceholderAgent' : status === 'pending_agent' ? 'inputPlaceholderPending' : 'inputPlaceholder'}`)}
                                     className="text-black disabled:cursor-not-allowed disabled:opacity-40 flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg resize-none focus:outline-none"
                                     rows={1}
-                                    disabled={isLoading || status === 'pending_agent' || !leadCollected}
+                                    disabled={isLoading || status === 'pending_agent'}
                                 />
                                 <button
                                     type="submit"
-                                    disabled={isLoading || !inputMessage.trim() || status === 'pending_agent' || !leadCollected}
+                                    disabled={isLoading || !inputMessage.trim() || status === 'pending_agent'}
                                     style={{ backgroundColor: config.botColor }}
                                     className="hover:opacity-90 disabled:bg-gray-400 disabled:opacity-40 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors flex items-center justify-center aspect-square" aria-label="Send Message"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
                                 </button>
