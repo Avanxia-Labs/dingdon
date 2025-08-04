@@ -9,6 +9,9 @@ interface Workspace {
     name: string;
     created_at: string;
     owner_id: string;
+
+    ai_model?: string;
+    ai_api_key?: string;
 }
 
 export const SuperAdminPanel = () => {
@@ -24,6 +27,12 @@ export const SuperAdminPanel = () => {
     const [adminName, setAdminName] = useState('');
     const [adminEmail, setAdminEmail] = useState('');
     const [adminPassword, setAdminPassword] = useState('');
+
+    // Estados de configuracion de modelo IA y API
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+    const [aiModel, setAiModel] = useState('');
+    const [aiApiKey, setAiApiKey] = useState('');
 
     // Función para obtener la lista de workspaces desde nuestra API
     const fetchWorkspaces = async () => {
@@ -47,7 +56,7 @@ export const SuperAdminPanel = () => {
     useEffect(() => {
         fetchWorkspaces();
     }, []);
-    
+
     // Manejador para el envío del formulario de creación
     const handleCreateWorkspace = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,10 +74,10 @@ export const SuperAdminPanel = () => {
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to create workspace.');
             }
-            
+
             setFeedbackMessage('Workspace created successfully!');
             fetchWorkspaces(); // Recargar la lista para mostrar el nuevo workspace
-            
+
             // Limpiar los campos del formulario
             setWorkspaceName('');
             setAdminName('');
@@ -80,10 +89,47 @@ export const SuperAdminPanel = () => {
         }
     };
 
+    // Función para abrir el modal con los datos del workspace seleccionado
+    const handleOpenAiModal = (workspace: Workspace) => {
+        setSelectedWorkspace(workspace);
+        // Usamos los valores existentes o placeholders
+        setAiModel(workspace.ai_model || 'gemini-1.5-flash');
+        setAiApiKey(workspace.ai_api_key || '');
+        setIsAiModalOpen(true);
+    };
+
+    // Función para guardar la nueva configuración de IA
+    const handleSaveAiConfig = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedWorkspace) return;
+
+        setFeedbackMessage('Updating AI configuration...');
+
+        try {
+            const response = await fetch(`/api/superadmin/workspaces/${selectedWorkspace.id}/ai-config`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ai_model: aiModel, ai_api_key: aiApiKey }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update AI config.');
+            }
+
+            setFeedbackMessage('AI configuration updated successfully!');
+            fetchWorkspaces(); // Recargar la lista para reflejar los cambios
+            setIsAiModalOpen(false); // Cerrar el modal
+
+        } catch (error: any) {
+            setFeedbackMessage(`Error: ${error.message}`);
+        }
+    };
+
     return (
         <div className="p-6 md:p-8 bg-gray-50 min-h-screen">
             <h1 className="text-3xl font-bold text-gray-800 mb-8">Superadmin Panel</h1>
-            
+
             {/* Formulario para crear un nuevo workspace */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
                 <h2 className="text-xl font-semibold mb-4 text-gray-700">Create New Client Workspace</h2>
@@ -121,7 +167,7 @@ export const SuperAdminPanel = () => {
                             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
-                     <div>
+                    <div>
                         <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-600">Admin Password</label>
                         <input
                             id="adminPassword"
@@ -173,7 +219,7 @@ export const SuperAdminPanel = () => {
                         )}
                     </tbody>
                 </table>
-            </div>
+            </div>aqui
         </div>
     );
 };

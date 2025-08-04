@@ -7,6 +7,9 @@ import axios from "axios";
  * and can be extended with interceptors for handling tokens, errors, etc.
  */
 
+
+//=============================================================================================
+
 /**
  * The base URL for all API requests.
  * Using a relative URL ('/api') is robust as it works seamlessly in
@@ -14,6 +17,12 @@ import axios from "axios";
  * to configure different absolute URLs.
  */
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api` || 'http://localhost:3000';
+
+/**
+ * EN MODO DEV QUITAR /api DE LA URL DE ARRIBA
+ */
+
+//=============================================================================================
 
 /**
  * The main Axios instance for making API requests.
