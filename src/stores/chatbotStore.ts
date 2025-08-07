@@ -2,7 +2,8 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { ChatSessionStatus, Message } from '@/types/chatbot'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
+import { saveHistoryBeforeResetClient } from '@/lib/chatHistoryService';
 
 /**
  * @file Defines the state management for the chatbot using Zustand with persistence.
@@ -29,7 +30,8 @@ interface ChatState {
     config: ChatbotConfigState;
     error: string | null;
     language: string;
-    leadCollected: boolean
+    leadCollected: boolean;
+    lastActivity: number; // Timestamp de la última actividad
 
     // ACTIONS
     /** Toggles the chat window's visibility */
@@ -84,6 +86,16 @@ interface ChatState {
     initializeOrSyncWorkspace: (workspaceId: string) => void;
 
     setLeadCollected: (collected: boolean) => void;
+
+    /**
+     * Actualiza el timestamp de la última actividad
+     */
+    updateLastActivity: () => void;
+
+    /**
+     * Obtiene los datos necesarios para guardar el historial
+     */
+    getHistoryData: () => { sessionId: string | null | undefined; workspaceId: string | null; messages: Message[]; lastActivity: number };
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -142,13 +154,15 @@ export const useChatStore = create<ChatState>()(
                 error: null,
                 language: initialLanguage,
                 leadCollected: false,
+                lastActivity: Date.now(), // Inicializar con el timestamp actual
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
                 })),
 
                 addMessage: (message) => set((state) => ({
-                    messages: [...state.messages, message]
+                    messages: [...state.messages, message],
+                    lastActivity: Date.now() // Actualizar actividad cuando se añade un mensaje
                 })),
 
                 setIsLoading: (isLoading) => set({ isLoading }),
@@ -192,11 +206,9 @@ export const useChatStore = create<ChatState>()(
                     // Compara el ID real del widget con el ID que está actualmente en el estado
                     // (que puede ser el que se cargó desde localStorage).
                     if (currentState.workspaceId !== newWorkspaceId) {
-                        // console.warn(`[Zustand] Discrepancia de Workspace detectada. Reseteando. Widget actual: ${newWorkspaceId}, Estado anterior: ${currentState.workspaceId}`);
-                        console.warn(`Reseteando config de workspace...`)
+                        console.warn(`Reseteando config de workspace...`);
+                        
                         // Si no coinciden, forzamos un reseteo completo, creando una sesión nueva.
-                        // Usamos la config y language del estado "viejo" para el mensaje de bienvenida,
-                        // lo cual está bien porque el hook buscará la nueva config inmediatamente después.
                         set({
                             workspaceId: newWorkspaceId, // Establecemos el nuevo ID correcto.
                             sessionId: uuidv4(),         // ¡Generamos un ID de sesión nuevo y único!
@@ -206,7 +218,6 @@ export const useChatStore = create<ChatState>()(
                             error: null
                         });
                     }
-
                 },
 
                 setConfig: (newConfig) => set((state) => {
@@ -239,7 +250,7 @@ export const useChatStore = create<ChatState>()(
                     // Si el workspaceId del estado persistido no coincide con el nuevo,
                     // significa que tenemos datos de otra sesión. ¡Hay que resetear!
                     if (currentState.workspaceId !== newWorkspaceId) {
-                        console.warn(`[Zustand] Workspace cambiado. Reseteando sesión de ${currentState.workspaceId} a ${newWorkspaceId}.`)
+                        console.warn(`[Zustand] Workspace cambiado. Reseteando sesión de ${currentState.workspaceId} a ${newWorkspaceId}.`);
 
                         // Obtenemos la config actual para el mensaje de bienvenida
                         const config = currentState.config;
@@ -251,13 +262,27 @@ export const useChatStore = create<ChatState>()(
                             status: 'bot',
                             messages: [createInitialMessage(config.botName, language)],
                             error: null,
-                        })
+                        });
                     }
                     // Si los workspaceId coinciden, no hacemos nada. Significa que el usuario
                     // refrescó la página y la rehidratación desde localStorage es correcta.
                 },
 
                 setLeadCollected: (collected) => set({leadCollected: collected}),
+
+                updateLastActivity: () => set({
+                    lastActivity: Date.now()
+                }),
+
+                getHistoryData: () => {
+                    const state = get();
+                    return {
+                        sessionId: state.sessionId,
+                        workspaceId: state.workspaceId,
+                        messages: state.messages,
+                        lastActivity: state.lastActivity
+                    };
+                },
             };
         },
         {
@@ -272,11 +297,12 @@ export const useChatStore = create<ChatState>()(
                 config: state.config,
                 language: state.language,
                 leadCollected: state.leadCollected,
+                lastActivity: state.lastActivity,
             }),
 
-            // Reseteo despues de 24h de inactividad
+            // Reseteo después de 24h de inactividad (sistema automático)
             storage: createJSONStorage(() => localStorage, {
-                //Nombre para la clave de expiracion
+                //Nombre para la clave de expiración
                 reviver: (key, value: any) => {
                     if (key === 'state' && value.sessionId) {
                         const now = Date.now();
@@ -285,7 +311,6 @@ export const useChatStore = create<ChatState>()(
                         // 24 horas 
                         const oneDay = 24 * 60 * 60 * 1000 // h * min * sec * milSec
                         
-
                         if (now - lastUpdated > oneDay) {
                             // Si han pasado más de 24h, no cargamos la sesión vieja.
                             // Devolvemos `undefined` para que Zustand use el estado inicial.
@@ -306,8 +331,6 @@ export const useChatStore = create<ChatState>()(
                     return value;
                 }
             })
-
-
         }
     )
 )
