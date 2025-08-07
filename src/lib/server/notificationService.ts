@@ -59,14 +59,14 @@ import { Message } from '@/types/chatbot';
 
 /**
  * Notifica al dashboard de agentes que hay una nueva solicitud de chat
- * @param workspaceId - El ID del workspace al que pertenece la solicitud. <-- CAMBIO
- * @param requestData - Un objeto que contiene el sessionId y el initialMessage. <-- CAMBIO
+ * @param workspaceId - El ID del workspace al que pertenece la solicitud. 
+ * @param requestData - Un objeto que contiene el sessionId y el initialMessage. 
  */
 function notifyNewHandoffRequest(
     workspaceId: string,
     requestData: { sessionId: string; initialMessage: Message }
 ) {
-    // ---> MODIFICACIÓN CLAVE N°3: Usar la instancia `io` del servidor directamente <---
+    // ---> Usar la instancia `io` del servidor directamente <---
     // Emitimos el evento a la sala correcta. Esto es ahora una llamada a función
     // interna, no una petición de red. Es instantáneo y 100% fiable.
     io.to(`dashboard_${workspaceId}`).emit('new_handoff_request', {

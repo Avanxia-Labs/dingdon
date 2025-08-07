@@ -402,6 +402,7 @@ require('dotenv').config();
 //    - `handle`: Es el manejador de peticiones de Next.js. Él sabe cómo servir las páginas.
 const dev = process.env.NODE_ENV !== 'production';
 
+
 /** @type {import('next/dist/server/next-server').default} */
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
@@ -465,7 +466,7 @@ nextApp.prepare().then(() => {
             return res.status(400).send('Missing workspaceId or requestData');
         }
 
-        // --- AÑADIDO: Guardar la sesión en la base de datos INMEDIATAMENTE ---
+        // --- Guardar la sesión en la base de datos  ---
         const { error: dbError } = await supabase
             .from('chat_sessions')
             .upsert({
@@ -482,7 +483,7 @@ nextApp.prepare().then(() => {
             // Podríamos devolver un error 500, pero por ahora solo lo logueamos para no detener la notificación
         }
 
-        // =========== AÑADIDO: CREAR LA SESIÓN EN LA MEMORIA ===============
+        // =========== CREAR LA SESIÓN EN LA MEMORIA ===============
         if (!workspacesData[workspaceId]) {
             workspacesData[workspaceId] = {};
         }

@@ -17,7 +17,7 @@ import axios from "axios";
  * to configure different absolute URLs.
  */
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api` || 'http://localhost:3000'; 
-
+ 
 /**
  * EN MODO DEV QUITAR /api DE LA URL DE ARRIBA
  */
