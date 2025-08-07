@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace, updateLastActivity, checkInactivityTimeout } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -44,12 +44,23 @@ export const useChatbot = () => {
       error: state.error,
       setError: state.setError,
       language: state.language,
-      initializeOrSyncWorkspace: state.initializeOrSyncWorkspace
+      initializeOrSyncWorkspace: state.initializeOrSyncWorkspace,
+      updateLastActivity: state.updateLastActivity,
+      checkInactivityTimeout: state.checkInactivityTimeout
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
+
+  // --- EFECTO PARA VERIFICAR INACTIVIDAD DE 24 HORAS ---
+  useEffect(() => {
+    const checkInactivity = async () => {
+      await checkInactivityTimeout();
+    };
+    
+    checkInactivity();
+  }, []); // Solo ejecutar una vez al montar el componente
 
   // useEffect(() => {
   //   if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
@@ -66,19 +77,22 @@ export const useChatbot = () => {
 
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
-    // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
-    const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+    const handleWorkspaceChange = async () => {
+      // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
+      const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-    // 2. Si la configuración aún no está lista, avisa y espera.
-    if (!newWorkspaceIdFromConfig) {
-      console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
-      return;
-    }
+      // 2. Si la configuración aún no está lista, avisa y espera.
+      if (!newWorkspaceIdFromConfig) {
+        console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+        return;
+      }
 
-    // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
-    // El store se encargará de decidir si debe resetear o no.
-    setWorkspaceId(newWorkspaceIdFromConfig);
+      // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
+      // El store se encargará de decidir si debe resetear o no.
+      await setWorkspaceId(newWorkspaceIdFromConfig);
+    };
 
+    handleWorkspaceChange();
   }, [setWorkspaceId]);
 
 
@@ -286,6 +300,9 @@ export const useChatbot = () => {
 
     if (!content.trim() || mutation.isPending || !sessionId || !workspaceId) return;
 
+    // Actualizar actividad cuando el usuario envía un mensaje
+    updateLastActivity();
+
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       content,
@@ -314,14 +331,14 @@ export const useChatbot = () => {
   /**
    * Function to resets the chat state if the chat is being closed.
    */
-  const startNewChat = () => {
+  const startNewChat = async () => {
     // Disconnect the current socket if it exists
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
     // Reset the chat state
-    resetChat();
+    await resetChat();
   }
 
   return {

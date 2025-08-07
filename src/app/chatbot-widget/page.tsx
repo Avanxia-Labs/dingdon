@@ -12,15 +12,19 @@ function WidgetContent() {
     const setWorkspaceId = useChatStore((state) => state.setWorkspaceId);
 
     useEffect(() => {
-        // Leemos el workspaceId de los parámetros de la URL
-        const workspaceId = searchParams.get('workspaceId');
-        if (workspaceId) {
-            // Lo guardamos en nuestro store global de Zustand
-            setWorkspaceId(workspaceId);
-        } else {
-            console.error("Chatbot Widget Error: workspaceId is missing from URL parameters.");
-            // En producción, podríamos mostrar un mensaje de error en la UI del chat
-        }
+        const handleWorkspaceIdFromUrl = async () => {
+            // Leemos el workspaceId de los parámetros de la URL
+            const workspaceId = searchParams.get('workspaceId');
+            if (workspaceId) {
+                // Lo guardamos en nuestro store global de Zustand
+                await setWorkspaceId(workspaceId);
+            } else {
+                console.error("Chatbot Widget Error: workspaceId is missing from URL parameters.");
+                // En producción, podríamos mostrar un mensaje de error en la UI del chat
+            }
+        };
+
+        handleWorkspaceIdFromUrl();
     }, [searchParams, setWorkspaceId]);
 
     return <ChatbotUI />;
