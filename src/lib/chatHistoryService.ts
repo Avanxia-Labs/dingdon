@@ -1,6 +1,5 @@
 // lib/chatHistoryService.ts
 
-import { supabaseAdmin } from '@/lib/supabase/server';
 import { Message } from '@/types/chatbot';
 
 /**
@@ -28,6 +27,16 @@ export async function saveHistoryBeforeReset(
 
   try {
     console.log(`[ChatHistory] Guardando historial de sesión ${sessionId} antes del reinicio`);
+    
+    // Esta función debe usarse solo desde el servidor
+    // Si se está llamando desde el cliente, usar saveHistoryBeforeResetClient
+    if (typeof window !== 'undefined') {
+      console.warn('[ChatHistory] Esta función debe usarse solo en el servidor. Usa saveHistoryBeforeResetClient desde el cliente.');
+      return await saveHistoryBeforeResetClient(sessionId, workspaceId, history);
+    }
+
+    // Importar supabaseAdmin solo cuando estamos en el servidor
+    const { supabaseAdmin } = await import('@/lib/supabase/server');
     
     // Guardar en la base de datos marcando como conversación del BOT
     const { error } = await supabaseAdmin

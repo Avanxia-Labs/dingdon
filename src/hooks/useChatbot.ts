@@ -107,31 +107,37 @@ export const useChatbot = () => {
   // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
     const handleWorkspaceChange = async () => {
-      // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
-      const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
-
-      // 2. Si la configuración aún no está lista, avisa y espera.
-      if (!newWorkspaceIdFromConfig) {
-        console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+      // En el iframe del widget, el workspaceId ya se obtiene de los parámetros URL
+      // y se establece en el store, así que no necesitamos window.chatbotConfig
+      
+      // Si ya tenemos workspaceId en el store, no hacer nada más
+      if (workspaceId) {
+        console.log(`[useChatbot] Workspace ID ya configurado: ${workspaceId}`);
         return;
       }
 
-      // 3. Guardar historial antes del posible cambio de workspace
-      const historyData = getHistoryData();
-      if (historyData.workspaceId && historyData.workspaceId !== newWorkspaceIdFromConfig) {
-        await saveHistoryBeforeResetClient(
-          historyData.sessionId ?? null,
-          historyData.workspaceId ?? null,
-          historyData.messages
-        );
-      }
+      // Solo si estamos en el contexto del widget principal (no iframe)
+      // intentamos obtener de window.chatbotConfig
+      const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-      // 4. Cambiar workspace (síncrono)
-      setWorkspaceId(newWorkspaceIdFromConfig);
+      if (newWorkspaceIdFromConfig) {
+        // 3. Guardar historial antes del posible cambio de workspace
+        const historyData = getHistoryData();
+        if (historyData.workspaceId && historyData.workspaceId !== newWorkspaceIdFromConfig) {
+          await saveHistoryBeforeResetClient(
+            historyData.sessionId ?? null,
+            historyData.workspaceId ?? null,
+            historyData.messages
+          );
+        }
+
+        // 4. Cambiar workspace (síncrono)
+        setWorkspaceId(newWorkspaceIdFromConfig);
+      }
     };
 
     handleWorkspaceChange();
-  }, [setWorkspaceId, getHistoryData]);
+  }, [workspaceId, setWorkspaceId, getHistoryData]);
 
 
   // - useEffect de WebSocket 
