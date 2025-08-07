@@ -67,14 +67,14 @@ interface ChatState {
     /**
      * Resets the chat state, clearing all messages and resetting the session ID
      */
-    resetChat: () => Promise<void>;
+    resetChat: () => void;
 
     /**
      * Starts a new chat session (used when previous session was closed)
      */
     startNewChat: () => void;
 
-    setWorkspaceId: (workspaceId: string) => Promise<void>;
+    setWorkspaceId: (workspaceId: string) => void;
 
     setConfig: (config: Partial<ChatbotConfigState>) => void;
 
@@ -82,7 +82,7 @@ interface ChatState {
 
     setLanguage: (language: string) => void;
 
-    initializeOrSyncWorkspace: (workspaceId: string) => Promise<void>;
+    initializeOrSyncWorkspace: (workspaceId: string) => void;
 
     /**
      * Actualiza el timestamp de la última actividad
@@ -90,9 +90,9 @@ interface ChatState {
     updateLastActivity: () => void;
 
     /**
-     * Verifica si han pasado 24 horas desde la última actividad y resetea si es necesario
+     * Obtiene los datos necesarios para guardar el historial
      */
-    checkInactivityTimeout: () => Promise<void>;
+    getHistoryData: () => { sessionId: string | null | undefined; workspaceId: string | null; messages: Message[]; lastActivity: number };
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -164,23 +164,12 @@ export const useChatStore = create<ChatState>()(
                     status: status
                 }),
 
-                resetChat: async () => {
-                    const currentState = get();
-                    
-                    // Guardar historial antes del reinicio
-                    await saveHistoryBeforeResetClient(
-                        currentState.sessionId,
-                        currentState.workspaceId,
-                        currentState.messages
-                    );
-                    
-                    set({
-                        messages: [createInitialMessage(currentState.config.botName, currentState.language)],
-                        sessionId: uuidv4(),
-                        status: 'bot',
-                        isLoading: false,
-                    });
-                },
+                resetChat: () => set((state) => ({
+                    messages: [createInitialMessage(state.config.botName, state.language)],
+                    sessionId: uuidv4(),
+                    status: 'bot',
+                    isLoading: false,
+                })),
 
                 startNewChat: () => set((state) => ({
                     messages: [createInitialMessage(state.config.botName, state.language)],
@@ -191,20 +180,13 @@ export const useChatStore = create<ChatState>()(
 
                 // setWorkspaceId: (workspaceId) => set({ workspaceId }),
 
-                setWorkspaceId: async (newWorkspaceId) => {
+                setWorkspaceId: (newWorkspaceId) => {
                     const currentState = get();
 
                     // Compara el ID real del widget con el ID que está actualmente en el estado
                     // (que puede ser el que se cargó desde localStorage).
                     if (currentState.workspaceId !== newWorkspaceId) {
                         console.warn(`Reseteando config de workspace...`);
-                        
-                        // Guardar historial antes del cambio de workspace
-                        await saveHistoryBeforeResetClient(
-                            currentState.sessionId,
-                            currentState.workspaceId,
-                            currentState.messages
-                        );
                         
                         // Si no coinciden, forzamos un reseteo completo, creando una sesión nueva.
                         set({
@@ -242,20 +224,13 @@ export const useChatStore = create<ChatState>()(
                     return { language, messages: updatedMessages };
                 }),
 
-                initializeOrSyncWorkspace: async (newWorkspaceId) => {
+                initializeOrSyncWorkspace: (newWorkspaceId) => {
                     const currentState = get();
 
                     // Si el workspaceId del estado persistido no coincide con el nuevo,
                     // significa que tenemos datos de otra sesión. ¡Hay que resetear!
                     if (currentState.workspaceId !== newWorkspaceId) {
                         console.warn(`[Zustand] Workspace cambiado. Reseteando sesión de ${currentState.workspaceId} a ${newWorkspaceId}.`);
-
-                        // Guardar historial antes del cambio de workspace
-                        await saveHistoryBeforeResetClient(
-                            currentState.sessionId,
-                            currentState.workspaceId,
-                            currentState.messages
-                        );
 
                         // Obtenemos la config actual para el mensaje de bienvenida
                         const config = currentState.config;
@@ -277,31 +252,14 @@ export const useChatStore = create<ChatState>()(
                     lastActivity: Date.now()
                 }),
 
-                checkInactivityTimeout: async () => {
-                    const currentState = get();
-                    const now = Date.now();
-                    const twentyFourHours = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-                    
-                    // Verificar si han pasado más de 24 horas desde la última actividad
-                    if (now - currentState.lastActivity > twentyFourHours) {
-                        console.log('[ChatStore] 24 horas de inactividad detectadas. Guardando historial y reseteando...');
-                        
-                        // Guardar historial antes del reinicio por inactividad
-                        await saveHistoryBeforeResetClient(
-                            currentState.sessionId,
-                            currentState.workspaceId,
-                            currentState.messages
-                        );
-                        
-                        // Resetear el estado
-                        set({
-                            messages: [createInitialMessage(currentState.config.botName, currentState.language)],
-                            sessionId: uuidv4(),
-                            status: 'bot',
-                            isLoading: false,
-                            lastActivity: now
-                        });
-                    }
+                getHistoryData: () => {
+                    const state = get();
+                    return {
+                        sessionId: state.sessionId,
+                        workspaceId: state.workspaceId,
+                        messages: state.messages,
+                        lastActivity: state.lastActivity
+                    };
                 },
             };
         },

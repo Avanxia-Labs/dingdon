@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
+import { saveHistoryBeforeResetClient } from '@/lib/chatHistoryService';
 import { io, Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace, updateLastActivity, checkInactivityTimeout } = useChatStore(
+  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace, updateLastActivity, getHistoryData } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -46,7 +47,7 @@ export const useChatbot = () => {
       language: state.language,
       initializeOrSyncWorkspace: state.initializeOrSyncWorkspace,
       updateLastActivity: state.updateLastActivity,
-      checkInactivityTimeout: state.checkInactivityTimeout
+      getHistoryData: state.getHistoryData
     }))
   );
 
@@ -56,7 +57,24 @@ export const useChatbot = () => {
   // --- EFECTO PARA VERIFICAR INACTIVIDAD DE 24 HORAS ---
   useEffect(() => {
     const checkInactivity = async () => {
-      await checkInactivityTimeout();
+      const historyData = getHistoryData();
+      const now = Date.now();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      
+      // Verificar si han pasado más de 24 horas desde la última actividad
+      if (historyData.sessionId && now - historyData.lastActivity > twentyFourHours) {
+        console.log('[useChatbot] 24 horas de inactividad detectadas. Guardando historial y reseteando...');
+        
+        // Guardar historial antes del reinicio por inactividad
+        await saveHistoryBeforeResetClient(
+          historyData.sessionId,
+          historyData.workspaceId,
+          historyData.messages
+        );
+        
+        // Resetear el estado
+        resetChat();
+      }
     };
     
     checkInactivity();
@@ -87,13 +105,22 @@ export const useChatbot = () => {
         return;
       }
 
-      // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
-      // El store se encargará de decidir si debe resetear o no.
-      await setWorkspaceId(newWorkspaceIdFromConfig);
+      // 3. Guardar historial antes del posible cambio de workspace
+      const historyData = getHistoryData();
+      if (historyData.workspaceId && historyData.workspaceId !== newWorkspaceIdFromConfig) {
+        await saveHistoryBeforeResetClient(
+          historyData.sessionId,
+          historyData.workspaceId,
+          historyData.messages
+        );
+      }
+
+      // 4. Cambiar workspace (síncrono)
+      setWorkspaceId(newWorkspaceIdFromConfig);
     };
 
     handleWorkspaceChange();
-  }, [setWorkspaceId]);
+  }, [setWorkspaceId, getHistoryData]);
 
 
   // - useEffect de WebSocket 
@@ -332,13 +359,21 @@ export const useChatbot = () => {
    * Function to resets the chat state if the chat is being closed.
    */
   const startNewChat = async () => {
+    // Guardar historial antes del reinicio
+    const historyData = getHistoryData();
+    await saveHistoryBeforeResetClient(
+      historyData.sessionId,
+      historyData.workspaceId,
+      historyData.messages
+    );
+
     // Disconnect the current socket if it exists
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
-    // Reset the chat state
-    await resetChat();
+    // Reset the chat state (ahora síncrono)
+    resetChat();
   }
 
   return {
