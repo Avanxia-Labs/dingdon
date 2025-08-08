@@ -225,5 +225,10 @@
       "description": "Enter your website URL to automatically crawl and extract content for your chatbot's knowledge base.",
       "crawlButton": "Crawl & Train"
     }
+  },
+  "whatsapp": {
+    "welcome": "Hello! Welcome. To begin, what is your full name?",
+    "askEmail": "Thank you! Now, please tell me your email address.",
+    "chatReady": "Perfect, thank you! You can now start chatting. How can I help you today?"
   }
 }

@@ -225,5 +225,10 @@
       "description": "Introduce la URL de tu sitio web para rastrear y extraer contenido automáticamente para la base de conocimiento de tu chatbot.",
       "crawlButton": "Rastrear y Entrenar"
     }
+  },
+  "whatsapp": {
+    "welcome": "¡Hola! Bienvenido. Para comenzar, ¿cuál es tu nombre completo?",
+    "askEmail": "¡Gracias! Ahora, por favor, dime tu correo electrónico.",
+    "chatReady": "¡Perfecto, gracias! Ya puedes comenzar a chatear. ¿En qué puedo ayudarte hoy?"
   }
 }

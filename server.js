@@ -391,6 +391,7 @@ const cors = require('cors');
 const supabase = require('./server-lib/supabaseClient');
 const next = require('next')
 const io = require('./server-lib/socketInstance');
+const { sendWhatsAppMessage } = require('./src/lib/twilio.js');
 
 // Cargar variables de entorno
 require('dotenv').config();
@@ -716,6 +717,7 @@ nextApp.prepare().then(() => {
                 return;
             }
 
+            // Guardar el mensaje en el historial
             workspacesData[workspaceId][sessionId].history.push(message);
 
             // Actualizar el historial en la DB
@@ -727,13 +729,39 @@ nextApp.prepare().then(() => {
                 console.error(`[DB Error] No se pudo actualizar historial de ${sessionId}:`, error.message);
             }
 
-            // 🔧 MEJORADO: Emitir a la sala con mejor logging
-            console.log(`[Socket.IO] Emitting agent_message to session ${sessionId}`);
+            // --- Logica de enrutamiento --- 
 
-            // Emitir a todos los miembros de la sala
-            io.to(sessionId).emit('agent_message', message);
+            // 1- Buscamos en la base de datos para saber de que canal es la sesion
+            const { data: sessionInfo, error: sessionError } = await supabase
+                .from('chat_sessions')
+                .select('channel, user_identifier')
+                .eq('id', sessionId)
+                .single();
 
-            // También emitir confirmación al dashboard
+            if (sessionError) {
+                console.error(`[DB Error] No se pudo obtener la información del canal para la sesión ${sessionId}:`, sessionError.message);
+                return; // No podemos continuar si no sabemos a dónde enviar el mensaje
+            }
+
+            // 2- Decidimos a donde enviar el mensaje
+            if (sessionInfo && sessionInfo.channel === 'whatsapp') {
+
+                // 2.1 Si el canal es whatsapp usamos twilio
+                if (sessionInfo.user_identifier) {
+                    console.log(`[Router] La sesión es de WhatsApp. Enviando a ${sessionInfo.user_identifier}`);
+                    await sendWhatsAppMessage(sessionInfo.user_identifier, message.content)
+                } else {
+                    console.error(`[Router] La sesión ${sessionId} es de WhatsApp pero no tiene user_identifier.`);
+                }
+            } else {
+
+                // 2.2 Si el canal es 'web' o no está definido, usamos Socket.IO como antes.
+                console.log(`[Router] La sesión es web. Emitiendo a la sala de socket ${sessionId}`);
+                io.to(sessionId).emit('agent_message', message);
+            }
+
+            // --- 3. NOTIFICAR AL DASHBOARD ---
+            // Esto es para que el propio agente vea su mensaje en la UI del dashboard.
             io.to(`dashboard_${workspaceId}`).emit('agent_message_sent', { sessionId, message });
 
             console.log(`[Socket.IO] Agent message successfully emitted to session ${sessionId}`);

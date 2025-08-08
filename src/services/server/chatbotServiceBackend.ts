@@ -351,6 +351,10 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
 
     8. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
 
+    9. YOUR RESPONSE CAN'T BE MORE THAN 1500 CHARACTERS LONG
+
+    10. REMEMBER. DON'T SAY HOLA, HELLO, ETC (DEPENDING ON THE LANGUAGE) EVERY TIME YOU RESPOND, JUST AT THE BEGINING OF THE CONVERSATION OR IF THE USER SAYS HI, HELLO, ETC. ALSO DON'T REPEAT THE USER'S NAME EVERY TIME YOU ANSWER
+
     APPROPRIATE RESPONSE EXAMPLES:
       - User: "Hi" → "Hello! Welcome to ${config.companyName}. How can I help you today?"
       - User: "How much does it cost?" → Provide general price ranges if available, or explain factors that affect the cost.

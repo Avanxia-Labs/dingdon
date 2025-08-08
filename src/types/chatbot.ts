@@ -44,13 +44,13 @@ export interface ChatbotConfig {
 export interface ChatApiResponse {
   reply: string;
 }
-
+ 
 /**
  * Represents a chat session, which includes the messages exchanged and the session status.
  */
 export type ChatSessionStatus = 
   'bot'             // The bot is handling the session 
-| 'pending_agent'   // The session is waiting for an agent to take over
+| 'pending'   // The session is waiting for an agent to take over
 | 'in_progress'     // The session is currently being handled by an agent
 | 'closed';         // The session has been closed
 

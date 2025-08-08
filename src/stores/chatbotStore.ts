@@ -58,7 +58,7 @@ interface ChatState {
     requestAgentHandoff: () => void;
 
     /**
-     * Sets the current session status, which can be 'bot', 'pending_agent', 'in_progress', or 'closed'
+     * Sets the current session status, which can be 'bot', 'pending', 'in_progress', or 'closed'
      * @param status - The new status of the chat session
      */
     setSessionStatus: (status: ChatSessionStatus) => void;
@@ -162,7 +162,7 @@ export const useChatStore = create<ChatState>()(
                 requestAgentHandoff: () => {
                     const currentState = get();
                     if (currentState.status === 'bot') {
-                        set({ status: 'pending_agent' });
+                        set({ status: 'pending' });
                     }
                 },
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Edit, Bot } from 'lucide-react';
+import { Trash2, Edit, Bot, MessageSquare } from 'lucide-react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 
@@ -13,6 +13,7 @@ interface Workspace {
 
     ai_model?: string;
     ai_api_key_name?: string;
+    twilio_config_name?: string
 }
 
 const availableModels = [
@@ -27,6 +28,12 @@ const availableApiKeys = [
     { value: 'GEMINI_API_KEY_1', label: 'Gemini Key 1' },
     { value: 'KIMI_API_KEY_1', label: 'Kimi Key 1' },
     { value: 'KIMI_API_KEY_2', label: 'Kimi Key 2' },
+];
+
+const availableTwilioConfigs = [
+    { value: 'DEFAULT', label: 'Use System Default Twilio Account' },
+    { value: 'CLIENTE_A', label: 'Twilio Config (Cliente A)' },
+    { value: 'CLIENTE_B', label: 'Twilio Config (Cliente B)' },
 ];
 
 const ManageWorkspacesPage = () => {
@@ -49,6 +56,10 @@ const ManageWorkspacesPage = () => {
     const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
     const [aiModel, setAiModel] = useState('');
     const [aiApiKeyName, setAiApiKeyName] = useState('');
+
+    // ---  ESTADOS PARA EL MODAL DE CONFIGURACIÓN DE TWILIO ---
+    const [isTwilioModalOpen, setIsTwilioModalOpen] = useState(false);
+    const [twilioConfigName, setTwilioConfigName] = useState('');
 
     const fetchWorkspaces = async () => {
         setIsLoading(true);
@@ -141,6 +152,41 @@ const ManageWorkspacesPage = () => {
         }
     };
 
+    const handleOpenTwilioModal = (workspace: Workspace) => {
+        setSelectedWorkspace(workspace);
+        setTwilioConfigName(workspace.twilio_config_name || 'DEFAULT');
+        setIsTwilioModalOpen(true);
+        setFeedback(null);
+    };
+
+    const handleSaveTwilioConfig = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!selectedWorkspace) return;
+
+        setFeedback({ message: 'Updating Twilio configuration...', type: 'success' });
+
+        try {
+            // Asumimos que crearemos un endpoint similar al de la IA
+            const response = await fetch(`/api/superadmin/workspaces/${selectedWorkspace.id}/twilio-config`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ twilio_config_name: twilioConfigName }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update Twilio config.');
+            }
+
+            setFeedback({ message: 'Twilio configuration updated successfully!', type: 'success' });
+            fetchWorkspaces(); // Recargar datos
+            setIsTwilioModalOpen(false); // Cerrar modal
+
+        } catch (error: any) {
+            setFeedback({ message: `${t('common.errorPrefix')}: ${error.message}`, type: 'error' });
+        }
+    };
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('superadmin.pageTitle')}</h1>
@@ -186,9 +232,16 @@ const ManageWorkspacesPage = () => {
                                     <td className="px-5 py-4 border-b border-gray-200 text-sm"><p className="text-gray-900">{new Date(ws.created_at).toLocaleDateString()}</p></td>
                                     <td className="px-5 py-4 border-b border-gray-200 text-sm text-right">
                                         <button
+                                            onClick={() => handleOpenTwilioModal(ws)}
+                                            className="text-green-600 hover:text-green-900 mr-4"
+                                            title="Configure Twilio/WhatsApp"
+                                        >
+                                            <MessageSquare size={18} />
+                                        </button>
+                                        <button
                                             onClick={() => handleOpenAiModal(ws)}
                                             className="text-blue-600 hover:text-blue-900 mr-4"
-                                            title="Configure AI" 
+                                            title="Configure AI"
                                         >
                                             <Bot size={20} />
                                         </button>
@@ -258,6 +311,38 @@ const ManageWorkspacesPage = () => {
                             <div className="mt-6 flex justify-end space-x-3">
                                 <button type="button" onClick={() => setIsAiModalOpen(false)} className="py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">{t('common.cancel')}</button>
                                 <button type="submit" className="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Save AI Config</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {isTwilioModalOpen && selectedWorkspace && (
+                <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-20" onClick={() => setIsTwilioModalOpen(false)}>
+                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold mb-4">
+                            Configure Twilio for <span className="text-green-600">{selectedWorkspace.name}</span>
+                        </h3>
+                        <form onSubmit={handleSaveTwilioConfig}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="twilioConfigName" className="block text-sm font-medium text-gray-700">Twilio Account Configuration</label>
+                                    <select
+                                        id="twilioConfigName"
+                                        value={twilioConfigName}
+                                        onChange={(e) => setTwilioConfigName(e.target.value)}
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500"
+                                    >
+                                        {availableTwilioConfigs.map(config => (
+                                            <option key={config.value} value={config.value}>{config.label}</option>
+                                        ))}
+                                    </select>
+                                    <p className="mt-1 text-xs text-gray-500">Select the set of Twilio credentials for this workspace.</p>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button type="button" onClick={() => setIsTwilioModalOpen(false)} className="py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">{t('common.cancel')}</button>
+                                <button type="submit" className="py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">Save Twilio Config</button>
                             </div>
                         </form>
                     </div>

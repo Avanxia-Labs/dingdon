@@ -34,6 +34,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "tesseract.js": "^6.0.1",
+    "twilio": "^5.8.0",
     "uuid": "^11.1.0",
     "zustand": "^5.0.5"
   },
