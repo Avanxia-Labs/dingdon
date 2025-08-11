@@ -51,7 +51,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
             fetchProfileName();
         } else { setAgentName(session?.user?.name || ''); }
     }, [session?.user?.name, session?.user?.email]);
-    
+
     const { workspaceRole, email } = session!.user;
 
     const navItems = [
@@ -69,7 +69,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
                 <nav className="flex-1 px-2 py-4 space-y-1">
                     {navItems.map(item => (
                         workspaceRole && item.requiredRole.includes(workspaceRole) && (
-                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${ pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700' }`}>
+                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700'}`}>
                                 {item.icon}<span>{item.label}</span>
                             </Link>
                         )
@@ -95,9 +95,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (status === 'loading' || !session) { return <div className="flex h-screen items-center justify-center">Loading session...</div>; }
 
     if (session.user.role === 'superadmin') {
-        if (usePathname() !== '/dashboard/superadmin/workspaces') { redirect('/dashboard/superadmin/workspaces'); }
+
+        const allowedPaths = [
+            '/dashboard/superadmin/workspaces',
+            '/dashboard/superadmin/configs'
+        ];
+
+        const currentPath = usePathname();
+
+        if (!allowedPaths.includes(currentPath)) {
+            redirect('/dashboard/superadmin/workspaces'); // Solo redirige si no está en una ruta permitida
+        }
+
         return <>{children}</>;
     }
-    
+
     return (<I18nProvider><SocketProvider><DashboardUI>{children}</DashboardUI></SocketProvider></I18nProvider>);
 }

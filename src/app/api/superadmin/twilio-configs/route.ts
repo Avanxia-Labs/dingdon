@@ -9,7 +9,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { error } from "console";
 
 // Funcion GET: Obtener la lista de todas las configuraciones de TWILIO
 export async function GET(req: NextRequest) {
@@ -23,7 +22,7 @@ export async function GET(req: NextRequest) {
     try {
         const {data, error} = await supabaseAdmin
             .from('twilio_configs')
-            .select('id, config_name, descrpition');
+            .select('*');
         
         if (error) throw error;
         

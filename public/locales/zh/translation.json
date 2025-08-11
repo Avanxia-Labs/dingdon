@@ -85,8 +85,9 @@
       "updating": "更新中...",
       "updatedSuccess": "工作空间更新成功！"
     },
-    "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。"
-  },
+    "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。",
+    "configsTitle": "Twilio 配置"
+  }, 
   "agents": {
     "pageTitle": "团队成员",
     "inviteTitle": "邀请新成员",

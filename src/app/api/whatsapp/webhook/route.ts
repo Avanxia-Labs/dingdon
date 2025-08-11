@@ -7,7 +7,6 @@ import { getServerTranslations } from "@/lib/server/translations"
 import { Message } from "@/types/chatbot";
 
 
-
 export async function POST(req: NextRequest) {
 
     try {
@@ -18,6 +17,29 @@ export async function POST(req: NextRequest) {
         if (!workspaceId) {
             console.error("Webhook Error: El 'workspaceId' falta en la URL del webhook.");
             return NextResponse.json({ error: 'Webhook configuration error' }, { status: 400 });
+        }
+
+        const { data: workspace, error: wsError } = await supabaseAdmin
+            .from('workspaces')
+            .select(`id, twilio_configs (*)`)
+            .eq('id', workspaceId)
+            .single();
+
+        if (wsError || !workspace) {
+            console.error(`Error al buscar el workspace o su config de Twilio: ${workspaceId}`, wsError);
+            return new NextResponse('Workspace configuration error.', { status: 500 });
+        }
+
+        // Este es el objeto de configuración que usaremos.
+        // Si un workspace no tiene una config asignada, twilio_configs será null.
+        const twilioConfig = Array.isArray(workspace.twilio_configs)
+            ? workspace.twilio_configs[0]
+            : workspace.twilio_configs;
+
+        // Si no hay una configuración de Twilio asignada, no podemos enviar mensajes.
+        if (!twilioConfig) {
+            console.error(`El workspace ${workspaceId} no tiene una configuración de Twilio asignada.`);
+            return new NextResponse('Twilio not configured for this workspace.', { status: 500 });
         }
 
         // 2- Leer los datos del formulario en Twilio. Twilio envia los datos como 'form-data', no JSON
@@ -42,7 +64,7 @@ export async function POST(req: NextRequest) {
             .select('*')
             .eq('user_identifier', userPhone)
             .eq('workspace_id', workspaceId)
-            .in('status', ['bot', 'pending'])
+            .in('status', ['bot', 'pending', 'in_progress'])
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -67,7 +89,7 @@ export async function POST(req: NextRequest) {
 
             session = newSession;
 
-            await sendWhatsAppMessage(userPhone, translations.whatsapp.welcome);
+            await sendWhatsAppMessage(userPhone, translations.whatsapp.welcome, twilioConfig);
             return new NextResponse('OK', { status: 200 })
         }
 
@@ -132,35 +154,18 @@ export async function POST(req: NextRequest) {
                 break;
 
             case 'chatting':
-                const aiResponse = await chatbotServiceBackend.generateChatbotResponse(
-                    workspaceId,
-                    userMessage,
-                    session.id,
-                    language,
-                    updatedHistory
-                );
 
-                if (typeof aiResponse === 'object' && aiResponse.handoff) {
-                    botReply = translations.chatbotUI.handoffMessage;
+                if (session.status === 'in_progress') {
+                    // --- ESTADO: AGENTE YA ESTÁ ATENDIENDO ---
+                    console.log(`[WhatsApp Webhook] Reenviando mensaje de usuario a dashboard para sesión ${session.id}`);
 
-                    // Obtener el primer mensaje del usuario para darle contexto al agente
-                    const firstUserMessage = updatedHistory?.find(
-                        (msg: Message) => msg.role === 'user'
-                    )
-
-                    // Lógica para notificar al panel de agentes.
-                    await supabaseAdmin
-                        .from('chat_sessions')
-                        .update({ status: 'pending' })
-                        .eq('id', session.id)
-
-                    // Notifica al panel de agentes a traves de la ruta interna
+                    // --- Llamamos a la ruta interna ---
                     const isDev = process.env.NODE_ENV !== 'production';
                     const internalApiUrl = isDev
-                        ? 'http://localhost:3001/api/internal/notify-handoff'  // Express server en desarrollo
-                        : `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`; // Mismo servidor en producción
+                        ? 'http://localhost:3001/api/internal/forward-message' // Puerto fijo en desarrollo
+                        : `http://localhost:${process.env.PORT || 3001}/api/internal/forward-message`; // Puerto dinámico en producción
 
-                    console.log("INTERNALURL: ", internalApiUrl)
+                    const userMessageObject: Message = updatedHistory[updatedHistory.length - 1];
 
                     fetch(internalApiUrl, {
                         method: 'POST',
@@ -171,16 +176,66 @@ export async function POST(req: NextRequest) {
                         body: JSON.stringify({
                             workspaceId: workspaceId,
                             sessionId: session.id,
-                            history: updatedHistory,
-                            initialMessage: firstUserMessage
+                            message: userMessageObject
                         })
                     }).catch(err => {
-                        console.error('[API Route] Error llamando al notificador interno de handoff:', err);
+                        console.error('[WhatsApp Webhook] Error llamando al reenviador interno de mensajes:', err);
                     });
 
-                    // Informar al usuario que se le contactará con un agente
-                } else if (typeof aiResponse === 'string') {
-                    botReply = aiResponse;
+                    // Actualizamos el historial pero no enviamos respuesta desde aquí.
+                    await supabaseAdmin.from('chat_sessions').update({ history: updatedHistory }).eq('id', session.id);
+
+                } else {
+                    const aiResponse = await chatbotServiceBackend.generateChatbotResponse(
+                        workspaceId,
+                        userMessage,
+                        session.id,
+                        language,
+                        updatedHistory
+                    );
+
+                    if (typeof aiResponse === 'object' && aiResponse.handoff) {
+                        botReply = translations.chatbotUI.handoffMessage;
+
+                        // Obtener el primer mensaje del usuario para darle contexto al agente
+                        const firstUserMessage = updatedHistory?.find(
+                            (msg: Message) => msg.role === 'user'
+                        )
+
+                        // Lógica para notificar al panel de agentes.
+                        await supabaseAdmin
+                            .from('chat_sessions')
+                            .update({ status: 'pending' })
+                            .eq('id', session.id)
+
+                        // Notifica al panel de agentes a traves de la ruta interna
+                        const isDev = process.env.NODE_ENV !== 'production';
+                        const internalApiUrl = isDev
+                            ? 'http://localhost:3001/api/internal/notify-handoff'  // Express server en desarrollo
+                            : `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`; // Mismo servidor en producción
+
+                        console.log("INTERNALURL: ", internalApiUrl)
+
+                        fetch(internalApiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-internal-secret': process.env.INTERNAL_API_SECRET || ''
+                            },
+                            body: JSON.stringify({
+                                workspaceId: workspaceId,
+                                sessionId: session.id,
+                                history: updatedHistory,
+                                initialMessage: firstUserMessage
+                            })
+                        }).catch(err => {
+                            console.error('[API Route] Error llamando al notificador interno de handoff:', err);
+                        });
+
+                        // Informar al usuario que se le contactará con un agente
+                    } else if (typeof aiResponse === 'string') {
+                        botReply = aiResponse;
+                    }
                 }
 
                 break;
@@ -197,7 +252,7 @@ export async function POST(req: NextRequest) {
             }
 
             // Enviamos la respuesta por whatsapp
-            await sendWhatsAppMessage(userPhone, botReply);
+            await sendWhatsAppMessage(userPhone, botReply, twilioConfig);
 
             // Actualizamos el historial en la base de datos con la respuesta del bot
             const finalHistory = [...updatedHistory, botMessage];

@@ -505,6 +505,27 @@ nextApp.prepare().then(() => {
         res.status(200).send('Notification sent');
     });
 
+    // --- Ruta interna para reenviar mensajes de WhatsApp al dashboard ---
+    app.post('/api/internal/forward-message', express.json(), (req, res) => {
+        const { workspaceId, sessionId, message } = req.body;
+        const secret = req.headers['x-internal-secret'];
+
+        if (secret !== process.env.INTERNAL_API_SECRET) {
+            return res.status(401).send('Unauthorized');
+        }
+
+        if (!workspaceId || !sessionId || !message) {
+            return res.status(400).send('Missing data');
+        } 
+
+        // Usamos la instancia REAL de 'io' para emitir al dashboard.
+        // Usamos el evento que el frontend ya espera: 'incoming_user_message'
+        io.to(`dashboard_${workspaceId}`).emit('incoming_user_message', { sessionId, message });
+
+        console.log(`[Forwarder] Mensaje de sesión ${sessionId} reenviado al dashboard.`);
+        res.status(200).send('Message forwarded');
+    });
+
     // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
     // const io = new Server(server, {
     //     cors: { origin: CLIENT_ORIGIN_URL },
@@ -734,7 +755,11 @@ nextApp.prepare().then(() => {
             // 1- Buscamos en la base de datos para saber de que canal es la sesion
             const { data: sessionInfo, error: sessionError } = await supabase
                 .from('chat_sessions')
-                .select('channel, user_identifier')
+                .select(`
+                    channel, 
+                    user_identifier,
+                    workspaces ( twilio_configs ( * ) )
+                `)
                 .eq('id', sessionId)
                 .single();
 
@@ -746,16 +771,28 @@ nextApp.prepare().then(() => {
             // 2- Decidimos a donde enviar el mensaje
             if (sessionInfo && sessionInfo.channel === 'whatsapp') {
 
-                // 2.1 Si el canal es whatsapp usamos twilio
-                if (sessionInfo.user_identifier) {
+                // 2.1 Extraemos el objeto de configuración de la respuesta
+                const twilioConfig = sessionInfo.workspaces?.twilio_configs;
+
+                // 2.2 Verificamos que la configuración y el identificador existan
+                if (twilioConfig && sessionInfo.user_identifier) {
                     console.log(`[Router] La sesión es de WhatsApp. Enviando a ${sessionInfo.user_identifier}`);
-                    await sendWhatsAppMessage(sessionInfo.user_identifier, message.content)
+                    try {
+                        // 2.3 Pasamos el objeto 'twilioConfig' como TERCER argumento
+                        await sendWhatsAppMessage(
+                            sessionInfo.user_identifier,
+                            message.content,
+                            twilioConfig
+                        );
+                    } catch (sendError) {
+                        console.error(`Error al intentar enviar mensaje de WhatsApp para sesión ${sessionId}:`, sendError);
+                    }
                 } else {
-                    console.error(`[Router] La sesión ${sessionId} es de WhatsApp pero no tiene user_identifier.`);
+                    console.error(`[Router] Faltan datos para enviar a WhatsApp: config=${!!twilioConfig}, identifier=${!!sessionInfo.user_identifier}.`);
                 }
             } else {
 
-                // 2.2 Si el canal es 'web' o no está definido, usamos Socket.IO como antes.
+                // 2.4 Si el canal es 'web' o no está definido, usamos Socket.IO como antes.
                 console.log(`[Router] La sesión es web. Emitiendo a la sala de socket ${sessionId}`);
                 io.to(sessionId).emit('agent_message', message);
             }

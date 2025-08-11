@@ -83,7 +83,8 @@
       "updating": "Actualizando...",
       "updatedSuccess": "¡Workspace actualizado con éxito!"
     },
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar el workspace \"{{name}}\"? Esta acción es irreversible."
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar el workspace \"{{name}}\"? Esta acción es irreversible.",
+    "configsTitle": "Configuraciones de Twilio"
   },
   "agents": {
     "pageTitle": "Miembros del Equipo",
