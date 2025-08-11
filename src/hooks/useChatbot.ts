@@ -45,7 +45,11 @@ export const useChatbot = () => {
     leadCollected,
     setLeadCollected,
     updateLastActivity,
-    getHistoryData
+    getHistoryData,
+    agentName,
+    setAgentName,
+    botPaused,
+    setBotPaused
   } = useChatStore(
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
@@ -71,12 +75,17 @@ export const useChatbot = () => {
       leadCollected: state.leadCollected,
       setLeadCollected: state.setLeadCollected,
       updateLastActivity: state.updateLastActivity,
-      getHistoryData: state.getHistoryData
+      getHistoryData: state.getHistoryData,
+      agentName: state.agentName,
+      setAgentName: state.setAgentName,
+      botPaused: state.botPaused,
+      setBotPaused: state.setBotPaused
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
+  const waitingMessageIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- EFECTO PARA VERIFICAR INACTIVIDAD DE 24 HORAS ---
   useEffect(() => {
@@ -155,9 +164,21 @@ export const useChatbot = () => {
       socketRef.current = socket;
 
       // 🔧 CAMBIO 1: Configurar listeners ANTES de hacer join
-      socket.on('agent_message', (message: Message) => {
+      socket.on('agent_message', (message: Message & { agentName?: string }) => {
         console.log(`[Chatbot] Agent message received:`, message);
+        
+        // Si es el primer mensaje del agente, guardar su nombre
+        if (message.agentName && !agentName) {
+          setAgentName(message.agentName);
+        }
+        
         addMessage(message);
+        
+        // Detener mensajes de espera cuando llega el agente
+        if (waitingMessageIntervalRef.current) {
+          clearInterval(waitingMessageIntervalRef.current);
+          waitingMessageIntervalRef.current = null;
+        }
       });
 
       socket.on('status_change', (newStatus: ChatSessionStatus) => {
@@ -170,10 +191,58 @@ export const useChatbot = () => {
           console.log(`[Chatbot] Re-joined session ${sessionId} for agent chat`);
         }
       });
+      
+      // Listener para control del bot
+      socket.on('bot_control', (data: { action: 'pause' | 'resume', agentName?: string }) => {
+        console.log(`[Chatbot] Bot control received:`, data);
+        console.log(`[Chatbot] Current status before change: "${status}", botPaused: ${botPaused}`);
+        setBotPaused(data.action === 'pause');
+        
+        // Cuando se reactiva el bot, asegurar que el status sea 'bot'
+        if (data.action === 'resume') {
+          console.log(`[Chatbot] Setting status to 'bot' for resume action`);
+          setSessionStatus('bot');
+        }
+        
+        console.log(`[Chatbot] After bot_control: status should be "${data.action === 'resume' ? 'bot' : status}", botPaused: ${data.action === 'pause'}`);
+        
+        if (data.agentName) {
+          setAgentName(data.agentName);
+        }
+        
+        // Mensaje del sistema indicando el cambio
+        const systemMessage: Message = {
+          id: `system-${Date.now()}`,
+          content: data.action === 'pause' 
+            ? `🔔 ${data.agentName || 'Un agente'} está revisando tu conversación. Por favor espera su respuesta.`
+            : `🤖 El asistente virtual ha sido reactivado y puede continuar ayudándote.`,
+          role: 'system' as any,
+          timestamp: new Date(),
+        };
+        addMessage(systemMessage);
+      });
+      
+      // Listener para cuando un agente toma el chat (solo para comandos de chat)
+      socket.on('agent_assigned', (data: { agentName: string }) => {
+        console.log(`[Chatbot] Agent assigned via command:`, data);
+        setAgentName(data.agentName);
+        
+        // Detener mensajes de espera
+        if (waitingMessageIntervalRef.current) {
+          clearInterval(waitingMessageIntervalRef.current);
+          waitingMessageIntervalRef.current = null;
+        }
+      });
 
       // 🔧 CAMBIO 3: Join inicial después de configurar listeners
       socket.emit('join_session', sessionId);
       console.log(`[Chatbot] Joined session ${sessionId}`);
+      console.log(`[Chatbot] Listeners configured. Waiting for bot_control events...`);
+      
+      // Debug: Log all incoming events
+      socket.onAny((eventName, ...args) => {
+        console.log(`[Chatbot] Received event: ${eventName}`, args);
+      });
 
       // 🔧 CAMBIO 4: Listener para confirmar que estamos en la sala
       socket.on('connect', () => {
@@ -197,6 +266,10 @@ export const useChatbot = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
+      }
+      if (waitingMessageIntervalRef.current) {
+        clearInterval(waitingMessageIntervalRef.current);
+        waitingMessageIntervalRef.current = null;
       }
     }
   }, [workspaceId, sessionId, startSession, setSessionStatus, addMessage]);
@@ -361,11 +434,37 @@ export const useChatbot = () => {
       socketRef.current.emit('user_message', { workspaceId, sessionId, message: userMessage });
     }
 
-    // Solo llamamos a la IA si el estado es 'bot'
-    if (status === 'bot') {
+    // Solo llamamos a la IA si el estado es 'bot' Y el bot no está pausado
+    console.log(`[useChatbot] Checking AI call conditions: status="${status}", botPaused=${botPaused}`);
+    if (status === 'bot' && !botPaused) {
+      console.log('✅ [useChatbot] Calling AI - conditions met');
       const updatedHistory = [...messages, userMessage];
       // --- CAMBIO: Pasamos el workspaceId a la mutación ---
       mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory, language });
+    } else if (botPaused) {
+      console.log('❌ [useChatbot] Bot is paused, message not sent to AI');
+    } else if (status === 'pending_agent') {
+      // Si está esperando un agente, iniciar mensajes periódicos si no están activos
+      if (!waitingMessageIntervalRef.current) {
+        let messageCount = 0;
+        const waitingMessages = [
+          '🕑 Seguimos buscando un agente disponible. Por favor, espera un momento más...',
+          '🔍 Todos nuestros agentes están ocupados. Te atenderemos en breve...',
+          '✅ Tu solicitud está en cola. Un agente te atenderá pronto...',
+          '🙏 Gracias por tu paciencia. Estamos conectando con el próximo agente disponible...'
+        ];
+        
+        waitingMessageIntervalRef.current = setInterval(() => {
+          const waitingMessage: Message = {
+            id: `system-wait-${Date.now()}`,
+            content: waitingMessages[messageCount % waitingMessages.length],
+            role: 'system' as any,
+            timestamp: new Date(),
+          };
+          addMessage(waitingMessage);
+          messageCount++;
+        }, 15000); // Cada 15 segundos
+      }
     }
   };
 
@@ -403,7 +502,9 @@ export const useChatbot = () => {
     error,
     leadCollected,
     setLeadCollected,
-    workspaceId
+    workspaceId,
+    agentName,
+    botPaused
   };
 };
 

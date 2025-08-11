@@ -43,7 +43,8 @@
     "chatHistory": "Chat History",
     "settingsAndBot": "Settings & Bot",
     "signOut": "Sign Out",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Lead Classification"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -159,7 +160,9 @@
     "leadFormEmail": "Email Address",
     "leadFormPhone": "Phone Number (Optional)",
     "leadFormButton": "Start Chat",
-    "leadFormLoading": "Starting..."
+    "leadFormLoading": "Starting...",
+    "formError": "There was an issue. Please try again.",
+    "technicalError": "I'm sorry, I'm having some technical difficulties. Please try again later."
   },
   "settings": {
     "pageTitle": "Bot Settings",
@@ -224,6 +227,38 @@
       "subtitle": "Automatically train your bot from website content",
       "description": "Enter your website URL to automatically crawl and extract content for your chatbot's knowledge base.",
       "crawlButton": "Crawl & Train"
+    }
+  },
+  "leadClassification": {
+    "pageTitle": "Lead Classification",
+    "pageSubtitle": "Automatically analyze and classify your leads based on conversation patterns",
+    "totalChats": "Total Chats",
+    "classifiedChats": "Classified Chats",
+    "hotLeads": "Hot Leads",
+    "warmLeads": "Warm Leads",
+    "coldLeads": "Cold Leads",
+    "classifyButton": "Classify All Chats",
+    "classifyingButton": "Classifying...",
+    "configureKeywords": "Configure Keywords",
+    "hideKeywords": "Hide Keywords",
+    "saveConfiguration": "Save Configuration",
+    "keywordsConfigTitle": "Keywords Configuration",
+    "newHotKeyword": "New HOT keyword...",
+    "newWarmKeyword": "New WARM keyword...",
+    "newColdKeyword": "New COLD keyword...",
+    "resultsTitle": "Classification Results",
+    "noResults": "No results yet. Run the classification to see lead analysis.",
+    "tableHeaderChat": "Chat",
+    "tableHeaderScore": "Score",
+    "tableHeaderClassification": "Classification",
+    "tableHeaderReasoning": "Analysis",
+    "tableHeaderDate": "Date",
+    "feedback": {
+      "classificationStarted": "Classification started...",
+      "classificationComplete": "Classification completed! {{count}} chats processed.",
+      "classificationError": "Error during classification. Please try again.",
+      "keywordsConfigSaved": "Keywords configuration saved successfully",
+      "keywordAdded": "Added keyword: \"{{keyword}}\""
     }
   }
 }

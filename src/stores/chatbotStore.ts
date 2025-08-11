@@ -32,6 +32,8 @@ interface ChatState {
     language: string;
     leadCollected: boolean;
     lastActivity: number; // Timestamp de la última actividad
+    agentName: string | null; // Nombre del agente asignado
+    botPaused: boolean; // Si el bot está pausado por el agente
 
     // ACTIONS
     /** Toggles the chat window's visibility */
@@ -96,6 +98,16 @@ interface ChatState {
      * Obtiene los datos necesarios para guardar el historial
      */
     getHistoryData: () => { sessionId: string | null | undefined; workspaceId: string | null; messages: Message[]; lastActivity: number };
+    
+    /**
+     * Establece el nombre del agente asignado
+     */
+    setAgentName: (name: string | null) => void;
+    
+    /**
+     * Establece si el bot está pausado
+     */
+    setBotPaused: (paused: boolean) => void;
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -155,6 +167,8 @@ export const useChatStore = create<ChatState>()(
                 language: initialLanguage,
                 leadCollected: false,
                 lastActivity: Date.now(), // Inicializar con el timestamp actual
+                agentName: null,
+                botPaused: false,
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
@@ -189,6 +203,8 @@ export const useChatStore = create<ChatState>()(
                     sessionId: uuidv4(),
                     status: 'bot',
                     isLoading: false,
+                    agentName: null,
+                    botPaused: false,
                 })),
 
                 startNewChat: () => set((state) => ({
@@ -196,6 +212,8 @@ export const useChatStore = create<ChatState>()(
                     sessionId: uuidv4(),
                     status: 'bot',
                     isLoading: false,
+                    agentName: null,
+                    botPaused: false,
                 })),
 
                 // setWorkspaceId: (workspaceId) => set({ workspaceId }),
@@ -283,6 +301,10 @@ export const useChatStore = create<ChatState>()(
                         lastActivity: state.lastActivity
                     };
                 },
+                
+                setAgentName: (name) => set({ agentName: name }),
+                
+                setBotPaused: (paused) => set({ botPaused: paused }),
             };
         },
         {

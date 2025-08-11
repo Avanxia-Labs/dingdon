@@ -43,7 +43,8 @@
     "chatHistory": "Historial de Chats",
     "settingsAndBot": "Ajustes y Bot",
     "signOut": "Cerrar Sesión",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Clasificación de Leads"
   },
   "leads": {
     "pageTitle": "Leads Recolectados",
@@ -159,7 +160,9 @@
     "leadFormEmail": "Dirección de Email",
     "leadFormPhone": "Teléfono (Opcional)",
     "leadFormButton": "Iniciar Chat",
-    "leadFormLoading": "Iniciando..."
+    "leadFormLoading": "Iniciando...",
+    "formError": "Hubo un problema. Por favor, inténtalo de nuevo.",
+    "technicalError": "Lo siento, estoy teniendo algunas dificultades técnicas. Por favor, inténtalo de nuevo más tarde."
   },
   "settings": {
     "pageTitle": "Configuración del Bot",
@@ -224,6 +227,38 @@
       "subtitle": "Entrena a tu bot automáticamente desde el contenido del sitio web",
       "description": "Introduce la URL de tu sitio web para rastrear y extraer contenido automáticamente para la base de conocimiento de tu chatbot.",
       "crawlButton": "Rastrear y Entrenar"
+    }
+  },
+  "leadClassification": {
+    "pageTitle": "Clasificación de Leads",
+    "pageSubtitle": "Analiza y clasifica automáticamente la calidad de tus leads basándose en las conversaciones",
+    "totalChats": "Total de Chats",
+    "classifiedChats": "Chats Clasificados",
+    "hotLeads": "Leads Calientes",
+    "warmLeads": "Leads Tibios",
+    "coldLeads": "Leads Fríos",
+    "classifyButton": "Clasificar Todos los Chats",
+    "classifyingButton": "Clasificando...",
+    "configureKeywords": "Configurar Palabras Clave",
+    "hideKeywords": "Ocultar Palabras Clave",
+    "saveConfiguration": "Guardar Configuración",
+    "keywordsConfigTitle": "Configuración de Palabras Clave",
+    "newHotKeyword": "Nueva palabra CALIENTE...",
+    "newWarmKeyword": "Nueva palabra TIBIA...",
+    "newColdKeyword": "Nueva palabra FRÍA...",
+    "resultsTitle": "Resultados de Clasificación",
+    "noResults": "No hay resultados aún. Ejecuta la clasificación para ver el análisis de leads.",
+    "tableHeaderChat": "Chat",
+    "tableHeaderScore": "Puntuación",
+    "tableHeaderClassification": "Clasificación",
+    "tableHeaderReasoning": "Análisis",
+    "tableHeaderDate": "Fecha",
+    "feedback": {
+      "classificationStarted": "Clasificación iniciada...",
+      "classificationComplete": "¡Clasificación completada! Se procesaron {{count}} chats.",
+      "classificationError": "Error durante la clasificación. Inténtalo de nuevo.",
+      "keywordsConfigSaved": "Configuración de palabras clave guardada exitosamente",
+      "keywordAdded": "Se agregó la palabra: \"{{keyword}}\""
     }
   }
 }

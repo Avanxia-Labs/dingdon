@@ -281,7 +281,20 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
             socketInstance.on('connect', () => {
                 console.log('[SocketProvider] Socket conectado. Uniéndose al dashboard...');
+                console.log(`[SocketProvider] DEBUG: workspaceId para join_agent_dashboard: ${workspaceId}`);
+                
+                // Registrar información del agente
+                const currentUser = useDashboardStore.getState().user;
+                if (currentUser?.id) {
+                    console.log(`[SocketProvider] Registering agent info: ${currentUser.id}`);
+                    socketInstance.emit('agent_info', { 
+                        agentId: currentUser.id, 
+                        workspaceId 
+                    });
+                }
+                
                 socketInstance.emit('join_agent_dashboard', { workspaceId });
+                console.log('[SocketProvider] DEBUG: Evento join_agent_dashboard emitido');
                 
                 // Si hay un chat activo durante la reconexión, nos unimos de nuevo.
                 const currentActiveChatId = useDashboardStore.getState().activeChat?.sessionId;

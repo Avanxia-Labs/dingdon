@@ -46,7 +46,8 @@
     "chatHistory": "سجل المحادثات",
     "settingsAndBot": "الإعدادات والبوت",
     "signOut": "تسجيل الخروج",
-    "leads": "العملاء المحتملون"
+    "leads": "العملاء المحتملون",
+    "leadClassification": "تصنيف العملاء المحتملين"
   },
   "leads": {
     "pageTitle": "العملاء المحتملون الذين تم جمعهم",
@@ -162,7 +163,9 @@
     "leadFormEmail": "عنوان البريد الإلكتروني",
     "leadFormPhone": "رقم الهاتف (اختياري)",
     "leadFormButton": "ابدأ الدردشة",
-    "leadFormLoading": "جار البدء..."
+    "leadFormLoading": "جار البدء...",
+    "formError": "حدثت مشكلة. يرجى المحاولة مرة أخرى.",
+    "technicalError": "أنا آسف، أواجه بعض الصعوبات الفنية. يرجى المحاولة مرة أخرى لاحقًا."
   },
   "settings": {
     "pageTitle": "إعدادات البوت",
@@ -227,6 +230,38 @@
       "subtitle": "درّب البوت تلقائياً من محتوى الموقع الإلكتروني",
       "description": "أدخل رابط موقعك الإلكتروني للزحف التلقائي واستخراج المحتوى لقاعدة معرفة الشات بوت الخاص بك.",
       "crawlButton": "زحف وتدريب"
+    }
+  },
+  "leadClassification": {
+    "pageTitle": "تصنيف العملاء المحتملين",
+    "pageSubtitle": "تحليل وتصنيف العملاء المحتملين تلقائياً بناءً على أنماط المحادثة",
+    "totalChats": "إجمالي المحادثات",
+    "classifiedChats": "المحادثات المصنفة",
+    "hotLeads": "عملاء محتملين ساخنين",
+    "warmLeads": "عملاء محتملين دافئين",
+    "coldLeads": "عملاء محتملين باردين",
+    "classifyButton": "تصنيف جميع المحادثات",
+    "classifyingButton": "جاري التصنيف...",
+    "configureKeywords": "تكوين الكلمات المفتاحية",
+    "hideKeywords": "إخفاء الكلمات المفتاحية",
+    "saveConfiguration": "حفظ التكوين",
+    "keywordsConfigTitle": "تكوين الكلمات المفتاحية",
+    "newHotKeyword": "كلمة مفتاحية ساخنة جديدة...",
+    "newWarmKeyword": "كلمة مفتاحية دافئة جديدة...",
+    "newColdKeyword": "كلمة مفتاحية باردة جديدة...",
+    "resultsTitle": "نتائج التصنيف",
+    "noResults": "لا توجد نتائج حتى الآن. قم بتشغيل التصنيف لرؤية تحليل العملاء المحتملين.",
+    "tableHeaderChat": "المحادثة",
+    "tableHeaderScore": "النقاط",
+    "tableHeaderClassification": "التصنيف",
+    "tableHeaderReasoning": "التحليل",
+    "tableHeaderDate": "التاريخ",
+    "feedback": {
+      "classificationStarted": "بدأ التصنيف...",
+      "classificationComplete": "اكتمل التصنيف! تم معالجة {{count}} محادثة.",
+      "classificationError": "خطأ أثناء التصنيف. حاول مرة أخرى.",
+      "keywordsConfigSaved": "تم حفظ تكوين الكلمات المفتاحية بنجاح",
+      "keywordAdded": "تم إضافة الكلمة: \"{{keyword}}\""
     }
   }
 }
