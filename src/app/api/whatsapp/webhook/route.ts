@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendWhatsAppMessage } from "@/lib/twilio";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { chatbotServiceBackend } from "@/services/server/chatbotServiceBackend";
-import { getServerTranslations } from "@/lib/server/translations"
+import { getTranslations } from "@/lib/server/translations"
 import { Message } from "@/types/chatbot";
 
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         // - DETERMINAR EL IDIOMA Y CARGAR TRADUCCIONES -
         // En el futuro, este 'language' podría venir de la configuración del workspace en la DB.
         const language = 'es';
-        const translations = await getServerTranslations(language);
+        const t = await getTranslations(language);
 
         // 3- Buscar o crear una sesion de chat activa
         let { data: session } = await supabaseAdmin
@@ -71,7 +71,59 @@ export async function POST(req: NextRequest) {
 
         // 4- Si no hay sesion activa, crear una nueva
         if (!session) {
-            console.log(`No se encontró sesión activa para ${userPhone}. Creando una nueva...`);
+            console.log(`No se encontró sesión activa para ${userPhone}. Verificando si es un cliente recurrente...`);
+
+            // Normalizamos el número de teléfono SÓLO para esta búsqueda específica.
+            const phoneForLeadSearch = userPhone.replace('whatsapp:', '');
+
+            // --- INICIO DEL DIAGNÓSTICO ---
+            console.log(`[DIAGNÓSTICO] Buscando en tabla 'leads' con:`);
+            console.log(`[DIAGNÓSTICO]   - phone: "${phoneForLeadSearch}"`);
+            console.log(`[DIAGNÓSTICO]   - workspace_id: "${workspaceId}"`);
+
+            // Buscamos en la tabla 'leads' usando el numero de telefono
+            const { data: existingLeads, error: leadError } = await supabaseAdmin
+                .from('leads')
+                .select('name') // Usaremos el nombre para saludar
+                .eq('phone', phoneForLeadSearch)
+                .eq('workspace_id', workspaceId)
+                .order('created_at', { ascending: false });
+
+            if (leadError) {
+                console.error("[DIAGNÓSTICO] Error directo de Supabase al buscar leads:", leadError);
+            }
+
+            console.log("[DIAGNÓSTICO] Resultado de la búsqueda (existingLeads):", existingLeads);
+
+            const mostRecentLead = existingLeads && existingLeads.length > 0 ? existingLeads[0] : null;
+
+            let initialState = {};
+            let welcomeMessage = '';
+
+            if (mostRecentLead) {
+                // --- CASO 1: Es un cliente recurrente ---
+                console.log(`Cliente recurrente detectado: ${mostRecentLead.name}`);
+
+                // Creamos la sesión directamente en estado 'chatting'
+                initialState = {
+                    conversation_state: 'chatting',
+                };
+                // Le damos una bienvenida personalizada
+                welcomeMessage = t('whatsapp.welcomeBack', { name: mostRecentLead.name });
+
+            } else {
+                // --- CASO 2: Es un cliente nuevo ---
+                console.log(`Cliente nuevo. Iniciando flujo de captura de leads.`);
+
+                // Creamos la sesión en el estado inicial del formulario
+                initialState = {
+                    conversation_state: 'collecting_name',
+                };
+                welcomeMessage = t('whatsapp.welcome');
+            }
+
+
+            // Ahora creamos la sesión con el estado inicial que hemos determinado
             const { data: newSession, error } = await supabaseAdmin
                 .from('chat_sessions')
                 .insert({
@@ -79,7 +131,7 @@ export async function POST(req: NextRequest) {
                     user_identifier: userPhone,
                     channel: 'whatsapp',
                     status: 'bot',
-                    conversation_state: 'collecting_name', // El primer paso del formulario
+                    ...initialState, // El primer paso del formulario
                     history: [],
                 })
                 .select()
@@ -89,8 +141,8 @@ export async function POST(req: NextRequest) {
 
             session = newSession;
 
-            await sendWhatsAppMessage(userPhone, translations.whatsapp.welcome, twilioConfig);
-            return new NextResponse('OK', { status: 200 })
+            await sendWhatsAppMessage(userPhone, welcomeMessage, twilioConfig);
+            return new NextResponse('', { status: 200 })
         }
 
         // 5- Procesar el mensaje del usuario
@@ -126,7 +178,7 @@ export async function POST(req: NextRequest) {
                     })
                     .eq('id', session.id);
 
-                botReply = translations.whatsapp.askEmail;
+                botReply = t('whatsapp.askEmail');
 
                 break;
 
@@ -149,7 +201,8 @@ export async function POST(req: NextRequest) {
                     })
                     .eq('id', session.id);
 
-                botReply = translations.whatsapp.chatReady;
+                botReply = t('whatsapp.chatReady');
+
 
                 break;
 
@@ -195,7 +248,7 @@ export async function POST(req: NextRequest) {
                     );
 
                     if (typeof aiResponse === 'object' && aiResponse.handoff) {
-                        botReply = translations.chatbotUI.handoffMessage;
+                        botReply = t('chatbotUI.handoffMessage');
 
                         // Obtener el primer mensaje del usuario para darle contexto al agente
                         const firstUserMessage = updatedHistory?.find(

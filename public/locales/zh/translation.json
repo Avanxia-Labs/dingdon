@@ -162,7 +162,8 @@
     "leadFormEmail": "电子邮件地址",
     "leadFormPhone": "电话号码（可选）",
     "leadFormButton": "开始聊天",
-    "leadFormLoading": "正在开始..."
+    "leadFormLoading": "正在开始...",
+    "disclaimer": "我是一个人工智能，可能会犯错。请核实重要信息。"
   },
   "settings": {
     "pageTitle": "机器人设置",
@@ -173,7 +174,8 @@
       "uploading": "上传和处理文件中...",
       "uploadSuccess": "知识库更新成功！",
       "copied": "代码已复制到剪贴板！",
-      "selectFile": "请先选择文件。"
+      "selectFile": "请先选择文件。",
+      "avatarUpdated": "头像已更新！点击“保存设置”以使更改永久生效。"
     },
     "customization": {
       "title": "机器人自定义",
@@ -227,10 +229,23 @@
       "subtitle": "自动从网站内容训练您的机器人",
       "description": "输入您的网站 URL 以自动爬取和提取内容供您的聊天机器人知识库使用。",
       "crawlButton": "爬取并训练"
+    },
+    "botAvatar": {
+        "label": "机器人头像 URL",
+        "description": "提供机器人头像的直接图片 URL。留空以使用默认头像。",
+        "placeholder": "https://example.com/avatar.png",
+        "uploadingButton": "上传中...",
+        "changeButton": "更换图片"
+    },
+    "botIntro": {
+        "label": "机器人介绍",
+        "description": "显示在机器人名称下方的简短友好介绍。",
+        "placeholder": "您的人工智能虚拟助手。"
     }
   },
   "whatsapp": {
     "welcome": "您好！欢迎。请问您的全名是？",
+    "welcomeBack": "欢迎回来，{{name}}！今天有什么可以帮您？",
     "askEmail": "谢谢！现在，请告诉我您的电子邮件地址。",
     "chatReady": "好的，谢谢！您现在可以开始聊天了。今天我能为您做些什么？"
   }

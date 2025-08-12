@@ -160,7 +160,8 @@
     "leadFormEmail": "Dirección de Email",
     "leadFormPhone": "Teléfono (Opcional)",
     "leadFormButton": "Iniciar Chat",
-    "leadFormLoading": "Iniciando..."
+    "leadFormLoading": "Iniciando...",
+    "disclaimer": "Soy una IA y puedo cometer errores. Considera verificar la información importante."
   },
   "settings": {
     "pageTitle": "Configuración del Bot",
@@ -171,7 +172,8 @@
       "uploading": "Subiendo y procesando archivo...",
       "uploadSuccess": "¡Base de conocimiento actualizada con éxito!",
       "copied": "¡Código copiado al portapapeles!",
-      "selectFile": "Por favor, selecciona un archivo primero."
+      "selectFile": "Por favor, selecciona un archivo primero.",
+      "avatarUpdated": "¡Avatar actualizado! Haz clic en 'Guardar Configuración' para hacer el cambio permanente."
     },
     "customization": {
       "title": "Personalización del Bot",
@@ -225,10 +227,23 @@
       "subtitle": "Entrena a tu bot automáticamente desde el contenido del sitio web",
       "description": "Introduce la URL de tu sitio web para rastrear y extraer contenido automáticamente para la base de conocimiento de tu chatbot.",
       "crawlButton": "Rastrear y Entrenar"
+    },
+    "botAvatar": {
+        "label": "URL del Avatar del Bot",
+        "description": "Proporciona una URL directa a una imagen para el avatar del bot. Déjalo vacío para usar el avatar por defecto.",
+        "placeholder": "https://ejemplo.com/avatar.png",
+        "uploadingButton": "Subiendo...",
+        "changeButton": "Cambiar Imagen"
+    },
+    "botIntro": {
+        "label": "Introducción del Bot",
+        "description": "Una introducción corta y amigable que aparece debajo del nombre del bot.",
+        "placeholder": "Tu asistente virtual de IA."
     }
   },
   "whatsapp": {
     "welcome": "¡Hola! Bienvenido. Para comenzar, ¿cuál es tu nombre completo?",
+    "welcomeBack": "¡Hola de nuevo, {{name}}! ¿En qué puedo ayudarte hoy?",
     "askEmail": "¡Gracias! Ahora, por favor, dime tu correo electrónico.",
     "chatReady": "¡Perfecto, gracias! Ya puedes comenzar a chatear. ¿En qué puedo ayudarte hoy?"
   }

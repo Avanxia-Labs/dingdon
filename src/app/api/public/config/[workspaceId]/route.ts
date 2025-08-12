@@ -33,7 +33,7 @@ export async function GET(
         
         const { data, error } = await supabaseAdmin
             .from('workspaces')
-            .select('bot_name, bot_color')
+            .select('bot_name, bot_color, bot_avatar_url, bot_introduction')
             .eq('id', workspaceId)
             .single();
 

@@ -24,7 +24,7 @@ export async function GET(
 
     const { data, error } = await supabaseAdmin
         .from('workspaces')
-        .select('bot_name, bot_color')
+        .select('bot_name, bot_color, bot_avatar_url, bot_introduction')
         .eq('id', workspaceId)
         .single();
 
@@ -53,7 +53,7 @@ export async function PUT(
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { bot_name, bot_color } = await request.json();
+    const { bot_name, bot_color, bot_avatar_url, bot_introduction } = await request.json();
     
     // Validación simple
     if (typeof bot_name !== 'string' || typeof bot_color !== 'string') {
@@ -62,7 +62,7 @@ export async function PUT(
 
     const { data, error } = await supabaseAdmin
         .from('workspaces')
-        .update({ bot_name, bot_color })
+        .update({ bot_name, bot_color, bot_avatar_url, bot_introduction })
         .eq('id', workspaceId)
         .select()
         .single();

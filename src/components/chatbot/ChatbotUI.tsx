@@ -11,7 +11,6 @@ import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 import { Bot, User, Globe } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
 import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
 
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -99,14 +98,16 @@ const ChatInterface = () => {
         }
     };
 
-    const isHidden = leadCollected ? '': 'hidden';
+    const isHidden = leadCollected ? '' : 'hidden';
+
+    console.log("Avatar URL:", config.botAvatarUrl);
 
     return (
         <div className={`h-full w-full bg-white rounded-lg flex flex-col overflow-hidden ${language === 'ar' ? 'rtl' : 'ltr'}`}>
             <div className="text-white p-4 rounded-t-lg flex-shrink-0 flex justify-between items-start" style={{ backgroundColor: config.botColor }}>
                 <div>
                     <h3 className="font-semibold text-lg">{config.botName}</h3>
-                    <p className="text-sm opacity-90">{t('chatbotUI.headerTitle')}</p>
+                    <p className="text-sm opacity-90">{config.botIntroduction || t('chatbotUI.headerTitle')}</p>
                 </div>
                 <ChatLanguageSwitcher />
             </div>
@@ -121,6 +122,16 @@ const ChatInterface = () => {
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.map((message) => (
                             <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
+                                {(message.role === 'assistant' || message.role === 'agent') && (
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
+                                        <img
+                                            src={config.botAvatarUrl || '/default-bot-avatar.png'} // Por ahora, el agente también usa el avatar del bot
+                                            alt="Avatar"
+                                            className="w-full h-full rounded-full object-cover"
+                                        />
+                                    </div>
+                                )}
                                 <div
                                     className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
                                         message.role === 'user' ? 'text-white' :
@@ -132,7 +143,7 @@ const ChatInterface = () => {
                                         <div className="flex items-center gap-1.5 mb-1">
                                             {message.role === 'assistant' ? (
                                                 <div className="flex flex-row items-center gap-1">
-                                                    <Bot size={16} className='text-gray-500 flex-shrink-0' />
+                                                    {/* <Bot size={16} className='text-gray-500 flex-shrink-0' /> */}
                                                     <span className="text-xs font-semibold text-gray-600">{t('chatbotUI.botLabel')}</span>
                                                 </div>
                                             ) : message.role === 'agent' ? (
@@ -149,6 +160,10 @@ const ChatInterface = () => {
                                         <div className="mt-2 pt-2 text-xs text-gray-500 border-t border-gray-200">
                                             {t('chatbotUI.agentInstruction')} <br />
                                             <b>{t('chatbotUI.agentKeyword')}</b>
+                                            <br />
+                                            <p className="bg-yellow-50/60 border border-yellow-300 text-yellow-800 px-1 py-1 rounded text-xs mt-4">
+                                                ⚠️ {t('chatbotUI.disclaimer')}
+                                            </p>
                                         </div>
                                     )}
                                 </div>

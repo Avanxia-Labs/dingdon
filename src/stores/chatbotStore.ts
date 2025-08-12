@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 interface ChatbotConfigState {
     botName: string;
     botColor: string;
+    botAvatarUrl: string;    
+    botIntroduction: string;
 }
 
 /**
@@ -127,7 +129,9 @@ export const useChatStore = create<ChatState>()(
         (set, get) => {
             const initialConfig = {
                 botName: 'Asistente Virtual',
-                botColor: '#007bff'
+                botColor: '#007bff',
+                botAvatarUrl: '/default-bot-avatar.png',
+                botIntroduction: initialMessages.es('Asistente Virtual').content
             };
             const initialLanguage = 'es';
 

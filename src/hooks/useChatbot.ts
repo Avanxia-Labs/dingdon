@@ -7,7 +7,6 @@ import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
 import { io, Socket } from 'socket.io-client';
-import { v4 as uuidv4 } from 'uuid';
 
 
 /**
@@ -184,6 +183,8 @@ export const useChatbot = () => {
             const newConfig = {
               botName: data.bot_name || 'Virtual Assistant',
               botColor: data.bot_color || '#007bff',
+              botAvatarUrl: data.bot_avatar_url,
+              botIntroduction: data.bot_introduction,
             };
             setConfig(newConfig);
 

@@ -516,7 +516,7 @@ nextApp.prepare().then(() => {
 
         if (!workspaceId || !sessionId || !message) {
             return res.status(400).send('Missing data');
-        } 
+        }
 
         // Usamos la instancia REAL de 'io' para emitir al dashboard.
         // Usamos el evento que el frontend ya espera: 'incoming_user_message'
@@ -733,75 +733,61 @@ nextApp.prepare().then(() => {
                 console.log(`[Socket.IO] Room members:`, Array.from(sessionRoom));
             }
 
-            if (!workspaceId || !sessionId || !workspacesData[workspaceId]?.[sessionId]) {
-                console.error(`[Socket.IO] Missing data - workspaceId: ${workspaceId}, sessionId: ${sessionId}`);
-                return;
-            }
+            try {
+                // 1. Obtener el historial actual y la info de enrutamiento desde la DB
+                const { data: sessionData, error: fetchError } = await supabase
+                    .from('chat_sessions')
+                    .select(`
+                        history,
+                        channel,
+                        user_identifier,
+                        workspaces ( twilio_configs ( * ) )
+                    `)
+                    .eq('id', sessionId)
+                    .single();
 
-            // Guardar el mensaje en el historial
-            workspacesData[workspaceId][sessionId].history.push(message);
+                if (fetchError || !sessionData) {
+                    console.error(`[DB Error] No se pudo obtener la sesión ${sessionId} para actualizar el historial.`, fetchError?.message);
+                    return;
+                }
 
-            // Actualizar el historial en la DB
-            const { error } = await supabase
-                .from('chat_sessions')
-                .update({ history: workspacesData[workspaceId][sessionId].history })
-                .eq('id', sessionId);
-            if (error) {
-                console.error(`[DB Error] No se pudo actualizar historial de ${sessionId}:`, error.message);
-            }
+                // 2. Añadir el nuevo mensaje del agente al historial que acabamos de obtener
+                const currentHistory = sessionData.history || [];
+                const updatedHistory = [...currentHistory, message];
 
-            // --- Logica de enrutamiento --- 
+                // 3. Guardar el historial COMPLETO y actualizado de vuelta en la DB
+                const { error: updateError } = await supabase
+                    .from('chat_sessions')
+                    .update({ history: updatedHistory })
+                    .eq('id', sessionId);
 
-            // 1- Buscamos en la base de datos para saber de que canal es la sesion
-            const { data: sessionInfo, error: sessionError } = await supabase
-                .from('chat_sessions')
-                .select(`
-                    channel, 
-                    user_identifier,
-                    workspaces ( twilio_configs ( * ) )
-                `)
-                .eq('id', sessionId)
-                .single();
+                if (updateError) {
+                    console.error(`[DB Error] No se pudo actualizar el historial de ${sessionId}:`, updateError.message);
+                }
 
-            if (sessionError) {
-                console.error(`[DB Error] No se pudo obtener la información del canal para la sesión ${sessionId}:`, sessionError.message);
-                return; // No podemos continuar si no sabemos a dónde enviar el mensaje
-            }
-
-            // 2- Decidimos a donde enviar el mensaje
-            if (sessionInfo && sessionInfo.channel === 'whatsapp') {
-
-                // 2.1 Extraemos el objeto de configuración de la respuesta
-                const twilioConfig = sessionInfo.workspaces?.twilio_configs;
-
-                // 2.2 Verificamos que la configuración y el identificador existan
-                if (twilioConfig && sessionInfo.user_identifier) {
-                    console.log(`[Router] La sesión es de WhatsApp. Enviando a ${sessionInfo.user_identifier}`);
-                    try {
-                        // 2.3 Pasamos el objeto 'twilioConfig' como TERCER argumento
-                        await sendWhatsAppMessage(
-                            sessionInfo.user_identifier,
-                            message.content,
-                            twilioConfig
-                        );
-                    } catch (sendError) {
-                        console.error(`Error al intentar enviar mensaje de WhatsApp para sesión ${sessionId}:`, sendError);
+                // 4. Enrutar el mensaje al canal correcto usando los datos que ya obtuvimos
+                if (sessionData.channel === 'whatsapp') {
+                    const twilioConfig = sessionData.workspaces?.twilio_configs;
+                    if (twilioConfig && sessionData.user_identifier) {
+                        console.log(`[Router] La sesión es de WhatsApp. Enviando a ${sessionData.user_identifier}`);
+                        await sendWhatsAppMessage(sessionData.user_identifier, message.content, twilioConfig);
+                    } else {
+                        console.error(`[Router] Faltan datos para enviar a WhatsApp para la sesión ${sessionId}.`);
                     }
                 } else {
-                    console.error(`[Router] Faltan datos para enviar a WhatsApp: config=${!!twilioConfig}, identifier=${!!sessionInfo.user_identifier}.`);
+                    // Si es 'web' o cualquier otro canal, usamos Socket.IO
+                    console.log(`[Router] La sesión es web. Emitiendo a la sala de socket ${sessionId}`);
+                    io.to(sessionId).emit('agent_message', message);
                 }
-            } else {
 
-                // 2.4 Si el canal es 'web' o no está definido, usamos Socket.IO como antes.
-                console.log(`[Router] La sesión es web. Emitiendo a la sala de socket ${sessionId}`);
-                io.to(sessionId).emit('agent_message', message);
+                // Notificar al dashboard que el mensaje fue enviado (esto no cambia)
+                io.to(`dashboard_${workspaceId}`).emit('agent_message_sent', { sessionId, message });
+
+                console.log(`[Socket.IO] Procesamiento de agent_message para sesión ${sessionId} completado.`);
+
+            } catch (error) {
+                console.error(`[Critical Error] Error en el manejador de agent_message para la sesión ${sessionId}:`, error);
             }
-
-            // --- 3. NOTIFICAR AL DASHBOARD ---
-            // Esto es para que el propio agente vea su mensaje en la UI del dashboard.
-            io.to(`dashboard_${workspaceId}`).emit('agent_message_sent', { sessionId, message });
-
-            console.log(`[Socket.IO] Agent message successfully emitted to session ${sessionId}`);
         });
 
         socket.on('close_chat', async ({ workspaceId, sessionId }) => {

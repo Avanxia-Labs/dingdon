@@ -194,9 +194,6 @@ export async function GET(
             };
         });
 
-        // --- AÑADIMOS UN LOG MUY DETALLADO DE LOS DATOS CRUDOS ---
-        console.warn("[DIAGNÓSTICO CRUDO] Datos recibidos de Supabase:", JSON.stringify(data, null, 2));
-
         return NextResponse.json(formattedData);
 
     } catch (error: any) {

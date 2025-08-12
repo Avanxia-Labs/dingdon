@@ -160,7 +160,8 @@
     "leadFormEmail": "Email Address",
     "leadFormPhone": "Phone Number (Optional)",
     "leadFormButton": "Start Chat",
-    "leadFormLoading": "Starting..."
+    "leadFormLoading": "Starting...",
+    "disclaimer": "I am an AI and may make mistakes. Please consider verifying important information."
   },
   "settings": {
     "pageTitle": "Bot Settings",
@@ -171,7 +172,8 @@
       "uploading": "Uploading and processing file...",
       "uploadSuccess": "Knowledge base updated successfully!",
       "copied": "Code copied to clipboard!",
-      "selectFile": "Please select a file first."
+      "selectFile": "Please select a file first.",
+      "avatarUpdated": "Avatar updated! Click 'Save Settings' to make the change permanent."
     },
     "customization": {
       "title": "Bot Customization",
@@ -225,10 +227,23 @@
       "subtitle": "Automatically train your bot from website content",
       "description": "Enter your website URL to automatically crawl and extract content for your chatbot's knowledge base.",
       "crawlButton": "Crawl & Train"
+    },
+    "botAvatar": {
+        "label": "Bot Avatar URL",
+        "description": "Provide a direct URL to an image for the bot's avatar. Leave empty to use the default.",
+        "placeholder": "https://example.com/avatar.png",
+        "uploadingButton": "Uploading...",
+        "changeButton": "Change Image"
+    },
+    "botIntro": {
+        "label": "Bot Introduction",
+        "description": "A short, friendly introduction that appears under the bot's name.",
+        "placeholder": "Your AI virtual assistant."
     }
   },
   "whatsapp": {
     "welcome": "Hello! Welcome. To begin, what is your full name?",
+    "welcomeBack": "Welcome back, {{name}}! How can I help you today?",
     "askEmail": "Thank you! Now, please tell me your email address.",
     "chatReady": "Perfect, thank you! You can now start chatting. How can I help you today?"
   }
