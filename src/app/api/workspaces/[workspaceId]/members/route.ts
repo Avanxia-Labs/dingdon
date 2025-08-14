@@ -14,6 +14,7 @@ interface MemberFromDB {
         id: string;
         name: string | null;
         email: string | null;
+        app_role: string | null;
     } | null; // Puede ser nulo si el join no encuentra nada (aunque !inner lo previene)
 }
 
@@ -38,7 +39,7 @@ export async function GET(
             .from('workspace_members')
             .select<string, MemberFromDB>(`
                 role,
-                profiles!inner ( id, name, email )
+                profiles!inner ( id, name, email, app_role )
             `) // Usamos .select<string, MemberFromDB>(...)
             .eq('workspace_id', workspaceId);
 

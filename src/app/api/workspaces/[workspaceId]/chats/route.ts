@@ -183,7 +183,7 @@ export async function GET(
             const agentName = Array.isArray(profileData)
                 ? profileData[0]?.name          // Si es un array, toma el nombre del primer elemento
                 : profileData?.name             // Si es un objeto, toma el nombre directamente
-                || 'Unassigned';                // Si todo lo demás falla, es 'Unassigned'
+                || (chat.assigned_agent_id === null ? 'BOT' : 'Unassigned'); // NULL = BOT
 
             return {
                 id: chat.id,

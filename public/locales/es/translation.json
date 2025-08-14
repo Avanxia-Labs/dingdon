@@ -44,7 +44,8 @@
     "settingsAndBot": "Ajustes y Bot",
     "profile": "Mi Perfil",
     "signOut": "Cerrar Sesión",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Clasificación de Leads"
   },
   "leads": {
     "pageTitle": "Leads Recolectados",
@@ -134,13 +135,46 @@
       "reconnect": "Reconectar"
     },
     "requestsTitle": "Solicitudes de Chat",
-    "noRequests": "No hay solicitudes pendientes.",
+    "noRequests": "No hay solicitudes pendientes",
+    "myActiveChatsTitle": "Mis Chats Activos",
+    "noActiveChats": "No hay chats activos aún. ¡Toma uno de las solicitudes de arriba!",
     "activeChatTitle": "Chat Activo: {{id}}",
     "closeChatButton": "Cerrar Chat",
     "inputPlaceholder": "Escribe tu respuesta...",
     "inputPlaceholderDisconnected": "Esperando conexión...",
     "selectChatPrompt": "Selecciona un chat para comenzar",
-    "chatClosed": "El chat fue cerrado"
+    "chatClosed": "El chat fue cerrado",
+    "sessionLabel": "Sesión",
+    "messagesCount": "{{count}} mensajes",
+    "transferredLabel": "Transferido",
+    "transferredFrom": "De: {{agent}}",
+    "status": {
+      "in_progress": "en progreso",
+      "pending": "pendiente",
+      "completed": "completado",
+      "closed": "cerrado"
+    }
+  },
+  "leadInfo": {
+    "title": "Información del Lead",
+    "contact": "Datos de Contacto",
+    "noContactInfo": "Sin información de contacto disponible",
+    "classification": "Clasificación",
+    "reclassify": "Reclasificar",
+    "stats": "Estadísticas",
+    "totalMessages": "Mensajes",
+    "sessions": "Sesiones",
+    "lastInteraction": "Última interacción",
+    "tags": "Etiquetas",
+    "noTags": "Sin etiquetas",
+    "addTagPlaceholder": "Nueva etiqueta...",
+    "notes": "Notas Internas",
+    "noNotes": "Sin notas internas",
+    "addNotePlaceholder": "Añadir nota interna...",
+    "quickActions": "Acciones Rápidas",
+    "reclassifyAction": "Reclasificar Lead",
+    "scheduleFollowup": "Programar Seguimiento",
+    "exportConversation": "Exportar Conversación"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -163,6 +197,8 @@
     "leadFormPhone": "Teléfono (Opcional)",
     "leadFormButton": "Iniciar Chat",
     "leadFormLoading": "Iniciando...",
+    "formError": "Hubo un problema. Por favor, inténtalo de nuevo.",
+    "technicalError": "Lo siento, estoy teniendo algunas dificultades técnicas. Por favor, inténtalo de nuevo más tarde.",
     "disclaimer": "Soy una IA y puedo cometer errores. Considera verificar la información importante."
   },
   "settings": {
@@ -259,5 +295,52 @@
     "welcomeBack": "¡Hola de nuevo, {{name}}! ¿En qué puedo ayudarte hoy?",
     "askEmail": "¡Gracias! Ahora, por favor, dime tu correo electrónico.",
     "chatReady": "¡Perfecto, gracias! Ya puedes comenzar a chatear. ¿En qué puedo ayudarte hoy?"
+  },
+  "leadClassification": {
+    "pageTitle": "Clasificación de Leads",
+    "pageSubtitle": "Analiza y clasifica automáticamente la calidad de tus leads basándose en las conversaciones",
+    "totalChats": "Total de Chats",
+    "classifiedChats": "Chats Clasificados",
+    "hotLeads": "Leads Calientes",
+    "warmLeads": "Leads Tibios",
+    "coldLeads": "Leads Fríos",
+    "classifyButton": "Clasificar Todos los Chats",
+    "classifyingButton": "Clasificando...",
+    "configureKeywords": "Configurar Palabras Clave",
+    "hideKeywords": "Ocultar Palabras Clave",
+    "saveConfiguration": "Guardar Configuración",
+    "keywordsConfigTitle": "Configuración de Palabras Clave",
+    "newHotKeyword": "Nueva palabra CALIENTE...",
+    "newWarmKeyword": "Nueva palabra TIBIA...",
+    "newColdKeyword": "Nueva palabra FRÍA...",
+    "hotKeywordsTitle": "CALIENTE 🔥",
+    "warmKeywordsTitle": "TIBIO 🌡️", 
+    "coldKeywordsTitle": "FRÍO ❄️",
+    "resetToDefaults": "Restaurar por Defecto",
+    "keywordCount": "({{count}})",
+    "resultsTitle": "Resultados de Clasificación",
+    "noResults": "No hay resultados aún. Ejecuta la clasificación para ver el análisis de leads.",
+    "tableHeaderChat": "Chat",
+    "tableHeaderScore": "Puntuación",
+    "tableHeaderClassification": "Clasificación",
+    "tableHeaderReasoning": "Análisis",
+    "tableHeaderDate": "Fecha",
+    "feedback": {
+      "classificationStarted": "Clasificación iniciada...",
+      "classificationComplete": "¡Clasificación completada! Se procesaron {{count}} chats.",
+      "classificationError": "Error durante la clasificación. Inténtalo de nuevo.",
+      "keywordsConfigSaved": "Configuración de palabras clave guardada exitosamente",
+      "keywordAdded": "Se agregó la palabra: \"{{keyword}}\"",
+      "loadingKeywords": "Cargando configuración de palabras clave...",
+      "keywordAddError": "Error al agregar palabra clave. Puede que ya exista.",
+      "keywordRemoveError": "Error al eliminar palabra clave. Inténtalo de nuevo.",
+      "keywordDuplicate": "Esta palabra clave ya existe en esta categoría",
+      "keywordEmpty": "Por favor ingresa una palabra clave",
+      "savingKeywords": "Guardando palabras clave...",
+      "loadingFromDatabase": "Cargando desde base de datos...",
+      "usingDefaultKeywords": "Usando palabras clave por defecto",
+      "keywordsReset": "Keywords restauradas a valores por defecto",
+      "keywordsResetError": "Error al restaurar keywords"
+    }
   }
 }

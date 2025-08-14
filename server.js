@@ -494,13 +494,23 @@ nextApp.prepare().then(() => {
             assignedAgentId: null,
         };
 
-        // Usamos la instancia REAL de 'io' para emitir al dashboard
-        // El objeto que el frontend espera es { sessionId, initialMessage }
-        io.to(`dashboard_${workspaceId}`).emit('new_chat_request', { sessionId, initialMessage });
+        // IMPORTANTE: Solo emitir new_chat_request si el chat NO está ya asignado a un agente
+        // Verificar si el chat ya tiene agente asignado en la BD
+        const { data: existingSession } = await supabase
+            .from('chat_sessions')
+            .select('assigned_agent_id, status')
+            .eq('id', sessionId)
+            .single();
+            
+        if (existingSession?.assigned_agent_id) {
+            console.log(`[Handoff Notifier] ⚠️ Chat ${sessionId} ya está asignado al agente ${existingSession.assigned_agent_id}, NO enviando new_chat_request`);
+        } else {
+            // Solo emitir si no hay agente asignado
+            console.log(`[Handoff Notifier] 📢 Enviando new_chat_request para sesión sin agente: ${sessionId}`);
+            io.to(`dashboard_${workspaceId}`).emit('new_chat_request', { sessionId, initialMessage });
+        }
 
-        // --- CORRECCIÓN CLAVE ---
-        // Usamos 'sessionId' directamente, no 'requestData.sessionId'
-        console.log(`[Handoff Notifier] Notificación enviada para workspace: ${workspaceId}, sesión: ${sessionId}`);
+        console.log(`[Handoff Notifier] Procesamiento completado para workspace: ${workspaceId}, sesión: ${sessionId}`);
 
         res.status(200).send('Notification sent');
     });
@@ -573,9 +583,23 @@ nextApp.prepare().then(() => {
         console.log(`[Socket.IO] Cliente conectado: ${socket.id}`);
 
         // 🔧 NUEVO: Manejar información del agente
-        socket.on('agent_info', ({ agentId, workspaceId }) => {
-            agentSockets.set(socket.id, { agentId, workspaceId, sessionId: null });
-            console.log(`[Socket.IO] Agent info registered: ${agentId} in workspace ${workspaceId}`);
+        socket.on('agent_info', ({ agentId, agentName, workspaceId }) => {
+            console.log(`[Socket.IO] 📝 ===== REGISTERING AGENT =====`);
+            console.log(`[Socket.IO] 🆔 Agent ID: "${agentId}" (length: ${agentId.length})`);
+            console.log(`[Socket.IO] 👤 Agent Name: "${agentName}"`);
+            console.log(`[Socket.IO] 🏢 Workspace: ${workspaceId}`);
+            console.log(`[Socket.IO] 🔗 Socket ID: ${socket.id}`);
+            
+            agentSockets.set(socket.id, { agentId, agentName: agentName || 'Unknown Agent', workspaceId, sessionId: null });
+            
+            console.log(`[Socket.IO] ✅ Agent registered successfully`);
+            console.log(`[Socket.IO] 📊 Total registered agents: ${agentSockets.size}`);
+            console.log(`[Socket.IO] 📋 All registered agents:`, Array.from(agentSockets.values()).map(info => ({
+                agentId: info.agentId,
+                agentName: info.agentName,
+                workspaceId: info.workspaceId
+            })));
+            console.log(`[Socket.IO] 🏁 ===== AGENT REGISTRATION COMPLETED =====`);
         });
 
         socket.on('join_session', (sessionId) => {
@@ -598,6 +622,10 @@ nextApp.prepare().then(() => {
                 const dashboardRoom = `dashboard_${workspaceId}`;
                 socket.join(dashboardRoom);
                 console.log(`[Socket.IO] Socket ${socket.id} joined dashboard: ${dashboardRoom}`);
+                
+                // Debug: mostrar cuántos sockets están en el dashboard
+                const dashboardSockets = io.sockets.adapter.rooms.get(dashboardRoom);
+                console.log(`[Socket.IO] Dashboard ${dashboardRoom} now has ${dashboardSockets?.size || 0} connected sockets`);
 
                 // Registrar o actualizar la información del agente
                 const agentInfo = agentSockets.get(socket.id) || {};
@@ -633,16 +661,74 @@ nextApp.prepare().then(() => {
             }
         });
 
-        socket.on('agent_joined', async ({ workspaceId, sessionId, agentId }) => {
+        socket.on('agent_joined', async ({ workspaceId, sessionId, agentId, agentName }) => {
             if (!workspaceId || !sessionId || !agentId) return;
 
             console.log(`[Socket.IO] Agent ${agentId} (${socket.id}) attempting to join session ${sessionId}`);
 
-            const sessionInMemory = workspacesData[workspaceId]?.[sessionId];
+            let sessionInMemory = workspacesData[workspaceId]?.[sessionId];
 
-            if (sessionInMemory && sessionInMemory.status === 'pending') {
-                sessionInMemory.status = 'in_progress';
-                sessionInMemory.assignedAgentId = agentId;
+            // 🔧 NUEVO: Si la sesión no está en memoria, cargarla desde la DB (importante para transferencias)
+            if (!sessionInMemory) {
+                console.log(`[Socket.IO] Session ${sessionId} not in memory, loading from database...`);
+                
+                const { data: sessionData, error: sessionError } = await supabase
+                    .from('chat_sessions')
+                    .select('*')
+                    .eq('id', sessionId)
+                    .eq('workspace_id', workspaceId)
+                    .single();
+                
+                if (!sessionError && sessionData) {
+                    // Crear la sesión en memoria a partir de los datos de la DB
+                    if (!workspacesData[workspaceId]) workspacesData[workspaceId] = {};
+                    sessionInMemory = {
+                        status: sessionData.status || 'pending',
+                        history: sessionData.history || [],
+                        assignedAgentId: sessionData.assigned_agent_id,
+                    };
+                    workspacesData[workspaceId][sessionId] = sessionInMemory;
+                    
+                    console.log(`[Socket.IO] Session ${sessionId} loaded from database with ${sessionInMemory.history.length} messages`);
+                } else {
+                    console.error(`[Socket.IO] Failed to load session ${sessionId} from database:`, sessionError?.message);
+                }
+            }
+
+            console.log(`[Socket.IO] Session ${sessionId} status check:`, {
+                exists: !!sessionInMemory,
+                status: sessionInMemory?.status,
+                assignedAgent: sessionInMemory?.assignedAgentId,
+                requestingAgent: agentId,
+                historyLength: sessionInMemory?.history?.length || 0
+            });
+
+            // Permitir que un agente se una a un chat si:
+            // 1. Es un chat nuevo (pending)
+            // 2. Es un chat in_progress (permite cambio de agente)
+            // 3. No permitir chats closed
+            const canJoin = sessionInMemory && (
+                sessionInMemory.status === 'pending' || 
+                sessionInMemory.status === 'in_progress'
+            );
+            
+            console.log(`[Socket.IO] canJoin result: ${canJoin}`);
+
+            if (canJoin) {
+                // Flag para saber si es la primera vez que se toma el chat
+                const isFirstTime = sessionInMemory.status === 'pending';
+                const isChangingAgent = sessionInMemory.assignedAgentId && sessionInMemory.assignedAgentId !== agentId;
+                
+                // Actualizar estado y agente asignado
+                if (isFirstTime) {
+                    sessionInMemory.status = 'in_progress';
+                    sessionInMemory.assignedAgentId = agentId;
+                } else if (isChangingAgent) {
+                    // Cambio de agente - actualizar assignedAgentId  
+                    const previousAgentId = sessionInMemory.assignedAgentId;
+                    sessionInMemory.assignedAgentId = agentId;
+                    console.log(`[Socket.IO] Chat ${sessionId} transferred from agent ${previousAgentId} to ${agentId}`);
+                }
 
                 // 🔧 MEJORADO: Registrar que este socket maneja esta sesión
                 const agentInfo = agentSockets.get(socket.id) || {};
@@ -696,14 +782,67 @@ nextApp.prepare().then(() => {
                     console.log(`[Socket.IO] Assignment success enviado para sesión ${sessionId}`);
                 }, 200);
 
+                // Siempre notificar que el chat fue tomado (para remover de listas de otros agentes)
                 setTimeout(() => {
-                    // Notificar a otros agentes que el chat fue tomado
                     socket.to(`dashboard_${workspaceId}`).emit('chat_taken', { sessionId });
                     console.log(`[Socket.IO] Chat taken notificado para sesión ${sessionId}`);
+                }, 250);
+
+                // Solo enviar mensaje de espera si es la primera vez
+                if (isFirstTime) {
+                    setTimeout(() => {
+                        // Agregar mensaje "Esperando respuesta de [Agente]" al historial
+                        const waitingMessage = {
+                            id: `system-waiting-${Date.now()}`,
+                            content: `⏳ Esperando respuesta de ${agentName || 'Agente de Soporte'}...`,
+                            role: 'system',
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        // Agregar al historial en memoria
+                        sessionInMemory.history.push(waitingMessage);
+                        
+                        // Actualizar historial en la DB
+                        supabase
+                            .from('chat_sessions')
+                            .update({ history: sessionInMemory.history })
+                            .eq('id', sessionId)
+                            .then(({ error }) => {
+                                if (error) {
+                                    console.error(`[DB Error] No se pudo actualizar historial con mensaje de espera:`, error.message);
+                                }
+                            });
+                        
+                        // Emitir el mensaje a toda la sala (usuario y agente)
+                        io.to(sessionId).emit('agent_message', waitingMessage);
+                        console.log(`[Socket.IO] Waiting message sent for agent ${agentName}`);
+                    }, 300);
+
+                    setTimeout(() => {
+                    // 🆕 NUEVO: Si este chat fue transferido, removerlo del dashboard del agente que lo transfirió
+                    if (sessionInMemory.transferInfo && sessionInMemory.transferInfo.transferredBy) {
+                        const transferringAgentSocket = io.sockets.sockets.get(sessionInMemory.transferInfo.transferredBy);
+                        if (transferringAgentSocket) {
+                            transferringAgentSocket.emit('chat_removed_from_dashboard', {
+                                sessionId,
+                                message: `Chat transferido y tomado por ${agentName || 'otro agente'}`
+                            });
+                            console.log(`[Socket.IO] Chat removed from transferring agent dashboard after being taken`);
+                        }
+                        
+                        // Limpiar la información de transferencia
+                        delete sessionInMemory.transferInfo;
+                    }
                 }, 300);
+                }
 
             } else {
                 console.log(`[Socket.IO] Assignment failed for session ${sessionId} - not available`);
+                console.log(`[Socket.IO] Failure reason:`, {
+                    sessionExists: !!sessionInMemory,
+                    status: sessionInMemory?.status,
+                    canJoinEvaluation: `sessionInMemory: ${!!sessionInMemory}, status check: ${sessionInMemory?.status === 'pending' || sessionInMemory?.status === 'in_progress'}`
+                });
                 socket.emit('assignment_failure', { message: "Chat no disponible." });
             }
         });

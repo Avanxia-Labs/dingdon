@@ -51,7 +51,7 @@ const ChatLanguageSwitcher = () => {
 const ChatInterface = () => {
     // Llamamos a useTranslation() sin argumentos para usar el namespace por defecto
     const { t } = useTranslation();
-    const { messages, isLoading, sendMessage, status, startNewChat, config, error, leadCollected, setLeadCollected, workspaceId } = useChatbot();
+    const { messages, isLoading, sendMessage, status, startNewChat, config, error, leadCollected, setLeadCollected, workspaceId, agentName, botPaused } = useChatbot();
     const language = useChatStore((state) => state.language);
 
     useSyncLanguage(language);
@@ -92,7 +92,7 @@ const ChatInterface = () => {
             await apiClient.post('/leads', { workspaceId, name, email, phone });
             setLeadCollected(true);
         } catch (err) {
-            setFormError("There was an issue. Please try again.");
+            setFormError(t('chatbotUI.formError'));
         } finally {
             setIsSubmitting(false);
         }
@@ -107,7 +107,26 @@ const ChatInterface = () => {
             <div className="text-white p-4 rounded-t-lg flex-shrink-0 flex justify-between items-start" style={{ backgroundColor: config.botColor }}>
                 <div>
                     <h3 className="font-semibold text-lg">{config.botName}</h3>
-                    <p className="text-sm opacity-90">{config.botIntroduction || t('chatbotUI.headerTitle')}</p>
+                    <p className="text-sm opacity-90">
+                        {botPaused && agentName ? (
+                            <span className="flex items-center gap-1">
+                                <span className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
+                                {agentName} está revisando tu conversación
+                            </span>
+                        ) : status === 'in_progress' && agentName ? (
+                            <span className="flex items-center gap-1">
+                                <span className="w-2 h-2 bg-green-300 rounded-full"></span>
+                                Hablando con {agentName}
+                            </span>
+                        ) : status === 'pending_agent' ? (
+                            <span className="flex items-center gap-1">
+                                <span className="w-2 h-2 bg-orange-300 rounded-full animate-pulse"></span>
+                                Buscando un agente...
+                            </span>
+                        ) : (
+                            t('chatbotUI.headerTitle')
+                        )}
+                    </p>
                 </div>
                 <ChatLanguageSwitcher />
             </div>
@@ -120,9 +139,23 @@ const ChatInterface = () => {
             ) : (
                 <>
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {messages.map((message) => (
-                            <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
+                        {messages.map((message) => {
+                            // Mensajes del sistema centrados
+                            if (message.role === 'system') {
+                                return (
+                                    <div key={message.id} className="flex justify-center my-2">
+                                        <div className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-lg max-w-[80%]">
+                                            <p className="text-sm text-gray-700 text-center">
+                                                {message.content}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            
+                            return (
+                                <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
                                 {(message.role === 'assistant' || message.role === 'agent') && (
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
                                         <img
@@ -133,12 +166,13 @@ const ChatInterface = () => {
                                     </div>
                                 )}
                                 <div
-                                    className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
-                                        message.role === 'user' ? 'text-white' :
-                                            'bg-slate-200 text-slate-600 border border-slate-300'
-                                        }`}
-                                    style={message.role === 'user' ? { backgroundColor: config.botColor } : {}}
-                                >
+                                        className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
+                                            message.role === 'user' ? 'text-white' :
+                                            message.role === 'agent' ? 'bg-blue-100 text-blue-900' :
+                                                'bg-slate-200 text-slate-600 border border-slate-300'
+                                            }`}
+                                        style={message.role === 'user' ? { backgroundColor: config.botColor } : {}}
+                                    >
                                     <div className="mb-1">
                                         <div className="flex items-center gap-1.5 mb-1">
                                             {message.role === 'assistant' ? (
@@ -148,8 +182,10 @@ const ChatInterface = () => {
                                                 </div>
                                             ) : message.role === 'agent' ? (
                                                 <div className="flex flex-row items-center gap-1">
-                                                    {/* <User size={16} className='text-slate-500 flex-shrink-0' /> */}
-                                                    <span className="text-xs font-semibold text-slate-600">{message.agentName || t('chatbotUI.agentLabel')}</span>
+                                                    {/* <User size={16} className='text-blue-600 flex-shrink-0' /> */}
+                                                    <span className="text-xs font-semibold text-blue-700">
+                                                        {message.agentName || agentName || message.agentName || t('chatbotUI.agentLabel')}
+                                                    </span>
                                                 </div>
                                             ) : null}
                                         </div>
@@ -168,7 +204,8 @@ const ChatInterface = () => {
                                     )}
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
 
                         {/* Muestra el formulario si el lead NO ha sido recolectado */}
                         {!leadCollected && (
