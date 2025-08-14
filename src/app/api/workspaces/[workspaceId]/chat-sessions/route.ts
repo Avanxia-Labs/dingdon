@@ -20,15 +20,18 @@ export async function GET(
     const classified = searchParams.get('classified') === 'true';
 
     if (unclassified) {
-      // Obtener todos los chats cerrados (sin verificar lead_classification porque no la usamos)
-      const { data: chats, error } = await supabaseAdmin
+      // NUEVA ESTRATEGIA: Obtener TODOS los chats con conversación real, sin importar el status
+      console.log(`[CLASSIFY] Buscando TODOS los chats para workspace ${workspaceId}`);
+      
+      const { data: allChats, error } = await supabaseAdmin
         .from('chat_sessions')
-        .select('id, created_at, ended_at, history')
+        .select('id, created_at, ended_at, history, status')
         .eq('workspace_id', workspaceId)
-        .eq('status', 'closed') // Solo chats terminados
         .not('history', 'is', null) // Que tengan historial
         .order('created_at', { ascending: false })
-        .limit(50); // Limitar para no sobrecargar
+        .limit(100);
+
+      console.log(`[CLASSIFY] Encontrados ${allChats?.length || 0} chats con historial`);
 
       if (error) {
         console.error('Error obteniendo chats sin clasificar:', error);
@@ -38,11 +41,30 @@ export async function GET(
         );
       }
 
-      // Filtrar chats que tengan al menos 2 mensajes
-      const validChats = (chats || []).filter(chat => {
-        if (!chat.history || !Array.isArray(chat.history)) return false;
-        return chat.history.length >= 2; // Al menos user + bot
+      // Filtrar chats que tengan al menos 2 mensajes, incluyendo TODOS los status
+      const validChats = (allChats || []).filter(chat => {
+        if (!chat.history || !Array.isArray(chat.history)) {
+          console.log(`[CLASSIFY] Chat ${chat.id} sin historial válido`);
+          return false;
+        }
+        
+        // Ajustar requisitos según el status - RELAJADO para incluir más chats
+        let minMessages = 2; // Mínimo universal
+        // Ya no discriminamos por status - todos los chats con 2+ mensajes califican
+        
+        const hasEnoughMessages = chat.history.length >= minMessages;
+        if (!hasEnoughMessages) {
+          console.log(`[CLASSIFY] Chat ${chat.id} (${chat.status}) solo tiene ${chat.history.length} mensajes (necesita ${minMessages})`);
+        }
+        return hasEnoughMessages;
       });
+
+      console.log(`[CLASSIFY] Chats válidos para clasificar: ${validChats.length}`);
+      console.log(`[CLASSIFY] Por status:`, validChats.reduce((acc, chat) => {
+        acc[chat.status] = (acc[chat.status] || 0) + 1;
+        return acc;
+      }, {}));
+      console.log(`[CLASSIFY] IDs de ejemplo:`, validChats.map(c => `${c.id.slice(0, 8)}...(${c.status})`).slice(0, 5));
 
       return NextResponse.json({
         success: true,
@@ -67,12 +89,18 @@ export async function GET(
       });
     }
 
-    // Por defecto, obtener solo el total de chats cerrados
+    // Por defecto, obtener el total de chats con conversación (terminados o con suficientes mensajes)
     const { data: totalChats, error: totalError } = await supabaseAdmin
       .from('chat_sessions')
-      .select('id', { count: 'exact' })
+      .select('id, history, status', { count: 'exact' })
       .eq('workspace_id', workspaceId)
-      .eq('status', 'closed');
+      .not('history', 'is', null);
+
+    // Contar solo chats con conversación real
+    const chatsWithConversation = (totalChats || []).filter(chat => {
+      if (!chat.history || !Array.isArray(chat.history)) return false;
+      return chat.history.length >= 2;
+    }).length;
 
     if (totalError) {
       return NextResponse.json(
@@ -84,7 +112,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       statistics: {
-        totalChats: totalChats?.length || 0,
+        totalChats: chatsWithConversation,
         classifiedChats: 0, // En memoria, siempre 0 al iniciar
         hotLeads: 0,
         warmLeads: 0,

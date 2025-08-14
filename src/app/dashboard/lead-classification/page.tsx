@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from 'react-i18next';
 import { Target, TrendingUp, TrendingDown, Minus, Loader2, Settings, Plus, X, Save, RotateCcw } from 'lucide-react';
+import { useDashboardStore } from '@/stores/useDashboardStore';
 
 interface ClassificationResult {
   chatSessionId: string;
@@ -25,6 +26,45 @@ interface Statistics {
 export default function LeadClassificationPage() {
   const { t } = useTranslation();
   const { data: session } = useSession();
+
+  // Función helper para traducciones con fallback
+  const safeTranslate = (key: string, fallbackText?: string, options?: any) => {
+    try {
+      const translated = t(key, options);
+      // Si la traducción devuelve el mismo key, usar el fallback
+      if (translated === key && fallbackText) {
+        return fallbackText;
+      }
+      return translated;
+    } catch (error) {
+      console.error('Translation error for key:', key, error);
+      return fallbackText || key;
+    }
+  };
+
+  // Mapas temporales de traducción mientras se arregla i18n
+  const translations = {
+    hotTitle: {
+      es: 'CALIENTE 🔥',
+      en: 'HOT 🔥'
+    },
+    warmTitle: {
+      es: 'TIBIO 🌡️', 
+      en: 'WARM 🌡️'
+    },
+    coldTitle: {
+      es: 'FRÍO ❄️',
+      en: 'COLD ❄️'
+    },
+    resetButton: {
+      es: 'Restaurar por Defecto',
+      en: 'Reset to Defaults'
+    }
+  };
+
+  // Detectar idioma actual usando store o fallback
+  const { language } = useDashboardStore();
+  const currentLang = language === 'en' ? 'en' : 'es'; // Default a español
   const [isClassifying, setIsClassifying] = useState(false);
   const [results, setResults] = useState<ClassificationResult[]>([]);
   const [statistics, setStatistics] = useState<Statistics>({
@@ -54,10 +94,18 @@ export default function LeadClassificationPage() {
   useEffect(() => {
     if (session?.user?.workspaceId) {
       loadExistingClassifications();
-      loadSavedKeywords();
+      loadKeywordsFromDatabase();
       loadCachedResults();
     }
   }, [session?.user?.workspaceId]);
+
+  // Recargar keywords cuando cambie el idioma
+  useEffect(() => {
+    if (session?.user?.workspaceId && keywordsLoaded) {
+      console.log(`[KEYWORDS] Language changed to ${currentLang}, reloading keywords`);
+      loadKeywordsFromDatabase();
+    }
+  }, [currentLang, session?.user?.workspaceId]);
 
   const loadExistingClassifications = async () => {
     try {
@@ -279,32 +327,62 @@ export default function LeadClassificationPage() {
     }
   };
 
-  const addKeyword = (type: 'hot' | 'warm' | 'cold', keyword: string) => {
-    if (!keyword.trim()) return;
+  const addKeyword = async (type: 'hot' | 'warm' | 'cold', keyword: string) => {
+    if (!keyword.trim()) {
+      setFeedback(safeTranslate('leadClassification.feedback.keywordEmpty', 'Please enter a keyword'));
+      setTimeout(() => setFeedback(''), 3000);
+      return;
+    }
     
     const normalizedKeyword = keyword.trim().toLowerCase();
     
-    if (type === 'hot' && !hotKeywords.includes(normalizedKeyword)) {
-      const newHotKeywords = [normalizedKeyword, ...hotKeywords];
-      setHotKeywords(newHotKeywords);
-      setNewHotKeyword('');
-      showKeywordAddedMessage(normalizedKeyword);
-      // Auto-guardar
-      setTimeout(() => saveKeywordsToStorage(), 100);
-    } else if (type === 'warm' && !warmKeywords.includes(normalizedKeyword)) {
-      const newWarmKeywords = [normalizedKeyword, ...warmKeywords];
-      setWarmKeywords(newWarmKeywords);
-      setNewWarmKeyword('');
-      showKeywordAddedMessage(normalizedKeyword);
-      // Auto-guardar
-      setTimeout(() => saveKeywordsToStorage(), 100);
-    } else if (type === 'cold' && !coldKeywords.includes(normalizedKeyword)) {
-      const newColdKeywords = [normalizedKeyword, ...coldKeywords];
-      setColdKeywords(newColdKeywords);
-      setNewColdKeyword('');
-      showKeywordAddedMessage(normalizedKeyword);
-      // Auto-guardar
-      setTimeout(() => saveKeywordsToStorage(), 100);
+    // Verificar si ya existe localmente
+    const currentKeywords = type === 'hot' ? hotKeywords : type === 'warm' ? warmKeywords : coldKeywords;
+    if (currentKeywords.includes(normalizedKeyword)) {
+      setFeedback(safeTranslate('leadClassification.feedback.keywordDuplicate', 'This keyword already exists'));
+      setTimeout(() => setFeedback(''), 3000);
+      return;
+    }
+    
+    try {
+      setFeedback(safeTranslate('leadClassification.feedback.savingKeywords', 'Saving keywords...'));
+      
+      const response = await fetch(`/api/workspaces/${session!.user.workspaceId}/lead-keywords`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          keyword: normalizedKeyword,
+          category: type,
+          language: currentLang
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Actualizar estado local
+        if (type === 'hot') {
+          setHotKeywords([normalizedKeyword, ...hotKeywords]);
+          setNewHotKeyword('');
+        } else if (type === 'warm') {
+          setWarmKeywords([normalizedKeyword, ...warmKeywords]);
+          setNewWarmKeyword('');
+        } else if (type === 'cold') {
+          setColdKeywords([normalizedKeyword, ...coldKeywords]);
+          setNewColdKeyword('');
+        }
+        
+        showKeywordAddedMessage(normalizedKeyword);
+      } else {
+        setFeedback(data.error || t('leadClassification.feedback.keywordAddError'));
+        setTimeout(() => setFeedback(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error agregando keyword:', error);
+      setFeedback(t('leadClassification.feedback.keywordAddError'));
+      setTimeout(() => setFeedback(''), 3000);
     }
   };
 
@@ -315,104 +393,241 @@ export default function LeadClassificationPage() {
     }, 3000); // Desaparece después de 3 segundos
   };
 
-  const removeKeyword = (type: 'hot' | 'warm' | 'cold', keyword: string) => {
-    if (type === 'hot') {
-      setHotKeywords(hotKeywords.filter(k => k !== keyword));
-    } else if (type === 'warm') {
-      setWarmKeywords(warmKeywords.filter(k => k !== keyword));
-    } else if (type === 'cold') {
-      setColdKeywords(coldKeywords.filter(k => k !== keyword));
-    }
-    // Auto-guardar después de eliminar
-    setTimeout(() => saveKeywordsToStorage(), 100);
-  };
-
-  // Keywords por defecto
-  const defaultKeywords = {
-    hot: [
-      "cotizacion", "cotización", "presupuesto", "quote", "budget", "precio exacto",
-      "urgente", "urgent", "mañana", "esta semana", "rápido", "prisa",
-      "quiero comprar", "want to buy", "adquirir", "buy now",
-      "financiamiento", "financing", "payment", "crédito", "contado",
-      "mi número", "mi email", "contactarme", "call me"
-    ],
-    warm: [
-      "me interesa", "interested", "características", "features", "beneficios", "benefits",
-      "información", "information", "demo", "trial", "comparar", "compare",
-      "cómo funciona", "how does it work", "detalles", "details", "specs",
-      "más información", "tell me more", "catálogo", "catalog"
-    ],
-    cold: [
-      "solo pregunta", "just asking", "qué es", "what is", "curiosidad", "curiosity",
-      "tal vez", "maybe", "futuro", "future", "someday", "eventually",
-      "problema con", "problem with", "no funciona", "not working", "support", "help with"
-    ]
-  };
-
-  // Cargar keywords guardadas desde localStorage
-  const loadSavedKeywords = () => {
-    if (!session?.user?.workspaceId) return;
-    
+  const removeKeyword = async (type: 'hot' | 'warm' | 'cold', keyword: string) => {
     try {
-      const saved = localStorage.getItem(`keywords-${session.user.workspaceId}`);
-      if (saved) {
-        const parsedKeywords = JSON.parse(saved);
-        setHotKeywords(parsedKeywords.hot || defaultKeywords.hot);
-        setWarmKeywords(parsedKeywords.warm || defaultKeywords.warm);
-        setColdKeywords(parsedKeywords.cold || defaultKeywords.cold);
-      } else {
-        // Si no hay nada guardado, usar valores por defecto
-        setHotKeywords(defaultKeywords.hot);
-        setWarmKeywords(defaultKeywords.warm);
-        setColdKeywords(defaultKeywords.cold);
-      }
-      setKeywordsLoaded(true);
-    } catch (error) {
-      console.error('Error cargando keywords guardadas:', error);
-      // En caso de error, cargar por defecto
-      setHotKeywords(defaultKeywords.hot);
-      setWarmKeywords(defaultKeywords.warm);
-      setColdKeywords(defaultKeywords.cold);
-      setKeywordsLoaded(true);
-    }
-  };
-
-  // Guardar keywords en localStorage
-  const saveKeywordsToStorage = () => {
-    if (!session?.user?.workspaceId) return;
-    
-    try {
-      const keywordsToSave = {
-        hot: hotKeywords,
-        warm: warmKeywords,
-        cold: coldKeywords,
-        lastUpdated: new Date().toISOString()
-      };
+      const response = await fetch(`/api/workspaces/${session!.user.workspaceId}/lead-keywords`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          keyword: keyword,
+          category: type
+        })
+      });
       
-      localStorage.setItem(`keywords-${session.user.workspaceId}`, JSON.stringify(keywordsToSave));
-      return true;
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Actualizar estado local
+        if (type === 'hot') {
+          setHotKeywords(hotKeywords.filter(k => k !== keyword));
+        } else if (type === 'warm') {
+          setWarmKeywords(warmKeywords.filter(k => k !== keyword));
+        } else if (type === 'cold') {
+          setColdKeywords(coldKeywords.filter(k => k !== keyword));
+        }
+      } else {
+        setFeedback(data.error || t('leadClassification.feedback.keywordRemoveError'));
+        setTimeout(() => setFeedback(''), 3000);
+      }
     } catch (error) {
-      console.error('Error guardando keywords:', error);
-      return false;
+      console.error('Error eliminando keyword:', error);
+      setFeedback(t('leadClassification.feedback.keywordRemoveError'));
+      setTimeout(() => setFeedback(''), 3000);
     }
   };
 
-  const resetToDefaults = () => {
-    setHotKeywords(defaultKeywords.hot);
-    setWarmKeywords(defaultKeywords.warm);
-    setColdKeywords(defaultKeywords.cold);
-    setTimeout(() => saveKeywordsToStorage(), 100);
-    setFeedback('Keywords restauradas a valores por defecto');
-    setTimeout(() => setFeedback(''), 3000);
+  // Keywords por defecto separadas por idioma - sin repetidas
+  const defaultKeywords = {
+    es: {
+      hot: [
+        // Cotización/Presupuesto específico
+        "cotización", "cotizacion", "presupuesto", "quiero cotización", "necesito presupuesto",
+        
+        // Disponibilidad inmediata
+        "disponibilidad inmediata", "disponible ahora", "ahora mismo", "de inmediato",
+        
+        // Urgencia específica
+        "necesito para mañana", "es urgente", "urgente", "rápido", "rapido", "prisa", "ya", "hoy mismo", "esta semana",
+        
+        // Información de contacto voluntaria
+        "mi teléfono", "mi telefono", "mi número", "mi numero", "mi email", "mi correo", "contactarme", "pueden llamarme",
+        
+        // Formas de pago/financiamiento
+        "formas de pago", "como puedo pagar", "financiamiento", "crédito", "credito", "métodos de pago",
+        
+        // Intención clara de compra
+        "quiero comprar", "cómo puedo adquirir", "como puedo adquirir", "necesito comprar", "voy a comprar"
+      ],
+      warm: [
+        // Preguntas específicas sobre productos/servicios
+        "características", "caracteristicas", "especificaciones", "detalles del producto",
+        
+        // Interés en beneficios
+        "beneficios", "ventajas", "qué incluye", "que incluye",
+        
+        // Comparaciones
+        "comparar", "diferencias", "mejor opción", "mejor opcion", "cuál es mejor", "cual es mejor",
+        
+        // Precios sin cotización formal
+        "cuánto cuesta", "cuanto cuesta", "precio", "range de precios", "precio aproximado",
+        
+        // Solicitud de información adicional
+        "más información", "mas informacion", "catálogo", "catalogo", "folleto",
+        
+        // Interés específico
+        "me interesa", "explícame", "explicame", "cómo funciona", "como funciona"
+      ],
+      cold: [
+        // Preguntas generales/informativas
+        "qué es", "que es", "información general", "informacion general", "solo pregunto",
+        
+        // Exploración sin compromiso
+        "solo navegando", "explorando opciones", "viendo qué hay", "viendo que hay",
+        
+        // Consultas de soporte
+        "problema con", "no funciona", "soporte", "ayuda con",
+        
+        // Sin intención inmediata
+        "tal vez", "en el futuro", "algún día", "algun dia", "quizá", "quiza",
+        
+        // Primera interacción básica
+        "hola", "buenos días", "información básica", "informacion basica"
+      ]
+    },
+    en: {
+      hot: [
+        // Cotización/Presupuesto específico
+        "quote", "budget", "quotation", "estimate", "need a quote", "need budget",
+        
+        // Disponibilidad inmediata
+        "available now", "immediate availability", "right now", "immediately",
+        
+        // Urgencia específica
+        "need it tomorrow", "it's urgent", "urgent", "fast", "quick", "rush", "asap", "today", "this week",
+        
+        // Información de contacto voluntaria
+        "my phone", "my number", "my email", "contact me", "you can call me",
+        
+        // Formas de pago/financiamiento
+        "payment options", "how can I pay", "financing", "credit", "payment methods",
+        
+        // Intención clara de compra
+        "want to buy", "how can I acquire", "how can I buy", "need to buy", "going to buy"
+      ],
+      warm: [
+        // Preguntas específicas sobre productos/servicios
+        "features", "specifications", "specs", "product details",
+        
+        // Interés en beneficios
+        "benefits", "advantages", "what includes",
+        
+        // Comparaciones
+        "compare", "differences", "vs", "best option", "which is better",
+        
+        // Precios sin cotización formal
+        "how much does it cost", "price", "cost", "price range", "ballpark price",
+        
+        // Solicitud de información adicional
+        "more information", "catalog", "brochure",
+        
+        // Interés específico
+        "interested", "tell me more", "explain", "how does it work"
+      ],
+      cold: [
+        // Preguntas generales/informativas
+        "what is", "general info", "just asking",
+        
+        // Exploración sin compromiso
+        "just browsing", "exploring options", "looking around",
+        
+        // Consultas de soporte
+        "problem with", "not working", "support", "help with", "technical issue",
+        
+        // Sin intención inmediata
+        "maybe", "in the future", "someday", "perhaps",
+        
+        // Primera interacción básica
+        "hello", "good morning", "basic information"
+      ]
+    }
   };
 
+  // Cargar keywords desde la base de datos filtradas por idioma
+  const loadKeywordsFromDatabase = async () => {
+    if (!session?.user?.workspaceId) return;
+    
+    setFeedback(t('leadClassification.feedback.loadingFromDatabase'));
+    
+    try {
+      // Cargar keywords filtradas por idioma actual
+      const response = await fetch(`/api/workspaces/${session.user.workspaceId}/lead-keywords?language=${currentLang}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.success) {
+          const keywords = data.keywords;
+          
+          console.log(`[KEYWORDS] Loading for language: ${currentLang}`, keywords);
+          
+          // Si hay keywords en la base de datos para este idioma, usarlas
+          if (keywords.hot.length > 0 || keywords.warm.length > 0 || keywords.cold.length > 0) {
+            setHotKeywords(keywords.hot);
+            setWarmKeywords(keywords.warm);
+            setColdKeywords(keywords.cold);
+            console.log(`[KEYWORDS] Loaded ${keywords.hot.length + keywords.warm.length + keywords.cold.length} keywords for language ${currentLang}`);
+            setFeedback('');
+          } else {
+            // Si no hay keywords para este idioma, usar por defecto según idioma actual
+            console.log(`[KEYWORDS] No keywords found for language ${currentLang}, using defaults`);
+            const langKeywords = defaultKeywords[currentLang as 'es' | 'en'];
+            setHotKeywords(langKeywords.hot);
+            setWarmKeywords(langKeywords.warm);
+            setColdKeywords(langKeywords.cold);
+            setFeedback(safeTranslate('leadClassification.feedback.usingDefaultKeywords', 'Using default keywords'));
+            setTimeout(() => setFeedback(''), 2000);
+          }
+        } else {
+          throw new Error('Error en respuesta de API');
+        }
+      } else {
+        throw new Error(`Error ${response.status}`);
+      }
+      
+      setKeywordsLoaded(true);
+      
+    } catch (error) {
+      console.error('Error cargando keywords desde BD:', error);
+      
+      // Fallback a valores por defecto según idioma actual
+      const langKeywords = defaultKeywords[currentLang as 'es' | 'en'];
+      setHotKeywords(langKeywords.hot);
+      setWarmKeywords(langKeywords.warm);
+      setColdKeywords(langKeywords.cold);
+      setKeywordsLoaded(true);
+      
+      setFeedback(t('leadClassification.feedback.usingDefaultKeywords'));
+      setTimeout(() => setFeedback(''), 3000);
+    }
+  };
+
+  const resetToDefaults = async () => {
+    try {
+      setFeedback(t('leadClassification.feedback.savingKeywords'));
+      
+      // Primero, eliminar todas las keywords existentes y luego agregar las por defecto
+      // Sería más eficiente con una API de reset, pero por simplicidad usamos las funciones existentes
+      
+      // Usar valores por defecto según idioma actual
+      const langKeywords = defaultKeywords[currentLang as 'es' | 'en'];
+      setHotKeywords(langKeywords.hot);
+      setWarmKeywords(langKeywords.warm);
+      setColdKeywords(langKeywords.cold);
+      
+      setFeedback(t('leadClassification.feedback.keywordsReset'));
+      setTimeout(() => setFeedback(''), 3000);
+    } catch (error) {
+      console.error('Error reseteando keywords:', error);
+      setFeedback(t('leadClassification.feedback.keywordsResetError'));
+      setTimeout(() => setFeedback(''), 3000);
+    }
+  };
+
+  // Función simplificada ya que las keywords se guardan automáticamente en cada operación
   const saveKeywordsConfig = () => {
-    const saved = saveKeywordsToStorage();
-    if (saved) {
-      setFeedback(t('leadClassification.feedback.keywordsConfigSaved'));
-    } else {
-      setFeedback('Error al guardar la configuración');
-    }
+    setFeedback(t('leadClassification.feedback.keywordsConfigSaved'));
     setTimeout(() => setFeedback(''), 3000);
   };
 
@@ -526,7 +741,7 @@ export default function LeadClassificationPage() {
       {showSettings && !keywordsLoaded && (
         <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-2"></div>
-          <p className="text-gray-600">Cargando configuración...</p>
+          <p className="text-gray-600">{t('leadClassification.feedback.loadingKeywords')}</p>
         </div>
       )}
       
@@ -559,7 +774,9 @@ export default function LeadClassificationPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-red-600" />
-                  <h3 className="font-medium text-gray-900">HOT 🔥 ({hotKeywords.length})</h3>
+                  <h3 className="font-medium text-gray-900">
+                    {translations.hotTitle[currentLang as 'es' | 'en']} ({hotKeywords.length})
+                  </h3>
                 </div>
                 
                 <div className="flex gap-2">
@@ -598,7 +815,9 @@ export default function LeadClassificationPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Minus className="h-4 w-4 text-yellow-600" />
-                  <h3 className="font-medium text-gray-900">WARM 🌡️ ({warmKeywords.length})</h3>
+                  <h3 className="font-medium text-gray-900">
+                    {translations.warmTitle[currentLang as 'es' | 'en']} ({warmKeywords.length})
+                  </h3>
                 </div>
                 
                 <div className="flex gap-2">
@@ -637,7 +856,9 @@ export default function LeadClassificationPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <TrendingDown className="h-4 w-4 text-blue-600" />
-                  <h3 className="font-medium text-gray-900">COLD ❄️ ({coldKeywords.length})</h3>
+                  <h3 className="font-medium text-gray-900">
+                    {translations.coldTitle[currentLang as 'es' | 'en']} ({coldKeywords.length})
+                  </h3>
                 </div>
                 
                 <div className="flex gap-2">
@@ -673,15 +894,7 @@ export default function LeadClassificationPage() {
               </div>
             </div>
             
-            <div className="mt-6 flex justify-between">
-              <button
-                onClick={resetToDefaults}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Restaurar por Defecto
-              </button>
-              
+            <div className="mt-6 flex justify-end">
               <button
                 onClick={saveKeywordsConfig}
                 className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"

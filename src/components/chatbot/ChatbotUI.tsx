@@ -11,7 +11,6 @@ import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 import { Bot, User, Globe } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
 import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
 
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },

@@ -132,13 +132,46 @@
       "reconnect": "Reconnect"
     },
     "requestsTitle": "Chat Requests",
-    "noRequests": "No pending requests.",
+    "noRequests": "No pending requests",
+    "myActiveChatsTitle": "My Active Chats",
+    "noActiveChats": "No active chats yet. Take one from requests above!",
     "activeChatTitle": "Active Chat: {{id}}",
     "closeChatButton": "Close Chat",
     "inputPlaceholder": "Type your response...",
     "inputPlaceholderDisconnected": "Waiting for connection...",
     "selectChatPrompt": "Select a chat to begin",
-    "chatClosed": "Chat was closed"
+    "chatClosed": "Chat was closed",
+    "sessionLabel": "Session",
+    "messagesCount": "{{count}} messages",
+    "transferredLabel": "Transferred",
+    "transferredFrom": "From: {{agent}}",
+    "status": {
+      "in_progress": "in_progress",
+      "pending": "pending",
+      "completed": "completed",
+      "closed": "closed"
+    }
+  },
+  "leadInfo": {
+    "title": "Lead Information",
+    "contact": "Contact Information",
+    "noContactInfo": "No contact information available",
+    "classification": "Classification",
+    "reclassify": "Reclassify",
+    "stats": "Statistics",
+    "totalMessages": "Messages",
+    "sessions": "Sessions",
+    "lastInteraction": "Last interaction",
+    "tags": "Tags",
+    "noTags": "No tags",
+    "addTagPlaceholder": "New tag...",
+    "notes": "Internal Notes",
+    "noNotes": "No internal notes",
+    "addNotePlaceholder": "Add internal note...",
+    "quickActions": "Quick Actions",
+    "reclassifyAction": "Reclassify Lead",
+    "scheduleFollowup": "Schedule Follow-up",
+    "exportConversation": "Export Conversation"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -246,6 +279,11 @@
     "newHotKeyword": "New HOT keyword...",
     "newWarmKeyword": "New WARM keyword...",
     "newColdKeyword": "New COLD keyword...",
+    "hotKeywordsTitle": "HOT 🔥",
+    "warmKeywordsTitle": "WARM 🌡️", 
+    "coldKeywordsTitle": "COLD ❄️",
+    "resetToDefaults": "Reset to Defaults",
+    "keywordCount": "({{count}})",
     "resultsTitle": "Classification Results",
     "noResults": "No results yet. Run the classification to see lead analysis.",
     "tableHeaderChat": "Chat",
@@ -258,7 +296,17 @@
       "classificationComplete": "Classification completed! {{count}} chats processed.",
       "classificationError": "Error during classification. Please try again.",
       "keywordsConfigSaved": "Keywords configuration saved successfully",
-      "keywordAdded": "Added keyword: \"{{keyword}}\""
+      "keywordAdded": "Added keyword: \"{{keyword}}\"",
+      "loadingKeywords": "Loading keywords configuration...",
+      "keywordAddError": "Error adding keyword. It might already exist.",
+      "keywordRemoveError": "Error removing keyword. Please try again.",
+      "keywordDuplicate": "This keyword already exists in this category",
+      "keywordEmpty": "Please enter a keyword",
+      "savingKeywords": "Saving keywords...",
+      "loadingFromDatabase": "Loading from database...",
+      "usingDefaultKeywords": "Using default keywords",
+      "keywordsReset": "Keywords restored to defaults",
+      "keywordsResetError": "Error restoring keywords"
     }
   }
 }

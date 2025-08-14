@@ -36,51 +36,229 @@ interface LeadScoringConfig {
   ai_model: string;
 }
 
+
 /**
- * Obtiene la configuración por defecto (sin base de datos)
+ * Detecta el idioma predominante de una conversación
  */
-function getDefaultScoringConfig(): LeadScoringConfig {
+function detectConversationLanguage(history: Message[]): 'es' | 'en' {
+  const userMessages = history.filter(msg => msg.role === 'user');
+  const conversationText = userMessages.map(msg => msg.content.toLowerCase()).join(' ');
+  
+  const spanishWords = [
+    'hola', 'como', 'que', 'el', 'la', 'los', 'las', 'de', 'en', 'con', 'por', 'para',
+    'es', 'son', 'esta', 'esta', 'tengo', 'quiero', 'necesito', 'puedo', 'donde',
+    'cuando', 'porque', 'si', 'no', 'tambien', 'muy', 'mas', 'menos', 'sobre',
+    'hasta', 'desde', 'entre', 'sin', 'tras', 'durante', 'mediante', 'según'
+  ];
+
+  const englishWords = [
+    'hello', 'how', 'what', 'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it',
+    'you', 'that', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his',
+    'they', 'i', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had',
+    'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your'
+  ];
+
+  const spanishMatches = spanishWords.filter(word => 
+    conversationText.includes(word)
+  ).length;
+  
+  const englishMatches = englishWords.filter(word => 
+    conversationText.includes(word)
+  ).length;
+
+  console.log(`[LANGUAGE] Detected - Spanish matches: ${spanishMatches}, English matches: ${englishMatches}`);
+  
+  return spanishMatches > englishMatches ? 'es' : 'en';
+}
+
+/**
+ * Obtiene la configuración de keywords desde la base de datos
+ */
+async function getScoringConfigFromDB(workspaceId: string, language?: 'es' | 'en'): Promise<LeadScoringConfig> {
+  try {
+    // Construir query con filtro por idioma si se especifica
+    let query = supabaseAdmin
+      .from('lead_keywords')
+      .select('keyword, category, language')
+      .eq('workspace_id', workspaceId)
+      .order('category', { ascending: true });
+
+    // Filtrar por idioma usando la columna language
+    if (language) {
+      query = query.eq('language', language);
+    }
+
+    const { data: keywords, error } = await query;
+
+    if (error) {
+      console.error('Error obteniendo keywords de BD:', error);
+      return getDefaultScoringConfig(language);
+    }
+
+    // Si no hay keywords, usar por defecto
+    if (!keywords || keywords.length === 0) {
+      console.log(`[KEYWORDS] No keywords found in DB for language ${language || 'all'}, using defaults`);
+      return getDefaultScoringConfig(language);
+    }
+
+    // Organizar keywords por categoría
+    const keywordsByCategory = {
+      hot: keywords.filter(k => k.category === 'hot').map(k => k.keyword),
+      warm: keywords.filter(k => k.category === 'warm').map(k => k.keyword),
+      cold: keywords.filter(k => k.category === 'cold').map(k => k.keyword)
+    };
+
+    console.log(`[KEYWORDS] Loaded from DB for language ${language || 'all'} - Hot: ${keywordsByCategory.hot.length}, Warm: ${keywordsByCategory.warm.length}, Cold: ${keywordsByCategory.cold.length}`);
+
+    return {
+      enabled: true,
+      scoring_rules: {
+        keywords: keywordsByCategory,
+        engagement: {
+          message_count_weight: 2,
+          question_count_weight: 5,
+          response_time_weight: 1
+        }
+      },
+      hot_threshold: 50,
+      warm_threshold: 20,
+      ai_enabled: true,
+      ai_model: 'gemini-2.0-flash'
+    };
+
+  } catch (error) {
+    console.error('Error en getScoringConfigFromDB:', error);
+    return getDefaultScoringConfig(language);
+  }
+}
+
+/**
+ * Obtiene la configuración por defecto (fallback) con keywords separadas por idioma
+ */
+function getDefaultScoringConfig(language: 'es' | 'en' = 'es'): LeadScoringConfig {
+  // Keywords por defecto separadas por idioma - sin repetidas
+  const defaultKeywords = {
+    es: {
+      hot: [
+        // Cotización/Presupuesto específico
+        "cotización", "cotizacion", "presupuesto", "quiero cotización", "necesito presupuesto",
+        
+        // Disponibilidad inmediata
+        "disponibilidad inmediata", "disponible ahora", "ahora mismo", "de inmediato",
+        
+        // Urgencia específica
+        "necesito para mañana", "es urgente", "urgente", "rápido", "rapido", "prisa", "ya", "hoy mismo", "esta semana",
+        
+        // Información de contacto voluntaria
+        "mi teléfono", "mi telefono", "mi número", "mi numero", "mi email", "mi correo", "contactarme", "pueden llamarme",
+        
+        // Formas de pago/financiamiento
+        "formas de pago", "como puedo pagar", "financiamiento", "crédito", "credito", "métodos de pago",
+        
+        // Intención clara de compra
+        "quiero comprar", "cómo puedo adquirir", "como puedo adquirir", "necesito comprar", "voy a comprar"
+      ],
+      warm: [
+        // Preguntas específicas sobre productos/servicios
+        "características", "caracteristicas", "especificaciones", "detalles del producto",
+        
+        // Interés en beneficios
+        "beneficios", "ventajas", "qué incluye", "que incluye",
+        
+        // Comparaciones
+        "comparar", "diferencias", "mejor opción", "mejor opcion", "cuál es mejor", "cual es mejor",
+        
+        // Precios sin cotización formal
+        "cuánto cuesta", "cuanto cuesta", "precio", "range de precios", "precio aproximado",
+        
+        // Solicitud de información adicional
+        "más información", "mas informacion", "catálogo", "catalogo", "folleto",
+        
+        // Interés específico
+        "me interesa", "explícame", "explicame", "cómo funciona", "como funciona"
+      ],
+      cold: [
+        // Preguntas generales/informativas
+        "qué es", "que es", "información general", "informacion general", "solo pregunto",
+        
+        // Exploración sin compromiso
+        "solo navegando", "explorando opciones", "viendo qué hay", "viendo que hay",
+        
+        // Consultas de soporte
+        "problema con", "no funciona", "soporte", "ayuda con",
+        
+        // Sin intención inmediata
+        "tal vez", "en el futuro", "algún día", "algun dia", "quizá", "quiza",
+        
+        // Primera interacción básica
+        "hola", "buenos días", "información básica", "informacion basica"
+      ]
+    },
+    en: {
+      hot: [
+        // Cotización/Presupuesto específico
+        "quote", "budget", "quotation", "estimate", "need a quote", "need budget",
+        
+        // Disponibilidad inmediata
+        "available now", "immediate availability", "right now", "immediately",
+        
+        // Urgencia específica
+        "need it tomorrow", "it's urgent", "urgent", "fast", "quick", "rush", "asap", "today", "this week",
+        
+        // Información de contacto voluntaria
+        "my phone", "my number", "my email", "contact me", "you can call me", "call me",
+        
+        // Formas de pago/financiamiento
+        "payment options", "how can I pay", "financing", "credit", "payment methods",
+        
+        // Intención clara de compra
+        "want to buy", "how can I acquire", "how can I buy", "need to buy", "going to buy"
+      ],
+      warm: [
+        // Preguntas específicas sobre productos/servicios
+        "features", "specifications", "specs", "product details",
+        
+        // Interés en beneficios
+        "benefits", "advantages", "what includes",
+        
+        // Comparaciones
+        "compare", "differences", "vs", "best option", "which is better",
+        
+        // Precios sin cotización formal
+        "how much does it cost", "price", "cost", "price range", "ballpark price",
+        
+        // Solicitud de información adicional
+        "more information", "catalog", "brochure",
+        
+        // Interés específico
+        "interested", "tell me more", "explain", "how does it work"
+      ],
+      cold: [
+        // Preguntas generales/informativas
+        "what is", "general info", "just asking",
+        
+        // Exploración sin compromiso
+        "just browsing", "exploring options", "looking around",
+        
+        // Consultas de soporte
+        "problem with", "not working", "support", "help with", "technical issue",
+        
+        // Sin intención inmediata
+        "maybe", "in the future", "someday", "perhaps",
+        
+        // Primera interacción básica
+        "hello", "good morning", "basic information"
+      ]
+    }
+  };
+
+  // Usar keywords del idioma especificado
+  const keywords = defaultKeywords[language];
+
   return {
     enabled: true, // Siempre habilitado
     scoring_rules: {
-      keywords: {
-        hot: [
-          // Cotización/Presupuesto
-          "cotizacion", "cotización", "presupuesto", "quote", "budget", "precio exacto",
-          // Disponibilidad inmediata
-          "disponibilidad", "inmediato", "availability", "ahora", "hoy", "ya",
-          // Urgencia
-          "urgente", "urgent", "mañana", "esta semana", "rapido", "rápido", "prisa",
-          // Intención de compra
-          "quiero comprar", "como comprar", "cómo comprar", "quiero adquirir", "want to buy", "adquirir",
-          // Pago/Financiamiento  
-          "formas de pago", "financiamiento", "payment", "financing", "credito", "crédito", "contado",
-          // Información de contacto (indicadores)
-          "mi numero", "mi número", "mi email", "mi telefono", "mi teléfono", "contactarme"
-        ],
-        warm: [
-          // Preguntas específicas
-          "caracteristicas", "características", "beneficios", "features", "funciona como", "incluye",
-          // Comparaciones
-          "diferencia", "comparar", "vs", "mejor opcion", "mejor opción", "compare", "options",
-          // Precios sin cotización
-          "cuanto cuesta", "cuánto cuesta", "precio", "cost", "range de precio", "aproximado",
-          // Información adicional
-          "mas informacion", "más información", "catalogo", "catálogo", "brochure", "detalles", "specs",
-          // Interés específico
-          "me interesa", "interested", "tell me more", "explain", "como funciona", "cómo funciona"
-        ],
-        cold: [
-          // Consultas generales
-          "solo pregunta", "just asking", "curiosidad", "exploring", "navegando", "viendo opciones",
-          // Primera interacción básica
-          "que es", "qué es", "what is", "general info", "informacion basica", "información básica",
-          // Soporte técnico
-          "problema con", "no funciona", "support", "ayuda con", "technical issue", "falla",
-          // Sin compromiso
-          "maybe", "tal vez", "quiza", "quizá", "futuro", "future", "eventually", "someday"
-        ]
-      },
+      keywords: keywords,
       engagement: {
         message_count_weight: 2, // Reducido de 10 a 2
         question_count_weight: 5, // Reducido de 15 a 5  
@@ -131,18 +309,23 @@ function analyzeByRules(history: Message[], config: LeadScoringConfig): Classifi
     }
   });
 
-  // Análisis de engagement basado en longitud de conversación
+  // Análisis de engagement basado en longitud de conversación según especificaciones del cliente
   const messageCount = userMessages.length;
   let engagementScore = 0;
   
-  // Bonificación por conversación prolongada (WARM)
-  if (messageCount >= 5) {
-    engagementScore += 15; // Bonus por conversación larga (criterio WARM)
-    console.log(`[DEBUG] Long conversation bonus: 15 points`);
+  // Criterios específicos del cliente:
+  if (messageCount > 5) {
+    // Interacción prolongada (más de 5 mensajes intercambiados) = WARM
+    engagementScore += 20; // Bonus por conversación larga (criterio WARM específico)
+    console.log(`[DEBUG] Prolonged interaction bonus (>5 messages): 20 points`);
   } else if (messageCount >= 3) {
-    engagementScore += 5; // Conversación media
+    // Conversación media (3-5 mensajes)
+    engagementScore += 8; 
+  } else {
+    // Interacción muy breve (menos de 3 mensajes) = COLD según cliente
+    engagementScore -= 10; // Penalización por conversación muy corta (criterio COLD específico)
+    console.log(`[DEBUG] Brief interaction penalty (<3 messages): -10 points`);
   }
-  // Conversaciones muy cortas (<3 mensajes) son indicador de COLD (no suman)
   
   score += engagementScore;
   console.log(`[DEBUG] Engagement score: ${engagementScore}, total: ${score}`);
@@ -224,28 +407,30 @@ function generateClassificationPrompt(history: Message[], language: string = 'es
   const promptInstructions = {
     es: `Eres un experto en análisis de leads y clasificación de clientes potenciales. 
     
-Analiza la siguiente conversación de chat y clasifica al cliente potencial en una de estas categorías:
+Analiza la siguiente conversación de chat y clasifica al cliente potencial según estos criterios específicos:
 
 **CALIENTE (HOT) - 70-100 puntos:**
-- Intención clara de compra inmediata
-- Solicita precios, cotizaciones, presupuestos
-- Palabras como: "comprar", "contratar", "precio", "cotizar", "urgente"
-- Alto engagement, muchas preguntas específicas
-- Disponibilidad inmediata para proceder
+- Solicitó específicamente una cotización o presupuesto
+- Preguntó sobre disponibilidad inmediata
+- Mencionó urgencia ("necesito para mañana", "es urgente")
+- Proporcionó información de contacto voluntariamente
+- Preguntó sobre formas de pago o financiamiento
+- Expresó intención clara de compra ("quiero comprar", "cómo puedo adquirir")
 
 **TIBIO (WARM) - 40-69 puntos:**
-- Interés genuino pero sin urgencia inmediata
-- Solicita información, demos, pruebas
-- Palabras como: "interesado", "información", "demo", "futuro"
-- Engagement moderado, algunas preguntas
-- Necesita más nurturing antes de decidir
+- Hizo preguntas específicas sobre productos/servicios
+- Mostró interés en características o beneficios
+- Comparó opciones o modelos
+- Preguntó sobre precios sin solicitar cotización formal
+- Interacción prolongada (más de 5 mensajes intercambiados)
+- Solicitó información adicional o catálogos
 
 **FRÍO (COLD) - 0-39 puntos:**
-- Consulta general o exploratoria
-- Sin intención de compra aparente
-- Palabras como: "solo pregunta", "comparar", "tal vez"
-- Bajo engagement, pocas preguntas
-- No muestra urgencia o compromiso
+- Preguntas generales o informativas
+- Primera interacción sin señales de compra
+- Solo navegando o explorando opciones
+- Consultas de soporte sobre productos ya adquiridos
+- Interacción muy breve (menos de 3 mensajes)
 
 RESPONDE ÚNICAMENTE en este formato JSON:
 {
@@ -255,28 +440,30 @@ RESPONDE ÚNICAMENTE en este formato JSON:
 }`,
     en: `You are an expert in lead analysis and potential customer classification.
     
-Analyze the following chat conversation and classify the potential customer into one of these categories:
+Analyze the following chat conversation and classify the potential customer according to these specific criteria:
 
 **HOT - 70-100 points:**
-- Clear intention to buy immediately
-- Requests prices, quotes, budgets
-- Keywords: "buy", "hire", "price", "quote", "urgent"
-- High engagement, many specific questions
-- Immediate availability to proceed
+- Specifically requested a quote or budget
+- Asked about immediate availability
+- Mentioned urgency ("need it tomorrow", "it's urgent")
+- Voluntarily provided contact information
+- Asked about payment methods or financing
+- Expressed clear purchase intention ("want to buy", "how can I acquire")
 
 **WARM - 40-69 points:**
-- Genuine interest but no immediate urgency
-- Requests information, demos, trials
-- Keywords: "interested", "information", "demo", "future"
-- Moderate engagement, some questions
-- Needs more nurturing before deciding
+- Asked specific questions about products/services
+- Showed interest in features or benefits
+- Compared options or models
+- Asked about prices without requesting formal quote
+- Prolonged interaction (more than 5 exchanged messages)
+- Requested additional information or catalogs
 
 **COLD - 0-39 points:**
-- General or exploratory inquiry
-- No apparent purchase intention
-- Keywords: "just asking", "compare", "maybe"
-- Low engagement, few questions
-- Shows no urgency or commitment
+- General or informative questions
+- First interaction without purchase signals
+- Just browsing or exploring options
+- Support inquiries about already purchased products
+- Very brief interaction (less than 3 messages)
 
 RESPOND ONLY in this JSON format:
 {
@@ -349,10 +536,7 @@ async function classifyLead(workspaceId: string, chatSessionId: string): Promise
   console.log(`[Lead Classification] Iniciando análisis para chat ${chatSessionId} en workspace ${workspaceId}`);
 
   try {
-    // 1. Usar configuración por defecto (sin base de datos)
-    const config = getDefaultScoringConfig();
-
-    // 2. Obtener historial del chat
+    // 1. Obtener historial del chat primero para detectar idioma
     const { data: chatSession, error } = await supabaseAdmin
       .from('chat_sessions')
       .select('history')
@@ -370,19 +554,26 @@ async function classifyLead(workspaceId: string, chatSessionId: string): Promise
       return null;
     }
 
-    // 3. Realizar análisis
+    // 2. Detectar idioma de la conversación
+    const detectedLanguage = detectConversationLanguage(history);
+    console.log(`[Lead Classification] Idioma detectado: ${detectedLanguage}`);
+
+    // 3. Obtener configuración desde la base de datos con idioma detectado
+    const config = await getScoringConfigFromDB(workspaceId, detectedLanguage);
+
+    // 4. Realizar análisis
     let result: ClassificationResult;
     if (config.ai_enabled) {
-      console.log(`[Lead Classification] Usando IA para análisis`);
+      console.log(`[Lead Classification] Usando IA para análisis con idioma ${detectedLanguage}`);
       result = await analyzeWithAI(history, config, workspaceId);
     } else {
-      console.log(`[Lead Classification] Usando reglas para análisis`);
+      console.log(`[Lead Classification] Usando reglas para análisis con idioma ${detectedLanguage}`);
       result = analyzeByRules(history, config);
     }
 
-    // 4. NO guardamos en base de datos - solo devolvemos el resultado en memoria
+    // 5. NO guardamos en base de datos - solo devolvemos el resultado en memoria
 
-    console.log(`[Lead Classification] Clasificación completada: ${result.classification} (${result.score})`);
+    console.log(`[Lead Classification] Clasificación completada: ${result.classification} (${result.score}) con keywords en ${detectedLanguage}`);
     return result;
 
   } catch (error) {

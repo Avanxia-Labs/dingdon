@@ -123,6 +123,78 @@
 
 // public/loader.js
 (function () {
+    // BLOQUEO TOTAL PARA DASHBOARD - SOLUCIÓN DEFINITIVA
+    const currentPath = window.location.pathname;
+    const currentHost = window.location.hostname;
+    
+    console.log('[Chatbot Widget] Checking path:', currentPath);
+    console.log('[Chatbot Widget] Host:', currentHost);
+    
+    // Lista de páginas donde SÍ debe cargar el widget (MUY RESTRICTIVO)
+    const allowedPages = [
+        '/test-widget.html',
+        '/demo.html',
+        '/preview.html'
+    ];
+    
+    // Lista de rutas donde NUNCA debe cargar (MUY AMPLIO)
+    const blockedPaths = [
+        '/dashboard',
+        '/login',
+        '/api',
+        '/admin',
+        '/settings',
+        '/_next',
+        '/static'
+    ];
+    
+    // BLOQUEO 1: Si contiene "dashboard" en cualquier parte, SALIR INMEDIATAMENTE
+    if (currentPath.includes('/dashboard')) {
+        console.log('[Chatbot Widget] ❌ BLOCKED - Dashboard detected in path');
+        // Eliminar cualquier elemento existente del widget
+        setTimeout(() => {
+            const elementsToRemove = [
+                'chatbot-animated-container', 'chatbot-head', 'chatbot-body', 
+                'chatbot-left-arm', 'chatbot-right-arm', 'chatbot-left-hand', 
+                'chatbot-right-hand', 'chatbot-left-leg', 'chatbot-right-leg', 
+                'chatbot-left-foot', 'chatbot-right-foot', 'chatbot-iframe', 
+                'chatbot-toggle-button'
+            ];
+            elementsToRemove.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            });
+        }, 100);
+        return;
+    }
+    
+    // BLOQUEO 2: Verificar host y rutas específicas
+    const isBlocked = blockedPaths.some(path => currentPath.includes(path));
+    const isAllowed = allowedPages.some(page => currentPath.includes(page));
+    
+    // En localhost, SOLO cargar si está explícitamente permitido
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+        if (!isAllowed) {
+            console.log('[Chatbot Widget] ❌ BLOCKED on localhost - not in allowed pages list');
+            console.log('[Chatbot Widget] Current path:', currentPath);
+            console.log('[Chatbot Widget] Allowed pages:', allowedPages);
+            
+            // Limpiar cualquier widget existente
+            const existing = document.getElementById('chatbot-animated-container');
+            if (existing) existing.remove();
+            
+            return;
+        }
+    } else {
+        // En producción, bloquear rutas específicas
+        if (isBlocked) {
+            console.log('[Chatbot Widget] ❌ BLOCKED - blocked route detected:', currentPath);
+            return;
+        }
+    }
+    
+    console.log('[Chatbot Widget] ✅ LOADING - Page approved:', currentPath);
+    
     if (window.ChatbotLoaded) return;
     window.ChatbotLoaded = true;
 

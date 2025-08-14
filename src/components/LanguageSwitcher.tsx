@@ -84,46 +84,115 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
-
-const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    // { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    // { code: 'zh', name: '中文', flag: '🇨🇳' },
-    // { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-];
+import { SUPPORTED_LANGUAGES } from '@/app/i18n';
+import { Globe, ChevronDown } from 'lucide-react';
 
 interface LanguageSwitcherProps {
     setLanguage: (language: string) => void;
-    // Added for styling consistency in different sidebars
     className?: string; 
+    variant?: 'sidebar' | 'dropdown';
 }
 
-export const LanguageSwitcher = ({ setLanguage, className = '' }: LanguageSwitcherProps) => {
+export const LanguageSwitcher = ({ 
+    setLanguage, 
+    className = '', 
+    variant = 'dropdown' 
+}: LanguageSwitcherProps) => {
     const { i18n } = useTranslation();
+    const [isOpen, setIsOpen] = useState(false);
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
         setLanguage(lng);
+        
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('i18nextLng', lng);
+        
+        // Cerrar dropdown si estamos en modo dropdown
+        if (variant === 'dropdown') {
+            setIsOpen(false);
+        }
+        
+        console.log(`[LanguageSwitcher] Changed language to: ${lng}`);
     };
 
+    const currentLanguage = SUPPORTED_LANGUAGES.find(lang => lang.code === i18n.language) || SUPPORTED_LANGUAGES[0];
+
+    // Versión para sidebar (select simple)
+    if (variant === 'sidebar') {
+        return (
+            <div className={`relative ${className}`}>
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
+                <select
+                    value={i18n.language}
+                    onChange={(e) => changeLanguage(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-500 bg-gray-700 text-white rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    aria-label="Select language"
+                >
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code} className="bg-gray-800 text-white">
+                            {`${lang.flag} ${lang.name}`}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        );
+    }
+
+    // Versión dropdown personalizada
     return (
         <div className={`relative ${className}`}>
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-            <select
-                value={i18n.language}
-                onChange={(e) => changeLanguage(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-500 bg-gray-700 text-white rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-sm w-full"
                 aria-label="Select language"
+                aria-expanded={isOpen}
             >
-                {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code} className="bg-gray-800 text-white">
-                        {`${lang.name} ${lang.flag}`}
-                    </option>
-                ))}
-            </select>
+                <Globe size={16} className="text-gray-400" />
+                <span className="flex items-center gap-2 flex-1">
+                    <span>{currentLanguage.flag}</span>
+                    <span className="truncate">{currentLanguage.name}</span>
+                </span>
+                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <>
+                    {/* Overlay para cerrar */}
+                    <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setIsOpen(false)}
+                    />
+                    
+                    {/* Dropdown */}
+                    <div className="absolute bottom-full left-0 right-0 mb-2 z-50 bg-gray-800 rounded-lg shadow-lg border border-gray-600 py-2 max-h-64 overflow-y-auto">
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-600">
+                            Select Language
+                        </div>
+                        
+                        {SUPPORTED_LANGUAGES.map((language) => (
+                            <button
+                                key={language.code}
+                                onClick={() => changeLanguage(language.code)}
+                                className={`w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-3 transition-colors text-sm ${
+                                    language.code === i18n.language 
+                                        ? 'bg-gray-700 text-blue-400' 
+                                        : 'text-gray-200'
+                                }`}
+                            >
+                                <span>{language.flag}</span>
+                                <span className="truncate">{language.name}</span>
+                                <span className="text-xs text-gray-500 ml-auto">{language.code.toUpperCase()}</span>
+                                {language.code === i18n.language && (
+                                    <span className="text-blue-400 text-xs ml-1">✓</span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 };
