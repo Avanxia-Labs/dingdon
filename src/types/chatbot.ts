@@ -25,7 +25,8 @@ export interface Message {
   content: string;
   role: Roles 
   timestamp: Date;
-  agentName?: string; // Optional, used for agent messages
+  agentName?: string; 
+  avatarUrl?: string;
 }
 
 /**

@@ -42,6 +42,7 @@
     "teamMembers": "Miembros",
     "chatHistory": "Historial de Chats",
     "settingsAndBot": "Ajustes y Bot",
+    "profile": "Mi Perfil",
     "signOut": "Cerrar Sesión",
     "leads": "Leads"
   },
@@ -117,7 +118,8 @@
     "feedback": {
       "deletingAll": "Eliminando todos los historiales...",
       "deletedAllSuccess": "Todos los historiales de chat han sido eliminados."
-    }
+    },
+    "tableHeaderChannel": "Canal"
   },
   "chatPanel": {
     "notifications": {
@@ -229,16 +231,27 @@
       "crawlButton": "Rastrear y Entrenar"
     },
     "botAvatar": {
-        "label": "URL del Avatar del Bot",
-        "description": "Proporciona una URL directa a una imagen para el avatar del bot. Déjalo vacío para usar el avatar por defecto.",
-        "placeholder": "https://ejemplo.com/avatar.png",
-        "uploadingButton": "Subiendo...",
-        "changeButton": "Cambiar Imagen"
+      "label": "URL del Avatar del Bot",
+      "description": "Proporciona una URL directa a una imagen para el avatar del bot. Déjalo vacío para usar el avatar por defecto.",
+      "placeholder": "https://ejemplo.com/avatar.png",
+      "uploadingButton": "Subiendo...",
+      "changeButton": "Cambiar Imagen"
     },
     "botIntro": {
-        "label": "Introducción del Bot",
-        "description": "Una introducción corta y amigable que aparece debajo del nombre del bot.",
-        "placeholder": "Tu asistente virtual de IA."
+      "label": "Introducción del Bot",
+      "description": "Una introducción corta y amigable que aparece debajo del nombre del bot.",
+      "placeholder": "Tu asistente virtual de IA."
+    }
+  },
+  "profile": {
+    "pageTitle": "Mi Perfil",
+    "avatarLabel": "Foto de Perfil",
+    "changeButton": "Cambiar",
+    "uploadingButton": "Subiendo...",
+    "savingButton": "Guardando...",
+    "feedback": {
+      "avatarUpdated": "¡Avatar actualizado! Haz clic en 'Guardar' para aplicar los cambios.",
+      "saveSuccess": "¡Perfil guardado con éxito!"
     }
   },
   "whatsapp": {

@@ -126,7 +126,7 @@ const ChatInterface = () => {
                                 {(message.role === 'assistant' || message.role === 'agent') && (
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
                                         <img
-                                            src={config.botAvatarUrl || '/default-bot-avatar.png'} // Por ahora, el agente también usa el avatar del bot
+                                            src={message.role === 'agent' && message.avatarUrl ? message.avatarUrl : config.botAvatarUrl} // Por ahora, el agente también usa el avatar del bot
                                             alt="Avatar"
                                             className="w-full h-full rounded-full object-cover"
                                         />
@@ -148,8 +148,8 @@ const ChatInterface = () => {
                                                 </div>
                                             ) : message.role === 'agent' ? (
                                                 <div className="flex flex-row items-center gap-1">
-                                                    <User size={16} className='text-slate-500 flex-shrink-0' />
-                                                    <span className="text-xs font-semibold text-slate-600">{t('chatbotUI.agentLabel')}</span>
+                                                    {/* <User size={16} className='text-slate-500 flex-shrink-0' /> */}
+                                                    <span className="text-xs font-semibold text-slate-600">{message.agentName || t('chatbotUI.agentLabel')}</span>
                                                 </div>
                                             ) : null}
                                         </div>

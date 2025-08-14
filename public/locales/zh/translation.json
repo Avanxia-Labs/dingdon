@@ -44,6 +44,7 @@
     "teamMembers": "团队成员",
     "chatHistory": "对话历史",
     "settingsAndBot": "设置和机器人",
+    "profile": "我的个人资料",
     "signOut": "退出",
     "leads": "潜在客户"
   },
@@ -87,7 +88,7 @@
     },
     "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。",
     "configsTitle": "Twilio 配置"
-  }, 
+  },
   "agents": {
     "pageTitle": "团队成员",
     "inviteTitle": "邀请新成员",
@@ -119,7 +120,8 @@
     "feedback": {
       "deletingAll": "删除所有历史中...",
       "deletedAllSuccess": "所有对话历史已删除。"
-    }
+    },
+    "tableHeaderChannel": "渠道"
   },
   "chatPanel": {
     "notifications": {
@@ -231,16 +233,27 @@
       "crawlButton": "爬取并训练"
     },
     "botAvatar": {
-        "label": "机器人头像 URL",
-        "description": "提供机器人头像的直接图片 URL。留空以使用默认头像。",
-        "placeholder": "https://example.com/avatar.png",
-        "uploadingButton": "上传中...",
-        "changeButton": "更换图片"
+      "label": "机器人头像 URL",
+      "description": "提供机器人头像的直接图片 URL。留空以使用默认头像。",
+      "placeholder": "https://example.com/avatar.png",
+      "uploadingButton": "上传中...",
+      "changeButton": "更换图片"
     },
     "botIntro": {
-        "label": "机器人介绍",
-        "description": "显示在机器人名称下方的简短友好介绍。",
-        "placeholder": "您的人工智能虚拟助手。"
+      "label": "机器人介绍",
+      "description": "显示在机器人名称下方的简短友好介绍。",
+      "placeholder": "您的人工智能虚拟助手。"
+    }
+  },
+  "profile": {
+    "pageTitle": "我的个人资料",
+    "avatarLabel": "个人头像",
+    "changeButton": "更换",
+    "uploadingButton": "上传中...",
+    "savingButton": "保存中...",
+    "feedback": {
+      "avatarUpdated": "头像已更新！点击“保存”以应用更改。",
+      "saveSuccess": "个人资料已成功保存！"
     }
   },
   "whatsapp": {

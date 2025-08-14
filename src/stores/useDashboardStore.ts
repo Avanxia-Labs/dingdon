@@ -14,12 +14,20 @@ interface ActiveChat {
     status: ChatSessionStatus;
 }
 
+interface BotConfig {
+    name?: string;
+    avatarUrl?: string;
+}
+
 interface DashboardState {
     // Estado de las solicitudes pendientes
     requests: ChatRequest[];
     
     // Estado del chat activo
     activeChat: ActiveChat | null;
+
+    // Estado del bot para el ChatPanel
+    activeBotConfig: BotConfig | null;
     
     // Estado de notificaciones
     notificationsEnabled: boolean;
@@ -42,6 +50,9 @@ interface DashboardState {
 
     // Acciones para el idioma
     setLanguage: (language: string) => void;
+
+    // Acciones para la config del bot
+    setActiveBotConfig: (config: BotConfig) => void;
     
     // Utilidades
     resetDashboard: () => void;
@@ -54,6 +65,7 @@ export const useDashboardStore = create<DashboardState>()(
             activeChat: null,
             notificationsEnabled: false,
             language: 'en',
+            activeBotConfig: null,
             
             addRequest: (request) => set((state) => ({
                 requests: state.requests.some(r => r.sessionId === request.sessionId) 
@@ -104,6 +116,8 @@ export const useDashboardStore = create<DashboardState>()(
             setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
 
             setLanguage: (language) => set({ language }),
+
+            setActiveBotConfig: (config) => set({ activeBotConfig: config }),
             
             resetDashboard: () => set({
                 requests: [],
@@ -119,6 +133,7 @@ export const useDashboardStore = create<DashboardState>()(
                 activeChat: state.activeChat,
                 notificationsEnabled: state.notificationsEnabled,
                 language: state.language,
+                activeBotConfig: state.activeBotConfig,
             })
         }
     )

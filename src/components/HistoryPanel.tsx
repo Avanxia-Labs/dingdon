@@ -170,9 +170,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Message } from '@/types/chatbot';
-import { Eye, Trash2, X } from 'lucide-react';
+import { Eye, MessageCircle, MessageSquare, Trash2, X } from 'lucide-react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import LanguageIcon from '@mui/icons-material/Language';
 
 interface ChatLog {
     id: string;
@@ -180,6 +182,7 @@ interface ChatLog {
     agentName: string;
     messageCount: number;
     firstMessage: string;
+    channel: 'web' | 'whatsapp' | null
 }
 
 interface HistoryPanelProps {
@@ -257,6 +260,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId }) => {
                         <thead>
                             <tr>
                                 <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">{t('history.tableHeaderDate')}</th>
+                                <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">{t('history.tableHeaderChannel')}</th>
                                 <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">{t('history.tableHeaderAgent')}</th>
                                 <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">{t('history.tableHeaderPreview')}</th>
                                 <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase text-center">{t('history.tableHeaderMessages')}</th>
@@ -267,6 +271,21 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId }) => {
                             {chatLogs.map(log => (
                                 <tr key={log.id} className="hover:bg-gray-50">
                                     <td className="px-5 py-4 border-b text-sm">{new Date(log.startTime).toLocaleString()}</td>
+                                    <td className="px-5 py-4 border-b text-sm">
+                                        <div className="flex justify-center">
+                                            {log.channel === 'whatsapp' ? (
+                                                <WhatsAppIcon
+                                                    style={{ color: '#25D366' }} // Color oficial de WhatsApp
+                                                    titleAccess="WhatsApp"
+                                                />
+                                            ) : (
+                                                <LanguageIcon
+                                                    className="text-blue-600" // Usa una clase de Tailwind
+                                                    titleAccess="Web Chat"
+                                                /> 
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-5 py-4 border-b text-sm">{log.agentName}</td>
                                     <td className="px-5 py-4 border-b text-sm"><p className="truncate max-w-xs">{log.firstMessage}</p></td>
                                     <td className="px-5 py-4 border-b text-sm text-center">{log.messageCount}</td>

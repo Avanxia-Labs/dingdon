@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { redirect, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, Users, Settings, History, Star } from 'lucide-react';
+import { MessageSquare, Users, Settings, History, Star, UserCircle } from 'lucide-react';
 import { SocketProvider } from '@/providers/SocketContext';
 import { I18nProvider } from '@/providers/I18nProvider';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +59,8 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/members', label: t('dashboardLayout.teamMembers'), icon: <Users className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/history', label: t('dashboardLayout.chatHistory'), icon: <History className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/leads', label: t('dashboardLayout.leads'), icon: <Star className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/profile', label: t('dashboardLayout.profile'), icon: <UserCircle className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }
     ];
 
     return (

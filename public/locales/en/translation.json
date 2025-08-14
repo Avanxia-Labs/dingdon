@@ -42,6 +42,7 @@
     "teamMembers": "Team Members",
     "chatHistory": "Chat History",
     "settingsAndBot": "Settings & Bot",
+    "profile": "My Profile",
     "signOut": "Sign Out",
     "leads": "Leads"
   },
@@ -117,7 +118,8 @@
     "feedback": {
       "deletingAll": "Deleting all histories...",
       "deletedAllSuccess": "All chat histories have been deleted."
-    }
+    },
+    "tableHeaderChannel": "Channel"
   },
   "chatPanel": {
     "notifications": {
@@ -229,18 +231,31 @@
       "crawlButton": "Crawl & Train"
     },
     "botAvatar": {
-        "label": "Bot Avatar URL",
-        "description": "Provide a direct URL to an image for the bot's avatar. Leave empty to use the default.",
-        "placeholder": "https://example.com/avatar.png",
-        "uploadingButton": "Uploading...",
-        "changeButton": "Change Image"
+      "label": "Bot Avatar URL",
+      "description": "Provide a direct URL to an image for the bot's avatar. Leave empty to use the default.",
+      "placeholder": "https://example.com/avatar.png",
+      "uploadingButton": "Uploading...",
+      "changeButton": "Change Image"
     },
     "botIntro": {
-        "label": "Bot Introduction",
-        "description": "A short, friendly introduction that appears under the bot's name.",
-        "placeholder": "Your AI virtual assistant."
+      "label": "Bot Introduction",
+      "description": "A short, friendly introduction that appears under the bot's name.",
+      "placeholder": "Your AI virtual assistant."
     }
   },
+
+  "profile": {
+    "pageTitle": "My Profile",
+    "avatarLabel": "Profile Picture",
+    "changeButton": "Change",
+    "uploadingButton": "Uploading...",
+    "savingButton": "Saving...",
+    "feedback": {
+      "avatarUpdated": "Avatar updated! Click 'Save' to apply the changes.",
+      "saveSuccess": "Profile saved successfully!"
+    }
+  },
+
   "whatsapp": {
     "welcome": "Hello! Welcome. To begin, what is your full name?",
     "welcomeBack": "Welcome back, {{name}}! How can I help you today?",

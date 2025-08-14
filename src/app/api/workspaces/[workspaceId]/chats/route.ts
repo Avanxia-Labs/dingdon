@@ -161,6 +161,7 @@ export async function GET(
                 ended_at,
                 assigned_agent_id,
                 history,
+                channel,
                 profiles:assigned_agent_id ( name )
             `)
             .eq('workspace_id', workspaceId)
@@ -190,7 +191,8 @@ export async function GET(
                 endTime: chat.ended_at,
                 agentName: agentName,
                 messageCount: chat.history?.length || 0,
-                firstMessage: chat.history?.[0]?.content || 'No messages'
+                firstMessage: chat.history?.[0]?.content || 'No messages',
+                channel: chat.channel || 'Unknown' 
             };
         });
 

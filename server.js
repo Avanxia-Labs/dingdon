@@ -665,6 +665,14 @@ nextApp.prepare().then(() => {
                     console.error(`[DB Error] No se pudo actualizar ${sessionId} a 'in_progress':`, error.message);
                 }
 
+                // 1. Obtén la configuración MÁS RECIENTE del bot desde la base de datos
+                const { data: workspaceConfig } = await supabase
+                    .from('workspaces')
+                    .select('bot_name, bot_avatar_url')
+                    .eq('id', workspaceId)
+                    .single();
+
+
                 // 🔧 MEJORADO: Secuencia de emisión con delays y mejor logging
                 setTimeout(() => {
                     // Emitir status_change a toda la sala
@@ -677,7 +685,14 @@ nextApp.prepare().then(() => {
 
                 setTimeout(() => {
                     // Enviar historial al agente
-                    socket.emit('assignment_success', { sessionId, history: sessionInMemory.history });
+                    socket.emit('assignment_success', {
+                        sessionId,
+                        history: sessionInMemory.history,
+                        botConfig: {
+                            name: workspaceConfig?.bot_name,
+                            avatarUrl: workspaceConfig?.bot_avatar_url
+                        }
+                    });
                     console.log(`[Socket.IO] Assignment success enviado para sesión ${sessionId}`);
                 }, 200);
 
