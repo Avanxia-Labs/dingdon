@@ -42,6 +42,7 @@ interface DashboardState {
     
     // Acciones para el chat activo
     setActiveChat: (sessionId: string, initialMessages?: Message[]) => void;
+    updateActiveChatStatus: (status: ChatSessionStatus) => void;
     addMessageToActiveChat: (message: Message) => void;
     closeActiveChat: () => void;
     
@@ -90,6 +91,16 @@ export const useDashboardStore = create<DashboardState>()(
                     }
                 }));
             },
+
+            updateActiveChatStatus: (status) => set((state) => {
+                if (!state.activeChat) return {}; // No hagas nada si no hay chat activo
+                return {
+                    activeChat: {
+                        ...state.activeChat,
+                        status: status, // <-- Actualiza solo el status
+                    }
+                };
+            }),
             
             addMessageToActiveChat: (message) => set((state) => {
                 if (!state.activeChat) return state;

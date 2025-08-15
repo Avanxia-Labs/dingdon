@@ -3,12 +3,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Message } from "@/types/chatbot";
+import { ChatSessionStatus, Message } from "@/types/chatbot";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
-import { Send, Wifi, WifiOff, RefreshCcw, User, Bot } from "lucide-react";
+import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause } from "lucide-react";
 import { useChatbot } from "@/hooks/useChatbot";
 
 interface ChatRequest {
@@ -31,7 +31,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const { socket, notificationsEnabled, enableNotifications } = useSocket();
     const { language } = useDashboardStore();
     useSyncLanguage(language);
-    
+
     const {
         requests,
         activeChat,
@@ -39,7 +39,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         addMessageToActiveChat,
         closeActiveChat,
         activeBotConfig,
-        setActiveBotConfig
+        setActiveBotConfig,
+        updateActiveChatStatus
     } = useDashboardStore();
 
     const [input, setInput] = useState("");
@@ -108,11 +109,31 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [activeChat?.messages]);
+
+
     useEffect(() => {
         if (socket && activeChat?.sessionId && isConnected) {
             socket.emit("join_session", activeChat.sessionId);
         }
     }, [socket, activeChat?.sessionId, isConnected]);
+
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleStatusChange = ({ sessionId, newStatus }: { sessionId: string, newStatus: ChatSessionStatus }) => {
+            if (activeChat?.sessionId === sessionId) {
+                // Actualiza el estado en la UI cuando el servidor confirma el cambio
+                updateActiveChatStatus(newStatus);
+            }
+        };
+
+        socket.on('session_status_changed', handleStatusChange);
+
+        return () => {
+            socket.off('session_status_changed', handleStatusChange);
+        };
+    }, [socket, activeChat?.sessionId, updateActiveChatStatus]);
 
     const handleSelectChat = (request: ChatRequest) => {
         if (socket && workspaceId && session?.user?.id && isConnected) {
@@ -123,6 +144,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             });
         }
     };
+
     const handleSendMessage = () => {
         if (
             !input.trim() ||
@@ -148,16 +170,28 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         addMessageToActiveChat(agentMessage);
         setInput("");
     };
+
     const handleCloseChat = () => {
         if (!activeChat?.sessionId || !socket || !workspaceId || !isConnected)
             return;
         socket.emit("close_chat", { workspaceId, sessionId: activeChat.sessionId });
         closeActiveChat();
     };
+
     const forceReconnect = () => {
         if (socket) {
             socket.disconnect();
             socket.connect();
+        }
+    };
+
+    const handleToggleBotStatus = () => {
+        if (socket && activeChat) {
+            console.log(`[ChatPanel] Emitiendo toggle_bot_status para sesión ${activeChat.sessionId}`);
+            socket.emit('toggle_bot_status', {
+                workspaceId,
+                sessionId: activeChat.sessionId
+            });
         }
     };
 
@@ -179,6 +213,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     </button>
                 </div>
             )}
+
+            {/* Chat Requests y Connection */}
             <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
                 <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm mb-2 ${isConnected
@@ -243,8 +279,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     )}
                 </div>
             </div>
+
+            {/* CHATS */}
             <div className="flex-1 flex flex-col bg-gray-50">
-                {activeChat && activeChat.status === "in_progress" ? (
+                {activeChat && ["in_progress", "bot"].includes(activeChat.status) ? (
                     <>
                         <div className="p-4 border-b bg-white flex justify-between items-center">
                             <h3 className="text-lg font-bold">
@@ -252,6 +290,27 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     id: activeChat.sessionId.slice(-6),
                                 })}
                             </h3>
+
+                            <button
+                                onClick={handleToggleBotStatus} // <-- Llama a la función toggle
+                                className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${activeChat.status === 'in_progress'
+                                    ? 'bg-green-500 hover:bg-green-600 text-white' // Estilo para "Resume Bot"
+                                    : 'bg-yellow-500 hover:bg-yellow-600 text-white' // Estilo para "Pause Bot"
+                                    }`}
+                            >
+                                {activeChat.status === 'in_progress' ? (
+                                    <>
+                                        <Play size={14} />
+                                        <span>Resume Bot</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Pause size={14} />
+                                        <span>Pause Bot</span>
+                                    </>
+                                )}
+                            </button>
+
                             <button
                                 onClick={handleCloseChat}
                                 disabled={!isConnected}
@@ -263,29 +322,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 {t("chatPanel.closeChatButton")}
                             </button>
                         </div>
+
                         <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                            {/* {activeChat.messages.map((msg) => {
-                                const isOutgoing =
-                                    msg.role === "agent" || msg.role === "assistant";
-                                return (
-                                    <div
-                                        key={msg.id}
-                                        className={`flex items-end gap-2 ${isOutgoing ? "justify-end" : "justify-start"
-                                            }`}
-                                    >
-                                        <div
-                                            className={`max-w-[70%] px-4 py-2 rounded-xl ${isOutgoing
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-200 text-gray-800"
-                                                }`}
-                                        >
-                                            <p className="text-sm whitespace-pre-wrap">
-                                                {msg.content}
-                                            </p>
-                                        </div>
-                                    </div>
-                                );
-                            })} */}
+
                             {activeChat.messages.map((msg) => {
                                 // 1. Determina los roles para facilitar la lectura
                                 const isUser = msg.role === 'user';
@@ -295,11 +334,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 // 2. Define si el mensaje es "saliente" (del agente o del bot)
                                 const isOutgoing = isAgent || isBot;
 
+                                const isBotAttending = activeChat.status === "bot";
+
                                 return (
                                     <div
                                         key={msg.id}
                                         // 3. La alineación ahora depende de si el mensaje es saliente
-                                        className={`flex items-start gap-3 ${isOutgoing ? 'justify-end' : 'justify-start'}`}
+                                        className={`flex items-start gap-3 ${isOutgoing ? 'justify-end' : 'justify-start'} ${isBotAttending ? 'opacity-20' : ''}`}
                                     >
                                         {/* --- AVATAR DEL USUARIO (IZQUIERDA) --- */}
                                         {isUser && (
@@ -312,8 +353,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                         {/* --- CUERPO DEL MENSAJE (EN EL MEDIO) --- */}
                                         <div
                                             className={`max-w-[70%] px-4 py-2 rounded-xl ${isAgent ? "bg-blue-500 text-white" :        // Mensaje del agente
-                                                    isBot ? "bg-slate-700 text-white" :         // Mensaje del bot (color distinto para diferenciarlo)
-                                                        "bg-gray-200 border border-black/10 text-gray-800"             // Mensaje del usuario
+                                                isBot ? "bg-slate-700 text-white" :         // Mensaje del bot (color distinto para diferenciarlo)
+                                                    "bg-gray-200 border border-black/10 text-gray-800"             // Mensaje del usuario
                                                 }`}
                                         >
                                             {/* Nombre del remitente (si es agente o bot) */}
@@ -345,6 +386,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             })}
                             <div ref={messagesEndRef} />
                         </div>
+
                         <div className="p-4 bg-white border-t">
                             <div className="flex space-x-2">
                                 <input
@@ -352,10 +394,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                                    disabled={!isConnected}
-                                    className={`flex-1 p-2 border rounded-lg ${isConnected
-                                        ? "border-gray-300 focus:border-blue-500"
-                                        : "border-gray-200 bg-gray-50 cursor-not-allowed"
+                                    disabled={!isConnected || activeChat.status === "bot"}
+                                    className={`flex-1 p-2 border rounded-lg ${!isConnected || activeChat.status === "bot"
+                                        ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-20"  // estilos deshabilitado
+                                        : "border-gray-300 focus:border-blue-500"                     // estilos habilitado
                                         }`}
                                     placeholder={
                                         isConnected
@@ -389,3 +431,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         </div>
     );
 };
+
+
+
+
+
+
+
+
+
+
+
+
