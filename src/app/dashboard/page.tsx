@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { ChatPanel } from '@/components/ChatPanel';
-import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react'; 
 
 const DashboardHomePage: React.FC = () => {
     // Obtenemos la sesión para pasar el workspaceId al panel de chat.

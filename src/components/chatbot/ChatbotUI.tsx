@@ -161,8 +161,8 @@ const ChatInterface = () => {
                                             {t('chatbotUI.agentInstruction')} <br />
                                             <b>{t('chatbotUI.agentKeyword')}</b>
                                             <br />
-                                            <p className="bg-yellow-50/60 border border-yellow-300 text-yellow-800 px-1 py-1 rounded text-xs mt-4">
-                                                ⚠️ {t('chatbotUI.disclaimer')}
+                                            <p className="text-gray-500 px-1 py-1 rounded text-xs mt-4">
+                                                {t('chatbotUI.disclaimer')}
                                             </p>
                                         </div>
                                     )}
