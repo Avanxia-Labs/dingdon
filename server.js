@@ -38,7 +38,18 @@ nextApp.prepare().then(() => {
     const app = express();
     const server = http.createServer(app);
 
-    app.use(cors({ origin: CLIENT_ORIGIN_URL }));
+    // Middleware de CORS
+    app.use((req, res, next) => {
+        // Si es una API pública, permite cualquier origen
+        if (req.path.startsWith('/api/public/') || req.path.startsWith('/api/chat') || req.path.startsWith('/api/leads')) {
+            cors({ origin: '*' })(req, res, next);
+        } else {
+            // Para todo lo demás, solo permite CLIENT_ORIGIN_URL
+            cors({ origin: CLIENT_ORIGIN_URL })(req, res, next);
+        }
+    });
+
+    //app.use(cors({ origin: CLIENT_ORIGIN_URL }));
     //app.use(express.json());
 
     // La "DB en memoria" para el estado de las sesiones activas
@@ -421,7 +432,7 @@ nextApp.prepare().then(() => {
         });
 
         socket.on('toggle_bot_status', async ({ workspaceId, sessionId }) => {
-            
+
             if (!workspaceId || !sessionId) {
                 console.log(`[Socket.IO] toggle_bot_status: workspaceId o sessionId no proporcionados.`);
                 return;
