@@ -6,7 +6,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
-import { saveHistoryBeforeResetClient } from '@/lib/chatHistoryService';
 import { io, Socket } from 'socket.io-client';
 
 
@@ -42,14 +41,9 @@ export const useChatbot = () => {
     language,
     initializeOrSyncWorkspace,
     leadCollected,
-    setLeadCollected,
-    updateLastActivity,
-    getHistoryData,
-    agentName,
-    setAgentName,
-    botPaused,
-    setBotPaused
+    setLeadCollected
   } = useChatStore(
+
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -72,80 +66,29 @@ export const useChatbot = () => {
       language: state.language,
       initializeOrSyncWorkspace: state.initializeOrSyncWorkspace,
       leadCollected: state.leadCollected,
-      setLeadCollected: state.setLeadCollected,
-      updateLastActivity: state.updateLastActivity,
-      getHistoryData: state.getHistoryData,
-      agentName: state.agentName,
-      setAgentName: state.setAgentName,
-      botPaused: state.botPaused,
-      setBotPaused: state.setBotPaused
+      setLeadCollected: state.setLeadCollected
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
-  const waitingMessageIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- EFECTO PARA VERIFICAR INACTIVIDAD DE 24 HORAS ---
+  // --- GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
-    const checkInactivity = async () => {
-      const historyData = getHistoryData();
-      const now = Date.now();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      
-      // Verificar si han pasado más de 24 horas desde la última actividad
-      if (historyData.sessionId && now - historyData.lastActivity > twentyFourHours) {
-        console.log('[useChatbot] 24 horas de inactividad detectadas. Guardando historial y reseteando...');
-        
-        // Guardar historial antes del reinicio por inactividad
-        await saveHistoryBeforeResetClient(
-          historyData.sessionId ?? null,
-          historyData.workspaceId ?? null,
-          historyData.messages
-        );
-        
-        // Resetear el estado
-        resetChat();
-      }
-    };
-    
-    checkInactivity();
-  }, []); // Solo ejecutar una vez al montar el componente
+    // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
+    const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
 
-  // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
-  useEffect(() => {
-    const handleWorkspaceChange = async () => {
-      // En el iframe del widget, el workspaceId ya se obtiene de los parámetros URL
-      // y se establece en el store, así que no necesitamos window.chatbotConfig
-      
-      // Si ya tenemos workspaceId en el store, no hacer nada más
-      if (workspaceId) {
-        console.log(`[useChatbot] Workspace ID ya configurado: ${workspaceId}`);
-        return;
-      }
+    // 2. Si la configuración aún no está lista, avisa y espera.
+    if (!newWorkspaceIdFromConfig) {
+      console.warn('[useChatbot] Esperando a que chatbotConfig esté disponible...');
+      return;
+    }
 
-      // Solo si estamos en el contexto del widget principal (no iframe)
-      // intentamos obtener de window.chatbotConfig
-      const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
+    // 3. Llama a nuestra nueva y más inteligente acción `setWorkspaceId`.
+    // El store se encargará de decidir si debe resetear o no.
+    setWorkspaceId(newWorkspaceIdFromConfig);
 
-      if (newWorkspaceIdFromConfig) {
-        // 3. Guardar historial antes del posible cambio de workspace
-        const historyData = getHistoryData();
-        if (historyData.workspaceId && historyData.workspaceId !== newWorkspaceIdFromConfig) {
-          await saveHistoryBeforeResetClient(
-            historyData.sessionId ?? null,
-            historyData.workspaceId ?? null,
-            historyData.messages
-          );
-        }
-
-        // 4. Cambiar workspace (síncrono)
-        setWorkspaceId(newWorkspaceIdFromConfig);
-      }
-    };
-
-    handleWorkspaceChange();
-  }, [workspaceId, setWorkspaceId, getHistoryData]);
+  }, [setWorkspaceId]);
 
 
   // - useEffect de WebSocket 
@@ -163,21 +106,9 @@ export const useChatbot = () => {
       socketRef.current = socket;
 
       // 🔧 CAMBIO 1: Configurar listeners ANTES de hacer join
-      socket.on('agent_message', (message: Message & { agentName?: string }) => {
+      socket.on('agent_message', (message: Message) => {
         console.log(`[Chatbot] Agent message received:`, message);
-        
-        // Si es el primer mensaje del agente, guardar su nombre
-        if (message.agentName && !agentName) {
-          setAgentName(message.agentName);
-        }
-        
         addMessage(message);
-        
-        // Detener mensajes de espera cuando llega el agente
-        if (waitingMessageIntervalRef.current) {
-          clearInterval(waitingMessageIntervalRef.current);
-          waitingMessageIntervalRef.current = null;
-        }
       });
 
       socket.on('status_change', (newStatus: ChatSessionStatus) => {
@@ -190,58 +121,10 @@ export const useChatbot = () => {
           console.log(`[Chatbot] Re-joined session ${sessionId} for agent chat`);
         }
       });
-      
-      // Listener para control del bot
-      socket.on('bot_control', (data: { action: 'pause' | 'resume', agentName?: string }) => {
-        console.log(`[Chatbot] Bot control received:`, data);
-        console.log(`[Chatbot] Current status before change: "${status}", botPaused: ${botPaused}`);
-        setBotPaused(data.action === 'pause');
-        
-        // Cuando se reactiva el bot, asegurar que el status sea 'bot'
-        if (data.action === 'resume') {
-          console.log(`[Chatbot] Setting status to 'bot' for resume action`);
-          setSessionStatus('bot');
-        }
-        
-        console.log(`[Chatbot] After bot_control: status should be "${data.action === 'resume' ? 'bot' : status}", botPaused: ${data.action === 'pause'}`);
-        
-        if (data.agentName) {
-          setAgentName(data.agentName);
-        }
-        
-        // Mensaje del sistema indicando el cambio
-        const systemMessage: Message = {
-          id: `system-${Date.now()}`,
-          content: data.action === 'pause' 
-            ? `🔔 ${data.agentName || 'Un agente'} está revisando tu conversación. Por favor espera su respuesta.`
-            : `🤖 El asistente virtual ha sido reactivado y puede continuar ayudándote.`,
-          role: 'system' as any,
-          timestamp: new Date(),
-        };
-        addMessage(systemMessage);
-      });
-      
-      // Listener para cuando un agente toma el chat (solo para comandos de chat)
-      socket.on('agent_assigned', (data: { agentName: string }) => {
-        console.log(`[Chatbot] Agent assigned via command:`, data);
-        setAgentName(data.agentName);
-        
-        // Detener mensajes de espera
-        if (waitingMessageIntervalRef.current) {
-          clearInterval(waitingMessageIntervalRef.current);
-          waitingMessageIntervalRef.current = null;
-        }
-      });
 
       // 🔧 CAMBIO 3: Join inicial después de configurar listeners
       socket.emit('join_session', sessionId);
       console.log(`[Chatbot] Joined session ${sessionId}`);
-      console.log(`[Chatbot] Listeners configured. Waiting for bot_control events...`);
-      
-      // Debug: Log all incoming events
-      socket.onAny((eventName, ...args) => {
-        console.log(`[Chatbot] Received event: ${eventName}`, args);
-      });
 
       // 🔧 CAMBIO 4: Listener para confirmar que estamos en la sala
       socket.on('connect', () => {
@@ -265,10 +148,6 @@ export const useChatbot = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
-      }
-      if (waitingMessageIntervalRef.current) {
-        clearInterval(waitingMessageIntervalRef.current);
-        waitingMessageIntervalRef.current = null;
       }
     }
   }, [workspaceId, sessionId, startSession, setSessionStatus, addMessage]);
@@ -417,9 +296,6 @@ export const useChatbot = () => {
 
     if (!content.trim() || mutation.isPending || !sessionId || !workspaceId) return;
 
-    // Actualizar actividad cuando el usuario envía un mensaje
-    updateLastActivity();
-
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       content,
@@ -435,37 +311,11 @@ export const useChatbot = () => {
       socketRef.current.emit('user_message', { workspaceId, sessionId, message: userMessage });
     }
 
-    // Solo llamamos a la IA si el estado es 'bot' Y el bot no está pausado
-    console.log(`[useChatbot] Checking AI call conditions: status="${status}", botPaused=${botPaused}`);
-    if (status === 'bot' && !botPaused) {
-      console.log('✅ [useChatbot] Calling AI - conditions met');
+    // Solo llamamos a la IA si el estado es 'bot'
+    if (status === 'bot') {
       const updatedHistory = [...messages, userMessage];
       // --- CAMBIO: Pasamos el workspaceId a la mutación ---
       mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory, language });
-    } else if (botPaused) {
-      console.log('❌ [useChatbot] Bot is paused, message not sent to AI');
-    } else if (status === 'pending_agent') {
-      // Si está esperando un agente, iniciar mensajes periódicos si no están activos
-      if (!waitingMessageIntervalRef.current) {
-        let messageCount = 0;
-        const waitingMessages = [
-          '🕑 Seguimos buscando un agente disponible. Por favor, espera un momento más...',
-          '🔍 Todos nuestros agentes están ocupados. Te atenderemos en breve...',
-          '✅ Tu solicitud está en cola. Un agente te atenderá pronto...',
-          '🙏 Gracias por tu paciencia. Estamos conectando con el próximo agente disponible...'
-        ];
-        
-        waitingMessageIntervalRef.current = setInterval(() => {
-          const waitingMessage: Message = {
-            id: `system-wait-${Date.now()}`,
-            content: waitingMessages[messageCount % waitingMessages.length],
-            role: 'system' as any,
-            timestamp: new Date(),
-          };
-          addMessage(waitingMessage);
-          messageCount++;
-        }, 15000); // Cada 15 segundos
-      }
     }
   };
 
@@ -474,21 +324,13 @@ export const useChatbot = () => {
   /**
    * Function to resets the chat state if the chat is being closed.
    */
-  const startNewChat = async () => {
-    // Guardar historial antes del reinicio
-    const historyData = getHistoryData();
-    await saveHistoryBeforeResetClient(
-      historyData.sessionId ?? null,
-      historyData.workspaceId ?? null,
-      historyData.messages
-    );
-
+  const startNewChat = () => {
     // Disconnect the current socket if it exists
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
-    // Reset the chat state (ahora síncrono)
+    // Reset the chat state
     resetChat();
   }
 
@@ -503,9 +345,7 @@ export const useChatbot = () => {
     error,
     leadCollected,
     setLeadCollected,
-    workspaceId,
-    agentName,
-    botPaused
+    workspaceId
   };
 };
 

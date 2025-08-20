@@ -9,7 +9,7 @@ import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
 import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users } from "lucide-react";
-import { useChatbot } from "@/hooks/useChatbot";
+import { useChatbot } from "@/hooks/useChatbot";    
 
 interface ChatRequest {
     sessionId: string;
