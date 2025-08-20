@@ -44,7 +44,8 @@
     "settingsAndBot": "Settings & Bot",
     "profile": "My Profile",
     "signOut": "Sign Out",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Lead Classification"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -134,13 +135,46 @@
       "reconnect": "Reconnect"
     },
     "requestsTitle": "Chat Requests",
-    "noRequests": "No pending requests.",
+    "noRequests": "No pending requests",
+    "myActiveChatsTitle": "My Active Chats",
+    "noActiveChats": "No active chats yet. Take one from requests above!",
     "activeChatTitle": "Active Chat: {{id}}",
     "closeChatButton": "Close Chat",
     "inputPlaceholder": "Type your response...",
     "inputPlaceholderDisconnected": "Waiting for connection...",
     "selectChatPrompt": "Select a chat to begin",
-    "chatClosed": "Chat was closed"
+    "chatClosed": "Chat was closed",
+    "sessionLabel": "Session",
+    "messagesCount": "{{count}} messages",
+    "transferredLabel": "Transferred",
+    "transferredFrom": "From: {{agent}}",
+    "status": {
+      "in_progress": "in_progress",
+      "pending": "pending",
+      "completed": "completed",
+      "closed": "closed"
+    }
+  },
+  "leadInfo": {
+    "title": "Lead Information",
+    "contact": "Contact Information",
+    "noContactInfo": "No contact information available",
+    "classification": "Classification",
+    "reclassify": "Reclassify",
+    "stats": "Statistics",
+    "totalMessages": "Messages",
+    "sessions": "Sessions",
+    "lastInteraction": "Last interaction",
+    "tags": "Tags",
+    "noTags": "No tags",
+    "addTagPlaceholder": "New tag...",
+    "notes": "Internal Notes",
+    "noNotes": "No internal notes",
+    "addNotePlaceholder": "Add internal note...",
+    "quickActions": "Quick Actions",
+    "reclassifyAction": "Reclassify Lead",
+    "scheduleFollowup": "Schedule Follow-up",
+    "exportConversation": "Export Conversation"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -163,6 +197,8 @@
     "leadFormPhone": "Phone Number (Optional)",
     "leadFormButton": "Start Chat",
     "leadFormLoading": "Starting...",
+    "formError": "There was an issue. Please try again.",
+    "technicalError": "I'm sorry, I'm having some technical difficulties. Please try again later.",
     "disclaimer": "I am an AI and may make mistakes. Please consider verifying important information."
   },
   "settings": {
@@ -261,5 +297,57 @@
     "welcomeBack": "Welcome back, {{name}}! How can I help you today?",
     "askEmail": "Thank you! Now, please tell me your email address.",
     "chatReady": "Perfect, thank you! You can now start chatting. How can I help you today?"
+  },
+  "leadClassification": {
+    "title": "Lead Classification",
+    "description": "Automatically analyze conversations to identify hot, warm and cold leads",
+    "stats": {
+      "totalChats": "Total Chats",
+      "classified": "Classified", 
+      "hot": "HOT 🔥",
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️"
+    },
+    "buttons": {
+      "classifying": "Classifying...",
+      "classifyAll": "Classify All Chats",
+      "configureKeywords": "Configure Keywords",
+      "saveConfig": "Save Configuration"
+    },
+    "keywords": {
+      "configuration": "Keywords Configuration",
+      "hot": "HOT 🔥", 
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️",
+      "hotPlaceholder": "New hot keyword...",
+      "warmPlaceholder": "New warm keyword...",
+      "coldPlaceholder": "New cold keyword...",
+      "added": "Keyword added successfully",
+      "removed": "Keyword removed successfully",
+      "duplicate": "This keyword already exists",
+      "emptyKeyword": "Please enter a keyword",
+      "configSaved": "Configuration saved (keywords save automatically)"
+    },
+    "classification": {
+      "starting": "Starting classification...",
+      "noChats": "No chats to classify",
+      "processing": "Processing...",
+      "completed": "Classification completed"
+    },
+    "errors": {
+      "loadKeywords": "Error loading keywords",
+      "classification": "Classification error",
+      "addKeyword": "Error adding keyword",
+      "removeKeyword": "Error removing keyword"
+    },
+    "table": {
+      "classification": "Classification",
+      "analysis": "Lead Analysis",
+      "date": "Date"
+    },
+    "results": {
+      "title": "Classification Results",
+      "noResults": "No classification results available"
+    }
   }
 }

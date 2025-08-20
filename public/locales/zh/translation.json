@@ -46,7 +46,8 @@
     "settingsAndBot": "设置和机器人",
     "profile": "我的个人资料",
     "signOut": "退出",
-    "leads": "潜在客户"
+    "leads": "潜在客户",
+    "leadClassification": "潜在客户分类"
   },
   "leads": {
     "pageTitle": "收集的潜在客户",
@@ -165,6 +166,8 @@
     "leadFormPhone": "电话号码（可选）",
     "leadFormButton": "开始聊天",
     "leadFormLoading": "正在开始...",
+    "formError": "出现了问题。请重试。",
+    "technicalError": "抱歉，我遇到了一些技术问题。请稍后再试。",
     "disclaimer": "我是一个人工智能，可能会犯错。请核实重要信息。"
   },
   "settings": {
@@ -261,5 +264,37 @@
     "welcomeBack": "欢迎回来，{{name}}！今天有什么可以帮您？",
     "askEmail": "谢谢！现在，请告诉我您的电子邮件地址。",
     "chatReady": "好的，谢谢！您现在可以开始聊天了。今天我能为您做些什么？"
+  },
+  "leadClassification": {
+    "pageTitle": "潜在客户分类",
+    "pageSubtitle": "根据对话模式自动分析和分类您的潜在客户",
+    "totalChats": "总聊天数",
+    "classifiedChats": "已分类聊天",
+    "hotLeads": "热门潜在客户",
+    "warmLeads": "温暖潜在客户",
+    "coldLeads": "冷淡潜在客户",
+    "classifyButton": "分类所有聊天",
+    "classifyingButton": "分类中...",
+    "configureKeywords": "配置关键词",
+    "hideKeywords": "隐藏关键词",
+    "saveConfiguration": "保存配置",
+    "keywordsConfigTitle": "关键词配置",
+    "newHotKeyword": "新的热门关键词...",
+    "newWarmKeyword": "新的温暖关键词...",
+    "newColdKeyword": "新的冷淡关键词...",
+    "resultsTitle": "分类结果",
+    "noResults": "还没有结果。运行分类以查看潜在客户分析。",
+    "tableHeaderChat": "聊天",
+    "tableHeaderScore": "分数",
+    "tableHeaderClassification": "分类",
+    "tableHeaderReasoning": "分析",
+    "tableHeaderDate": "日期",
+    "feedback": {
+      "classificationStarted": "分类已开始...",
+      "classificationComplete": "分类完成！已处理 {{count}} 个聊天。",
+      "classificationError": "分类过程中出错。请重试。",
+      "keywordsConfigSaved": "关键词配置保存成功",
+      "keywordAdded": "已添加关键词：\"{{keyword}}\""
+    }
   }
 }

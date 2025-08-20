@@ -3,9 +3,9 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
-const supabase = require('./server-lib/supabaseClient');
+const supabase = require('./server-lib/supabaseClient.js');
 const next = require('next')
-const io = require('./server-lib/socketInstance');
+const io = require('./server-lib/socketInstance.js');
 const { sendWhatsAppMessage } = require('./src/lib/twilio.js');
 
 // Cargar variables de entorno
@@ -483,6 +483,61 @@ nextApp.prepare().then(() => {
                 socket.emit('bot_control_error', { sessionId, message: 'Failed to change status.' });
             }
         });
+
+        // --- Manejador para re-encolar un chat y que lo tome otro agente ---
+        socket.on('transfer_to_queue', async ({ workspaceId, sessionId }) => {
+
+            if (!workspaceId || !sessionId) {
+                console.warn(`[Socket.IO] Workspace or Session not found`)
+                return
+            }
+
+            try {
+                console.log(`[Transfer] Agente solicitó transferir la sesión ${sessionId} a la cola.`);
+
+                // 1. Actualiza el estado de la sesión en la DB de vuelta a 'pending'.
+                // Mantenemos el 'assigned_agent_id' por si queremos saber quién lo atendió antes.
+                await supabase
+                    .from('chat_sessions')
+                    .update({ status: 'pending' })
+                    .eq('id', sessionId);
+
+                // Actualizar el estado en memoria
+                if (workspacesData[workspaceId] && workspacesData[workspaceId][sessionId]) {
+                    workspacesData[workspaceId][sessionId].status = 'pending';
+                }
+
+                // 2. Obtiene el mensaje inicial para darle contexto a otro agente
+                const { data: sessionData } = await supabase
+                    .from('chat_sessions')
+                    .select('history')
+                    .eq('id', sessionId)
+                    .single();
+
+                // 3. Usamos el primer mensaje del historial como mensaje inicial
+                const initialMessage = sessionData?.history?.[0] || { content: 'Chat Transferido' }
+
+                // 4. Emite el evento 'new_chat_request' a TODOS los agentes del dashboard.
+                io.to(`dashboard_${workspaceId}`).emit('new_chat_request', {
+                    sessionId,
+                    initialMessage,
+                    isTransfer: true // Flag para que el frontend sepa que es una transferencia
+                })
+
+                // 5. Libera agente actual de la session
+                const agentInfo = agentSockets.get(socket.id);
+                if (agentInfo) {
+                    agentInfo.sessionId = null;
+                    agentSockets.set(socket.id, agentInfo)
+                }
+
+
+            } catch (error) {
+                console.error(`Error al transferir la sesión ${sessionId} a la cola:`, error);
+                socket.emit('command_error', { message: 'Failed to transfer chat.' });
+            }
+
+        })
 
         socket.on('close_chat', async ({ workspaceId, sessionId }) => {
             console.log(`[Socket.IO] Closing chat for session ${sessionId}`);

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Send Button</title>
+</head>
+<body>
+    <h1>Instrucciones para arreglar el botón de envío</h1>
+    
+    <h2>Paso 1: Abre la consola del navegador (F12)</h2>
+    
+    <h2>Paso 2: Copia y pega este código:</h2>
+    <pre style="background: #f0f0f0; padding: 20px; border-radius: 5px;">
+// Remover TODOS los elementos del widget flotante
+const widgetIds = [
+    'chatbot-animated-container',
+    'chatbot-head',
+    'chatbot-body',
+    'chatbot-left-arm',
+    'chatbot-right-arm',
+    'chatbot-left-hand',
+    'chatbot-right-hand',
+    'chatbot-left-leg',
+    'chatbot-right-leg',
+    'chatbot-left-foot',
+    'chatbot-right-foot',
+    'chatbot-iframe',
+    'chatbot-toggle-button'
+];
+
+widgetIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.remove();
+        console.log('Removed:', id);
+    }
+});
+
+// Remover cualquier script que cargue loader.js
+document.querySelectorAll('script').forEach(script => {
+    if (script.src && script.src.includes('loader.js')) {
+        script.remove();
+        console.log('Removed loader.js script');
+    }
+});
+
+// Prevenir que se vuelva a cargar
+window.ChatbotLoaded = true;
+
+console.log('✅ Widget flotante eliminado. El botón de envío debería funcionar ahora.');
+    </pre>
+    
+    <h2>Paso 3: Prueba el botón de envío</h2>
+    <p>Ahora el botón debería funcionar correctamente.</p>
+    
+    <hr>
+    
+    <h2>Solución permanente:</h2>
+    <p>El problema es que el script loader.js se está cargando en el dashboard cuando no debería.</p>
+    <p>Necesitamos encontrar dónde se está incluyendo y removerlo.</p>
+</body>
+</html>

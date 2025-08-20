@@ -6,6 +6,7 @@ import { Message, ChatSessionStatus } from '@/types/chatbot'
 interface ChatRequest {
     sessionId: string;
     initialMessage: Message;
+    isTransfer?: boolean;
 }
 
 interface ActiveChat {

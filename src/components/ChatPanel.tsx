@@ -8,7 +8,11 @@ import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
+<<<<<<< HEAD
 import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause } from "lucide-react";
+=======
+import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users } from "lucide-react";
+>>>>>>> samuel-dev
 import { useChatbot } from "@/hooks/useChatbot";
 
 interface ChatRequest {
@@ -195,6 +199,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         }
     };
 
+<<<<<<< HEAD
+=======
+    // --- Funcion para el boton de transferir chat ---
+    const handleTransferToQueue = () => {
+        if (socket && activeChat) {
+            socket.emit('transfer_to_queue', {
+                workspaceId,
+                sessionId: activeChat.sessionId
+            });
+            // Cerramos la vista del chat para el agente actual.
+            closeActiveChat();
+        }
+    };
+
+>>>>>>> samuel-dev
     console.log("ACTIVE BOT CONFIG", activeBotConfig);
 
     return (
@@ -259,16 +278,22 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         <div
                             key={req.sessionId}
                             onClick={() => handleSelectChat(req)}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === req.sessionId
-                                ? "bg-blue-600 text-white"
-                                : isConnected
-                                    ? "bg-gray-100 hover:bg-gray-200"
-                                    : "bg-gray-50 cursor-not-allowed opacity-50"
+                            className={`p-3 rounded-lg cursor-pointer transition-colors 
+                                
+                                ${req.isTransfer ? 'border-2 border-orange-400' : ''}
+                                
+                                ${activeChat?.sessionId === req.sessionId
+                                    ? "bg-blue-600 text-white"
+                                    : isConnected
+                                        ? "bg-gray-100 hover:bg-gray-200"
+                                        : "bg-gray-50 cursor-not-allowed opacity-50"
                                 }`}
                         >
                             <p className="font-semibold">
                                 Session: {req.sessionId.slice(-6)}
                             </p>
+                            {/* Mostramos si es una transferencia */}
+                            {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
                             <p className="text-sm truncate">{req.initialMessage.content}</p>
                         </div>
                     ))}
@@ -291,6 +316,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 })}
                             </h3>
 
+<<<<<<< HEAD
+=======
+                            {/* --- BOTÓN DE TRANSFERENCIA --- */}
+                            <button
+                                onClick={handleTransferToQueue}
+                                className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm flex items-center gap-1.5"
+                            >
+                                <Users size={14} />
+                                <span>Transfer</span>
+                            </button>
+
+                            {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
+>>>>>>> samuel-dev
                             <button
                                 onClick={handleToggleBotStatus} // <-- Llama a la función toggle
                                 className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${activeChat.status === 'in_progress'
@@ -311,6 +349,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 )}
                             </button>
 
+<<<<<<< HEAD
+=======
+                            {/* --- BOTÓN DE CERRAR CHAT --- */}
+>>>>>>> samuel-dev
                             <button
                                 onClick={handleCloseChat}
                                 disabled={!isConnected}
