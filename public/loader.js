@@ -439,179 +439,25 @@
         animationCompleted = true;
     }
 
-    // --- 6. Función de animación de entrada ---
-    function playIntroAnimation() {
-        if (animationCompleted) return; // No ejecutar si ya se completó
+    // --- 6. Skip animation and go directly to final state ---
+    function skipAnimation() {
+        // Ocultar inmediatamente todas las partes del cuerpo
+        const bodyParts = [body, leftArm, leftHand, rightArm, rightHand, leftLeg, leftFoot, rightLeg, rightFoot];
+        bodyParts.forEach(part => {
+            part.style.opacity = '0';
+            part.style.transform = 'scale(0)';
+        });
         
-        // Fase 1: Aparición del cuerpo (0-2s)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            body.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            body.style.opacity = '1';
-            body.style.transform = 'scale(1)';
-        }, 100));
-
-        // Fase 2: Aparición de piernas (0.5s después)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            leftLeg.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            rightLeg.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            leftLeg.style.opacity = '1';
-            leftLeg.style.transform = 'scale(1)';
-            rightLeg.style.opacity = '1';
-            rightLeg.style.transform = 'scale(1)';
-        }, 600));
-
-        // Fase 3: Aparición de pies (0.3s después)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            leftFoot.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            rightFoot.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            leftFoot.style.opacity = '1';
-            leftFoot.style.transform = 'scale(1)';
-            rightFoot.style.opacity = '1';
-            rightFoot.style.transform = 'scale(1)';
-        }, 900));
-
-        // Fase 4: Aparición de brazos (1.2s después del inicio)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            leftArm.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            rightArm.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            leftArm.style.opacity = '1';
-            leftArm.style.transform = 'scale(1) rotate(-45deg)';
-            rightArm.style.opacity = '1';
-            rightArm.style.transform = 'scale(1) rotate(45deg)';
-        }, 1200));
-
-        // Fase 5: Aparición de manos (1.5s después del inicio)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            leftHand.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            rightHand.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            leftHand.style.opacity = '1';
-            leftHand.style.transform = 'scale(1)';
-            rightHand.style.opacity = '1';
-            rightHand.style.transform = 'scale(1)';
-        }, 1500));
-
-        // Fase 6: Animación de saludo con las manos (2s-8s)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Saludo con movimiento de manos
-            const waveAnimation = () => {
-                if (animationCompleted) return;
-                leftHand.style.transition = 'transform 0.4s ease-in-out';
-                rightHand.style.transition = 'transform 0.4s ease-in-out';
-                leftArm.style.transition = 'transform 0.4s ease-in-out';
-                rightArm.style.transition = 'transform 0.4s ease-in-out';
-                
-                // Movimiento 1
-                leftHand.style.transform = 'scale(1) translateY(-5px)';
-                rightHand.style.transform = 'scale(1) translateY(-5px)';
-                leftArm.style.transform = 'scale(1) rotate(-20deg)';
-                rightArm.style.transform = 'scale(1) rotate(20deg)';
-                
-                animationTimeouts.push(setTimeout(() => {
-                    if (animationCompleted) return;
-                    // Movimiento 2
-                    leftHand.style.transform = 'scale(1) translateY(0px)';
-                    rightHand.style.transform = 'scale(1) translateY(0px)';
-                    leftArm.style.transform = 'scale(1) rotate(-60deg)';
-                    rightArm.style.transform = 'scale(1) rotate(60deg)';
-                }, 400));
-                
-                animationTimeouts.push(setTimeout(() => {
-                    if (animationCompleted) return;
-                    // Movimiento 3
-                    leftHand.style.transform = 'scale(1) translateY(-5px)';
-                    rightHand.style.transform = 'scale(1) translateY(-5px)';
-                    leftArm.style.transform = 'scale(1) rotate(-20deg)';
-                    rightArm.style.transform = 'scale(1) rotate(20deg)';
-                }, 800));
-                
-                animationTimeouts.push(setTimeout(() => {
-                    if (animationCompleted) return;
-                    // Volver a posición original
-                    leftHand.style.transform = 'scale(1)';
-                    rightHand.style.transform = 'scale(1)';
-                    leftArm.style.transform = 'scale(1) rotate(-45deg)';
-                    rightArm.style.transform = 'scale(1) rotate(45deg)';
-                }, 1200));
-            };
-
-            // Repetir el saludo varias veces
-            waveAnimation();
-            animationTimeouts.push(setTimeout(waveAnimation, 1600));
-            animationTimeouts.push(setTimeout(waveAnimation, 3200));
-        }, 2000));
-
-        // Fase 7: Desaparición gradual del cuerpo (8s-12s)
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Primero las manos
-            leftHand.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            rightHand.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            leftHand.style.opacity = '0';
-            leftHand.style.transform = 'scale(0)';
-            rightHand.style.opacity = '0';
-            rightHand.style.transform = 'scale(0)';
-        }, 8000));
-
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Luego los brazos
-            leftArm.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            rightArm.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            leftArm.style.opacity = '0';
-            leftArm.style.transform = 'scale(0) rotate(-45deg)';
-            rightArm.style.opacity = '0';
-            rightArm.style.transform = 'scale(0) rotate(45deg)';
-        }, 8500));
-
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Luego los pies
-            leftFoot.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            rightFoot.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            leftFoot.style.opacity = '0';
-            leftFoot.style.transform = 'scale(0)';
-            rightFoot.style.opacity = '0';
-            rightFoot.style.transform = 'scale(0)';
-        }, 9000));
-
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Luego las piernas
-            leftLeg.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            rightLeg.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            leftLeg.style.opacity = '0';
-            leftLeg.style.transform = 'scale(0)';
-            rightLeg.style.opacity = '0';
-            rightLeg.style.transform = 'scale(0)';
-        }, 9500));
-
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            // Finalmente el cuerpo
-            body.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            body.style.opacity = '0';
-            body.style.transform = 'scale(0)';
-        }, 10000));
-
-        // Al final, mover la cabeza a su posición original
-        animationTimeouts.push(setTimeout(() => {
-            if (animationCompleted) return;
-            head.style.transition = 'bottom 0.5s ease, right 0.5s ease';
-            head.style.bottom = '0px';
-            head.style.right = '0px';
-            animationCompleted = true;
-            console.log('Animación completada - Bot listo para usar');
-        }, 11000));
+        // Mover la cabeza a su posición final inmediatamente
+        head.style.bottom = '0px';
+        head.style.right = '0px';
+        
+        animationCompleted = true;
+        console.log('Animation skipped - Bot ready to use');
     }
 
-    // Iniciar la animación al cargar
-    animationTimeouts.push(setTimeout(playIntroAnimation, 500));
+    // Skip animation immediately - no intro animation
+    skipAnimation();
 
     // --- 7. Lógica para mostrar/ocultar iframe ---
     let isOpen = false;

@@ -297,50 +297,55 @@
     "chatReady": "¡Perfecto, gracias! Ya puedes comenzar a chatear. ¿En qué puedo ayudarte hoy?"
   },
   "leadClassification": {
-    "pageTitle": "Clasificación de Leads",
-    "pageSubtitle": "Analiza y clasifica automáticamente la calidad de tus leads basándose en las conversaciones",
-    "totalChats": "Total de Chats",
-    "classifiedChats": "Chats Clasificados",
-    "hotLeads": "Leads Calientes",
-    "warmLeads": "Leads Tibios",
-    "coldLeads": "Leads Fríos",
-    "classifyButton": "Clasificar Todos los Chats",
-    "classifyingButton": "Clasificando...",
-    "configureKeywords": "Configurar Palabras Clave",
-    "hideKeywords": "Ocultar Palabras Clave",
-    "saveConfiguration": "Guardar Configuración",
-    "keywordsConfigTitle": "Configuración de Palabras Clave",
-    "newHotKeyword": "Nueva palabra CALIENTE...",
-    "newWarmKeyword": "Nueva palabra TIBIA...",
-    "newColdKeyword": "Nueva palabra FRÍA...",
-    "hotKeywordsTitle": "CALIENTE 🔥",
-    "warmKeywordsTitle": "TIBIO 🌡️", 
-    "coldKeywordsTitle": "FRÍO ❄️",
-    "resetToDefaults": "Restaurar por Defecto",
-    "keywordCount": "({{count}})",
-    "resultsTitle": "Resultados de Clasificación",
-    "noResults": "No hay resultados aún. Ejecuta la clasificación para ver el análisis de leads.",
-    "tableHeaderChat": "Chat",
-    "tableHeaderScore": "Puntuación",
-    "tableHeaderClassification": "Clasificación",
-    "tableHeaderReasoning": "Análisis",
-    "tableHeaderDate": "Fecha",
-    "feedback": {
-      "classificationStarted": "Clasificación iniciada...",
-      "classificationComplete": "¡Clasificación completada! Se procesaron {{count}} chats.",
-      "classificationError": "Error durante la clasificación. Inténtalo de nuevo.",
-      "keywordsConfigSaved": "Configuración de palabras clave guardada exitosamente",
-      "keywordAdded": "Se agregó la palabra: \"{{keyword}}\"",
-      "loadingKeywords": "Cargando configuración de palabras clave...",
-      "keywordAddError": "Error al agregar palabra clave. Puede que ya exista.",
-      "keywordRemoveError": "Error al eliminar palabra clave. Inténtalo de nuevo.",
-      "keywordDuplicate": "Esta palabra clave ya existe en esta categoría",
-      "keywordEmpty": "Por favor ingresa una palabra clave",
-      "savingKeywords": "Guardando palabras clave...",
-      "loadingFromDatabase": "Cargando desde base de datos...",
-      "usingDefaultKeywords": "Usando palabras clave por defecto",
-      "keywordsReset": "Keywords restauradas a valores por defecto",
-      "keywordsResetError": "Error al restaurar keywords"
+    "title": "Clasificación de Leads",
+    "description": "Analiza automáticamente las conversaciones para identificar leads calientes, tibios y fríos",
+    "stats": {
+      "totalChats": "Total Chats",
+      "classified": "Clasificados", 
+      "hot": "HOT 🔥",
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️"
+    },
+    "buttons": {
+      "classifying": "Clasificando...",
+      "classifyAll": "Clasificar Todos los Chats",
+      "configureKeywords": "Configurar Palabras Clave",
+      "saveConfig": "Guardar Configuración"
+    },
+    "keywords": {
+      "configuration": "Configuración de Palabras Clave",
+      "hot": "CALIENTE 🔥", 
+      "warm": "TIBIA 🟡",
+      "cold": "FRÍA ❄️",
+      "hotPlaceholder": "Nueva palabra caliente...",
+      "warmPlaceholder": "Nueva palabra tibia...",
+      "coldPlaceholder": "Nueva palabra fría...",
+      "added": "Palabra clave agregada exitosamente",
+      "removed": "Palabra clave eliminada exitosamente",
+      "duplicate": "Esta palabra clave ya existe",
+      "emptyKeyword": "Por favor ingresa una palabra clave",
+      "configSaved": "Configuración guardada (las palabras clave se guardan automáticamente)"
+    },
+    "classification": {
+      "starting": "Iniciando clasificación...",
+      "noChats": "No hay chats por clasificar",
+      "processing": "Procesando...",
+      "completed": "Clasificación completada"
+    },
+    "errors": {
+      "loadKeywords": "Error cargando palabras clave",
+      "classification": "Error en la clasificación",
+      "addKeyword": "Error al agregar palabra clave",
+      "removeKeyword": "Error al eliminar palabra clave"
+    },
+    "table": {
+      "classification": "Clasificación",
+      "analysis": "Análisis del Lead",
+      "date": "Fecha"
+    },
+    "results": {
+      "title": "Resultados de Clasificación",
+      "noResults": "No hay resultados de clasificación disponibles"
     }
   }
 }

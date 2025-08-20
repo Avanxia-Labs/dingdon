@@ -299,50 +299,55 @@
     "chatReady": "Perfect, thank you! You can now start chatting. How can I help you today?"
   },
   "leadClassification": {
-    "pageTitle": "Lead Classification",
-    "pageSubtitle": "Automatically analyze and classify your leads based on conversation patterns",
-    "totalChats": "Total Chats",
-    "classifiedChats": "Classified Chats",
-    "hotLeads": "Hot Leads",
-    "warmLeads": "Warm Leads",
-    "coldLeads": "Cold Leads",
-    "classifyButton": "Classify All Chats",
-    "classifyingButton": "Classifying...",
-    "configureKeywords": "Configure Keywords",
-    "hideKeywords": "Hide Keywords",
-    "saveConfiguration": "Save Configuration",
-    "keywordsConfigTitle": "Keywords Configuration",
-    "newHotKeyword": "New HOT keyword...",
-    "newWarmKeyword": "New WARM keyword...",
-    "newColdKeyword": "New COLD keyword...",
-    "hotKeywordsTitle": "HOT 🔥",
-    "warmKeywordsTitle": "WARM 🌡️", 
-    "coldKeywordsTitle": "COLD ❄️",
-    "resetToDefaults": "Reset to Defaults",
-    "keywordCount": "({{count}})",
-    "resultsTitle": "Classification Results",
-    "noResults": "No results yet. Run the classification to see lead analysis.",
-    "tableHeaderChat": "Chat",
-    "tableHeaderScore": "Score",
-    "tableHeaderClassification": "Classification",
-    "tableHeaderReasoning": "Analysis",
-    "tableHeaderDate": "Date",
-    "feedback": {
-      "classificationStarted": "Classification started...",
-      "classificationComplete": "Classification completed! {{count}} chats processed.",
-      "classificationError": "Error during classification. Please try again.",
-      "keywordsConfigSaved": "Keywords configuration saved successfully",
-      "keywordAdded": "Added keyword: \"{{keyword}}\"",
-      "loadingKeywords": "Loading keywords configuration...",
-      "keywordAddError": "Error adding keyword. It might already exist.",
-      "keywordRemoveError": "Error removing keyword. Please try again.",
-      "keywordDuplicate": "This keyword already exists in this category",
-      "keywordEmpty": "Please enter a keyword",
-      "savingKeywords": "Saving keywords...",
-      "loadingFromDatabase": "Loading from database...",
-      "usingDefaultKeywords": "Using default keywords",
-      "keywordsReset": "Keywords restored to defaults",
-      "keywordsResetError": "Error restoring keywords"
+    "title": "Lead Classification",
+    "description": "Automatically analyze conversations to identify hot, warm and cold leads",
+    "stats": {
+      "totalChats": "Total Chats",
+      "classified": "Classified", 
+      "hot": "HOT 🔥",
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️"
+    },
+    "buttons": {
+      "classifying": "Classifying...",
+      "classifyAll": "Classify All Chats",
+      "configureKeywords": "Configure Keywords",
+      "saveConfig": "Save Configuration"
+    },
+    "keywords": {
+      "configuration": "Keywords Configuration",
+      "hot": "HOT 🔥", 
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️",
+      "hotPlaceholder": "New hot keyword...",
+      "warmPlaceholder": "New warm keyword...",
+      "coldPlaceholder": "New cold keyword...",
+      "added": "Keyword added successfully",
+      "removed": "Keyword removed successfully",
+      "duplicate": "This keyword already exists",
+      "emptyKeyword": "Please enter a keyword",
+      "configSaved": "Configuration saved (keywords save automatically)"
+    },
+    "classification": {
+      "starting": "Starting classification...",
+      "noChats": "No chats to classify",
+      "processing": "Processing...",
+      "completed": "Classification completed"
+    },
+    "errors": {
+      "loadKeywords": "Error loading keywords",
+      "classification": "Classification error",
+      "addKeyword": "Error adding keyword",
+      "removeKeyword": "Error removing keyword"
+    },
+    "table": {
+      "classification": "Classification",
+      "analysis": "Lead Analysis",
+      "date": "Date"
+    },
+    "results": {
+      "title": "Classification Results",
+      "noResults": "No classification results available"
     }
   }
 }

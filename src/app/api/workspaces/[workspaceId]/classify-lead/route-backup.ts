@@ -14,8 +14,7 @@ export async function POST(
 ) {
   try {
     const { workspaceId } = await params;
-    const { chatSessionId, language } = await request.json();
-    // Pass current dashboard language to AI for response generation
+    const { chatSessionId } = await request.json();
 
     if (!chatSessionId) {
       return NextResponse.json(
@@ -39,7 +38,7 @@ export async function POST(
     }
 
     // Realizar clasificación
-    const result = await leadClassificationService.classifyLead(workspaceId, chatSessionId, language || 'es');
+    const result = await leadClassificationService.classifyLead(workspaceId, chatSessionId);
 
     if (!result) {
       return NextResponse.json(
@@ -48,10 +47,61 @@ export async function POST(
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      result
+    });
 
   } catch (error) {
     console.error('Error en clasificación de lead:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET: Obtener clasificación existente de un chat
+ * Query: ?chatSessionId=uuid
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { workspaceId: string } }
+) {
+  try {
+    const { workspaceId } = params;
+    const { searchParams } = new URL(request.url);
+    const chatSessionId = searchParams.get('chatSessionId');
+
+    if (!chatSessionId) {
+      return NextResponse.json(
+        { error: 'chatSessionId es requerido' },
+        { status: 400 }
+      );
+    }
+
+    const { data: score, error } = await supabaseAdmin
+      .from('lead_scores')
+      .select('*')
+      .eq('chat_session_id', chatSessionId)
+      .eq('workspace_id', workspaceId)
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Clasificación no encontrada' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      score
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo clasificación:', error);
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

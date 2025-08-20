@@ -359,7 +359,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             console.log(`[Dashboard] This should NOT happen for transferred chats!`);
             addRequest(request);
             playSound();
-            showNotification('New Chat Request', { body: `Session: ${request.sessionId.slice(-6)}` });
+            showNotification('New Chat Request', { body: `Session: ${String(request.sessionId || '').slice(-6)}` });
         });
 
         socket.on('chat_taken', ({ sessionId }: { sessionId: string }) => {
@@ -528,6 +528,109 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             }
         });
         
+        // 🔧 NUEVO: Manejar transferencias personales (cuando me transfieren un chat a mí específicamente)
+        socket.on('personal_transfer_received', (request: ChatRequest & { 
+            transferredFrom: string;
+            fullHistory?: Message[];
+        }) => {
+            console.log(`[Dashboard] 🎯 ===== PERSONAL TRANSFER RECEIVED =====`);
+            console.log(`[Dashboard] 📨 Session ID: ${request.sessionId}`);
+            console.log(`[Dashboard] 👤 Transferred from: ${request.transferredFrom}`);
+            console.log(`[Dashboard] 📝 Message: ${request.initialMessage.content}`);
+            console.log(`[Dashboard] 📜 Full history length: ${request.fullHistory?.length || 0}`);
+            
+            // Agregar a mis chats activos directamente
+            const { addToMyActiveChats, setActiveChat } = useDashboardStore.getState();
+            
+            // Usar el historial completo si está disponible, o crear uno nuevo
+            const chatMessages = request.fullHistory || [
+                {
+                    id: `system-transfer-${Date.now()}`,
+                    content: `📥 Chat transferido de ${request.transferredFrom}`,
+                    role: 'system' as any,
+                    timestamp: new Date()
+                },
+                request.initialMessage
+            ];
+            
+            // Verificar que sessionId sea válido antes de proceder
+            if (!request.sessionId || typeof request.sessionId !== 'string') {
+                console.error('[Dashboard] Invalid sessionId in transfer request:', request.sessionId);
+                return;
+            }
+            
+            // Agregar directamente a mis chats activos
+            addToMyActiveChats(request.sessionId, chatMessages);
+            
+            // Hacer este chat el activo inmediatamente para que el agente lo vea
+            setActiveChat(request.sessionId, chatMessages);
+            
+            // Reproducir sonido y mostrar notificación prominente
+            playSound();
+            showNotification('🔔 Chat Transferido Personalmente', { 
+                body: `${request.transferredFrom} te ha transferido un chat directamente. Sesión: ${String(request.sessionId || '').slice(-6)}`,
+                requireInteraction: true // Mantener la notificación hasta que el usuario interactúe
+            });
+            
+            // También reproducir un sonido adicional si es posible
+            if (typeof window !== 'undefined' && window.Audio) {
+                try {
+                    // Intentar reproducir múltiples veces para mayor atención
+                    const audio = new Audio('/notification-sound.mp3');
+                    audio.play().catch(() => {});
+                    setTimeout(() => {
+                        audio.play().catch(() => {});
+                    }, 500);
+                } catch (e) {
+                    console.log('[Dashboard] Could not play additional notification sound');
+                }
+            }
+            
+            console.log(`[Dashboard] Personal transfer added to my active chats`);
+            console.log(`[Dashboard] 🏁 ===== PERSONAL TRANSFER PROCESSED =====`);
+        });
+        
+        // 🔧 NUEVO: Manejar respuesta exitosa de transferencia
+        socket.on('transfer_success', ({ sessionId, message }: { sessionId: string; message: string }) => {
+            console.log(`[Dashboard] ✅ Transfer Success:`, { sessionId, message });
+            
+            // Remover el chat de los chats activos del agente que transfirió
+            const { removeFromMyActiveChats, clearActiveChat, activeChat } = useDashboardStore.getState();
+            
+            // Remover de mis chats activos
+            removeFromMyActiveChats(sessionId);
+            
+            // Si es el chat activo, limpiar la vista
+            if (activeChat?.sessionId === sessionId) {
+                clearActiveChat();
+            }
+            
+            // Mostrar notificación de éxito
+            showNotification('Transferencia Exitosa', { 
+                body: message || `Chat transferido exitosamente`
+            });
+            
+            console.log(`[Dashboard] Chat ${sessionId} removed after successful transfer`);
+        });
+        
+        // 🔧 NUEVO: Manejar fallo en transferencia
+        socket.on('transfer_failed', ({ sessionId, message }: { sessionId: string; message: string }) => {
+            console.error(`[Dashboard] ❌ Transfer Failed:`, { sessionId, message });
+            
+            // Mostrar notificación de error
+            showNotification('Error en Transferencia', { 
+                body: message || 'No se pudo transferir el chat'
+            });
+            
+            // Agregar mensaje de error al chat
+            const errorMessage: Message = {
+                id: `error-${Date.now()}`,
+                content: `❌ Error al transferir: ${message}`,
+                role: 'system' as any,
+                timestamp: new Date(),
+            };
+            addMessageToActiveChat(errorMessage);
+        });
        
 
     }, [addMessageToActiveChat, addRequest, playSound, removeRequest, showNotification, activeChat?.sessionId, myActiveChats, workspaceId, session?.user?.id]); // Dependencias estables.

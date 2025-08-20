@@ -14,7 +14,10 @@ import { authOptions } from '@/lib/auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  // { params }: { params: { workspaceId: string } }
+  context: {
+    params: Promise<{ workspaceId: string }>;
+  }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const language = searchParams.get('language') as 'es' | 'en' | null;
@@ -87,7 +90,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  // { params }: { params: { workspaceId: string } }
+  context: {
+    params: Promise<{ workspaceId: string }>;
+  }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -95,7 +101,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
     const { keyword, category, language = 'es' } = await request.json();
 
     if (!keyword || !category) {
@@ -173,7 +179,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  // { params }: { params: { workspaceId: string } }
+  context: {
+    params: Promise<{ workspaceId: string }>;
+  }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -181,7 +190,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
     const { keyword, category } = await request.json();
 
     if (!keyword || !category) {
