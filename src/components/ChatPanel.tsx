@@ -8,11 +8,7 @@ import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
-<<<<<<< HEAD
-import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause } from "lucide-react";
-=======
 import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users } from "lucide-react";
->>>>>>> samuel-dev
 import { useChatbot } from "@/hooks/useChatbot";
 
 interface ChatRequest {
@@ -199,8 +195,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         }
     };
 
-<<<<<<< HEAD
-=======
     // --- Funcion para el boton de transferir chat ---
     const handleTransferToQueue = () => {
         if (socket && activeChat) {
@@ -213,7 +207,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         }
     };
 
->>>>>>> samuel-dev
     console.log("ACTIVE BOT CONFIG", activeBotConfig);
 
     return (
@@ -316,8 +309,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 })}
                             </h3>
 
-<<<<<<< HEAD
-=======
                             {/* --- BOTÓN DE TRANSFERENCIA --- */}
                             <button
                                 onClick={handleTransferToQueue}
@@ -328,7 +319,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             </button>
 
                             {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
->>>>>>> samuel-dev
                             <button
                                 onClick={handleToggleBotStatus} // <-- Llama a la función toggle
                                 className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${activeChat.status === 'in_progress'
@@ -349,10 +339,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 )}
                             </button>
 
-<<<<<<< HEAD
-=======
                             {/* --- BOTÓN DE CERRAR CHAT --- */}
->>>>>>> samuel-dev
                             <button
                                 onClick={handleCloseChat}
                                 disabled={!isConnected}
