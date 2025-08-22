@@ -40,6 +40,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         closeActiveChat,
         activeBotConfig,
         setActiveBotConfig,
+        clearActiveChatView,
         updateActiveChatStatus
     } = useDashboardStore();
 
@@ -203,7 +204,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                 sessionId: activeChat.sessionId
             });
             // Cerramos la vista del chat para el agente actual.
-            closeActiveChat();
+            clearActiveChatView();
         }
     };
 

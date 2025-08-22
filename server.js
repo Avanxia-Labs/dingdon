@@ -339,27 +339,46 @@ nextApp.prepare().then(() => {
 
             console.log(`[Socket.IO] User message received for session ${sessionId}`);
 
-            if (!workspacesData[workspaceId]) workspacesData[workspaceId] = {};
-            if (!workspacesData[workspaceId][sessionId]) {
-                workspacesData[workspaceId][sessionId] = {
-                    status: 'bot',
-                    history: [],
-                    assignedAgentId: null,
-                };
-            }
-            workspacesData[workspaceId][sessionId].history.push(message);
+            try {
+                // 1. Obtener el historial ACTUAL de la base de datos
+                const { data: sessionData, error: fetchError } = await supabase
+                    .from('chat_sessions')
+                    .select('history')
+                    .eq('id', sessionId)
+                    .single();
 
-            // Actualizar el historial en la DB
-            const { error } = await supabase
-                .from('chat_sessions')
-                .update({ history: workspacesData[workspaceId][sessionId].history })
-                .eq('id', sessionId);
-            if (error) {
-                console.error(`[DB Error] No se pudo actualizar historial de ${sessionId}:`, error.message);
-            }
+                if (fetchError || !sessionData) {
+                    console.error(`[DB Error] No se pudo obtener la sesión ${sessionId} para guardar mensaje de usuario.`);
+                    return;
+                }
 
-            // 🔧 MEJORADO: Emitir a agentes en el dashboard
-            io.to(`dashboard_${workspaceId}`).emit('incoming_user_message', { sessionId, message });
+                // 2. Añadir el nuevo mensaje del usuario
+                const currentHistory = sessionData.history || [];
+                const updatedHistory = [...currentHistory, message];
+
+                // 3. Guardar el historial COMPLETO de vuelta en la DB
+                const { error: updateError } = await supabase
+                    .from('chat_sessions')
+                    .update({ history: updatedHistory })
+                    .eq('id', sessionId);
+
+                if (updateError) {
+                    console.error(`[DB Error] No se pudo actualizar el historial de ${sessionId} con mensaje de usuario:`, updateError.message);
+                }
+
+                // Sincroniza la memoria local también, para que `agent_joined` funcione
+                if (workspacesData[workspaceId]?.[sessionId]) {
+                    workspacesData[workspaceId][sessionId].history = updatedHistory;
+                }
+
+                // 4. Emitir el mensaje al dashboard del agente
+                io.to(`dashboard_${workspaceId}`).emit('incoming_user_message', { sessionId, message });
+
+                console.log(`[Socket.IO] Mensaje de usuario de la sesión ${sessionId} procesado y guardado.`);
+
+            } catch (error) { 
+                console.error(`[Critical Error] en user_message para sesión ${sessionId}:`, error);
+            }
         });
 
         socket.on('agent_message', async ({ workspaceId, sessionId, message }) => {
@@ -396,6 +415,8 @@ nextApp.prepare().then(() => {
                 const currentHistory = sessionData.history || [];
                 const updatedHistory = [...currentHistory, message];
 
+                console.log(`[DIAGNÓSTICO] Historial actualizado ahora tiene ${updatedHistory.length} mensajes. Intentando guardar...`);
+
                 // 3. Guardar el historial COMPLETO y actualizado de vuelta en la DB
                 const { error: updateError } = await supabase
                     .from('chat_sessions')
@@ -404,6 +425,8 @@ nextApp.prepare().then(() => {
 
                 if (updateError) {
                     console.error(`[DB Error] No se pudo actualizar el historial de ${sessionId}:`, updateError.message);
+                } else {
+                    console.log(`[DIAGNÓSTICO] ¡ÉXITO! Historial guardado en la DB.`);
                 }
 
                 // 4. Enrutar el mensaje al canal correcto usando los datos que ya obtuvimos

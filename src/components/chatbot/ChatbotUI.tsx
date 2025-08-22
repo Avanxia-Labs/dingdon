@@ -101,6 +101,7 @@ const ChatInterface = () => {
     const isHidden = leadCollected ? '' : 'hidden';
 
     console.log("Avatar URL:", config.botAvatarUrl);
+    console.log("Messages:", messages);
 
     return (
         <div className={`h-full w-full bg-white rounded-lg flex flex-col overflow-hidden ${language === 'ar' ? 'rtl' : 'ltr'}`}>
@@ -125,11 +126,25 @@ const ChatInterface = () => {
                                 {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
                                 {(message.role === 'assistant' || message.role === 'agent') && (
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
-                                        <img
-                                            src={message.role === 'agent' && message.avatarUrl ? message.avatarUrl : config.botAvatarUrl} // Por ahora, el agente también usa el avatar del bot
-                                            alt="Avatar"
-                                            className="w-full h-full rounded-full object-cover"
-                                        />
+
+                                        {message.avatarUrl
+                                            ?
+                                            (<img
+                                                src={message.role === 'agent' && message.avatarUrl ? message.avatarUrl : ''} // Por ahora, el agente también usa el avatar del bot
+                                                alt="Avatar"
+                                                className="w-full h-full rounded-full object-cover"
+                                            />
+                                            )
+                                            :
+                                            (
+                                                <div className="w-full h-full flex items-center justify-center text-black/60">
+                                                    <User />
+                                                </div>
+                                            )
+                                        }
+
+
+
                                     </div>
                                 )}
                                 <div
