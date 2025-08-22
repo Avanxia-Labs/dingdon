@@ -46,7 +46,8 @@
     "settingsAndBot": "设置和机器人",
     "profile": "我的个人资料",
     "signOut": "退出",
-    "leads": "潜在客户"
+    "leads": "潜在客户",
+    "leadClassification": "潜在客户分类"
   },
   "leads": {
     "pageTitle": "收集的潜在客户",
@@ -142,7 +143,9 @@
     "inputPlaceholder": "请输入您的回复...",
     "inputPlaceholderDisconnected": "等待连接...",
     "selectChatPrompt": "选择对话开始",
-    "chatClosed": "对话已关闭"
+    "chatClosed": "对话已关闭",
+    "conversationSummary": "对话摘要",
+    "close": "关闭"
   },
   "chatbotUI": {
     "botLabel": "机器人",

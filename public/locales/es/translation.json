@@ -44,7 +44,8 @@
     "settingsAndBot": "Ajustes y Bot",
     "profile": "Mi Perfil",
     "signOut": "Cerrar Sesión",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Clasificación de Leads"
   },
   "leads": {
     "pageTitle": "Leads Recolectados",
@@ -140,7 +141,9 @@
     "inputPlaceholder": "Escribe tu respuesta...",
     "inputPlaceholderDisconnected": "Esperando conexión...",
     "selectChatPrompt": "Selecciona un chat para comenzar",
-    "chatClosed": "El chat fue cerrado"
+    "chatClosed": "El chat fue cerrado",
+    "conversationSummary": "Resumen de la Conversación",
+    "close": "Cerrar"
   },
   "chatbotUI": {
     "botLabel": "Bot",

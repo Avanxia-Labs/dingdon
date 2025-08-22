@@ -124,7 +124,7 @@ const ChatInterface = () => {
                         {messages.map((message) => (
                             <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
-                                {(message.role === 'assistant' || message.role === 'agent') && (
+                                {/* {(message.role === 'assistant' || message.role === 'agent') && (
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
 
                                         {message.avatarUrl
@@ -146,7 +146,41 @@ const ChatInterface = () => {
 
 
                                     </div>
+                                )} */}
+                                {(message.role === 'assistant' || message.role === 'agent') && (
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10 overflow-hidden">
+                                        {/* Determinar qué avatar mostrar */}
+                                        {(() => {
+                                            const avatarUrl = message.role === 'assistant'
+                                                ? config.botAvatarUrl
+                                                : message.avatarUrl;
+
+                                            if (avatarUrl) {
+                                                return (
+                                                    <img
+                                                        src={avatarUrl}
+                                                        alt={message.role === 'assistant' ? `${config.botName} Avatar` : "Agent Avatar"}
+                                                        className="w-full h-full rounded-full object-cover"
+                                                        onError={(e) => {
+                                                            console.error('Failed to load avatar:', avatarUrl);
+                                                            // Ocultar imagen y mostrar fallback
+                                                            e.currentTarget.style.display = 'none';
+                                                        }}
+                                                    />
+                                                );
+                                            }
+
+                                            // Fallback icon si no hay avatar
+                                            return (
+                                                <div className="w-full h-full flex items-center justify-center text-black/60">
+                                                    {message.role === 'assistant' ? <Bot size={20} /> : <User size={20} />}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
                                 )}
+
+
                                 <div
                                     className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
                                         message.role === 'user' ? 'text-white' :

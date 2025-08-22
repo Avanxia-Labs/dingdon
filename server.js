@@ -7,6 +7,7 @@ const supabase = require('./server-lib/supabaseClient');
 const next = require('next')
 const io = require('./server-lib/socketInstance');
 const { sendWhatsAppMessage } = require('./src/lib/twilio.js');
+const { summarizeConversation } = require('./src/services/server/summaryService.js');
 
 // Cargar variables de entorno
 require('dotenv').config();
@@ -376,7 +377,7 @@ nextApp.prepare().then(() => {
 
                 console.log(`[Socket.IO] Mensaje de usuario de la sesión ${sessionId} procesado y guardado.`);
 
-            } catch (error) { 
+            } catch (error) {
                 console.error(`[Critical Error] en user_message para sesión ${sessionId}:`, error);
             }
         });
@@ -560,7 +561,53 @@ nextApp.prepare().then(() => {
                 socket.emit('command_error', { message: 'Failed to transfer chat.' });
             }
 
-        })
+        });
+
+        socket.on('get_summary', async ({ workspaceId, sessionId, language }) => {
+            if (!workspaceId || !sessionId) return;
+
+            try {
+                console.log(`[Summary] Solicitud de resumen para la sesión ${sessionId}`);
+
+                // 1. Obtiene el historial y la configuración de IA de la DB
+                const { data: sessionData, error } = await supabase
+                    .from('chat_sessions')
+                    .select(`
+                    history,
+                    workspaces ( ai_model, ai_api_key_name, knowledge_base )
+                `)
+                    .eq('id', sessionId)
+                    .single();
+
+                if (error || !sessionData) throw new Error("Session not found");
+
+                const workspaceConfig = sessionData.workspaces;
+                const history = sessionData.history;
+
+                // 2. Determina la clave API a usar
+                const apiKey = process.env[workspaceConfig.ai_api_key_name] || process.env.GEMINI_API_KEY_DEFAULT;
+                if (!apiKey) throw new Error("API Key not found");
+
+                const aiConfig = {
+                    model: workspaceConfig.ai_model,
+                    apiKey: apiKey,
+                };
+
+                // 3. Llama a la nueva función de resumen del servicio dedicado
+                const summary = await summarizeConversation(
+                    history,
+                    language || 'es', // O el idioma que prefieras
+                    aiConfig
+                );
+
+                // 4. Envía el resumen de vuelta SOLO al agente que lo pidió
+                socket.emit('summary_received', { sessionId, summary });
+
+            } catch (error) {
+                console.error("Error al generar el resumen:", error.message);
+                socket.emit('command_error', { message: 'Failed to generate summary.' });
+            }
+        });
 
         socket.on('close_chat', async ({ workspaceId, sessionId }) => {
             console.log(`[Socket.IO] Closing chat for session ${sessionId}`);

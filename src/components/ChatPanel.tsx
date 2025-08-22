@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
-import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users } from "lucide-react";
+import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2 } from "lucide-react";
 import { useChatbot } from "@/hooks/useChatbot";
 
 interface ChatRequest {
@@ -48,6 +48,22 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [isConnected, setIsConnected] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [summaryText, setSummaryText] = useState('');
+    const [isSummarizing, setIsSummarizing] = useState(false);
+
+    useEffect(() => {
+        if (!socket) return;
+        const handleSummaryReceived = ({ sessionId, summary }: { sessionId: string; summary: string }) => {
+            if (activeChat?.sessionId === sessionId) {
+                setSummaryText(summary);
+                setIsSummarizing(false);
+            }
+        };
+        socket.on('summary_received', handleSummaryReceived);
+        return () => { socket.off('summary_received', handleSummaryReceived); };
+    }, [socket, activeChat?.sessionId]);
 
 
     useEffect(() => {
@@ -208,6 +224,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         }
     };
 
+    const handleGetSummary = () => {
+        if (socket && activeChat) {
+            setSummaryText(''); // Limpia el resumen anterior
+            setIsSummarizing(true);
+            setIsSummaryModalOpen(true);
+            socket.emit('get_summary', { workspaceId, sessionId: activeChat.sessionId, language: language });
+        }
+    };
+
+
     console.log("ACTIVE BOT CONFIG", activeBotConfig);
 
     return (
@@ -340,6 +366,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 )}
                             </button>
 
+                            {/* --- BOTÓN DE RESUMEN --- */}
+                            <button
+                                onClick={handleGetSummary}
+                                className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm flex items-center gap-1.5"
+                            >
+                                <FileText size={14} />
+                                <span>Summarize</span>
+                            </button>
+
                             {/* --- BOTÓN DE CERRAR CHAT --- */}
                             <button
                                 onClick={handleCloseChat}
@@ -457,7 +492,35 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </p>
                     </div>
                 )}
+
+
             </div>
+
+            {/* Modal de Resumen */}
+            {isSummaryModalOpen && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+                        <h3 className="text-lg font-bold mb-4">{t("chatPanel.conversationSummary")}</h3>
+                        {isSummarizing ? (
+                            <div className="flex items-center justify-center h-24">
+                                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                {summaryText}
+                            </div>
+                        )}
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setIsSummaryModalOpen(false)}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                            >
+                                {t("chatPanel.close")}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

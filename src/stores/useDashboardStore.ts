@@ -15,7 +15,7 @@ interface ActiveChat {
     status: ChatSessionStatus;
 }
 
-interface BotConfig {
+export interface BotConfig {
     name?: string;
     avatarUrl?: string;
 }

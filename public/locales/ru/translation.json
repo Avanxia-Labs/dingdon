@@ -45,7 +45,8 @@
     "settingsAndBot": "Настройки и бот",
     "profile": "Мой профиль",
     "signOut": "Выйти",
-    "leads": "Лиды"
+    "leads": "Лиды",
+    "leadClassification": "Классификация лидов"
   },
   "leads": {
     "pageTitle": "Собранные лиды",
@@ -141,7 +142,9 @@
     "inputPlaceholder": "Введите ваш ответ...",
     "inputPlaceholderDisconnected": "Ожидание подключения...",
     "selectChatPrompt": "Выберите чат для начала",
-    "chatClosed": "Чат был закрыт"
+    "chatClosed": "Чат был закрыт",
+    "conversationSummary": "Резюме разговора",
+    "close": "Закрыть"
   },
   "chatbotUI": {
     "botLabel": "Бот",

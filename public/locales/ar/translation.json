@@ -47,7 +47,8 @@
     "settingsAndBot": "الإعدادات والبوت",
     "profile": "ملفي الشخصي",
     "signOut": "تسجيل الخروج",
-    "leads": "العملاء المحتملون"
+    "leads": "العملاء المحتملون",
+    "leadClassification": "تصنيف العملاء المحتملين"
   },
   "leads": {
     "pageTitle": "العملاء المحتملون الذين تم جمعهم",
@@ -143,7 +144,9 @@
     "inputPlaceholder": "اكتب ردك...",
     "inputPlaceholderDisconnected": "في انتظار الاتصال...",
     "selectChatPrompt": "اختر محادثة للبدء",
-    "chatClosed": "تم إغلاق المحادثة"
+    "chatClosed": "تم إغلاق المحادثة",
+    "conversationSummary": "ملخص المحادثة",
+    "close": "إغلاق"
   },
   "chatbotUI": {
     "botLabel": "بوت",

@@ -44,7 +44,8 @@
     "settingsAndBot": "Settings & Bot",
     "profile": "My Profile",
     "signOut": "Sign Out",
-    "leads": "Leads"
+    "leads": "Leads",
+    "leadClassification": "Lead Classification"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -140,7 +141,9 @@
     "inputPlaceholder": "Type your response...",
     "inputPlaceholderDisconnected": "Waiting for connection...",
     "selectChatPrompt": "Select a chat to begin",
-    "chatClosed": "Chat was closed"
+    "chatClosed": "Chat was closed",
+    "conversationSummary": "Conversation Summary",
+    "close": "Close"
   },
   "chatbotUI": {
     "botLabel": "Bot",
