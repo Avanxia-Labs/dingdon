@@ -45,7 +45,8 @@
     "profile": "My Profile",
     "signOut": "Sign Out",
     "leads": "Leads",
-    "leadClassification": "Lead Classification"
+    "leadClassification": "Lead Classification",
+    "reports": "Reports"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -264,5 +265,21 @@
     "welcomeBack": "Welcome back, {{name}}! How can I help you today?",
     "askEmail": "Thank you! Now, please tell me your email address.",
     "chatReady": "Perfect, thank you! You can now start chatting. How can I help you today?"
+  },
+
+  "reports": {
+    "pageTitle": "Daily Reports",
+    "pageSubtitle": "Review daily summaries and key metrics of your bot's activity.",
+    "summary": { "title": "Executive Summary" },
+    "metrics": {
+      "newConversations": "New Conversations",
+      "totalMessages": "Total Messages",
+      "avgResponseTime": "Avg. Response Time",
+      "handoffs": "Handoffs to Agent",
+      "botResolution": "Bot Resolution Rate"
+    },
+    "topics": { "title": "Topics & Trends" },
+    "actions": { "title": "Actionable Insights" },
+    "leads": { "title": "Lead Analysis" }
   }
 }
