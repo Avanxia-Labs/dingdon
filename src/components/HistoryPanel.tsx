@@ -96,7 +96,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId, botConf
                     <h2 className="text-2xl font-bold text-gray-800">{t('history.pageTitle')}</h2>
                     <button onClick={handleDeleteAll} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50" disabled={chatLogs.length === 0}>{t('history.deleteAllButton')}</button>
                 </div>
-                <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="bg-white shadow rounded-lg overflow-x-auto">
                     <table className="min-w-full leading-normal">
                         <thead>
                             <tr>
