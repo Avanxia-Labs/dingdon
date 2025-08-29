@@ -9,7 +9,7 @@ import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LanguageIcon from '@mui/icons-material/Language';
-//import { BotConfig } from '@/stores/useDashboardStore';
+import { Pagination } from './Pagination';
 
 interface ChatLog {
     id: string;
@@ -40,17 +40,31 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId, botConf
     const [selectedChatHistory, setSelectedChatHistory] = useState<Message[] | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
 
+    // ---  ESTADOS PARA LA PAGINACIÓN ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalChats, setTotalChats] = useState(0);
+
     const fetchHistoryList = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/workspaces/${workspaceId}/chats`);
-            const data = await response.json();
-            if (response.ok) setChatLogs(data);
-            else throw new Error(data.error || 'Failed to load chat history');
-        } catch (error: any) { setFeedback(`${t('common.errorPrefix')}: ${error.message}`); } finally { setIsLoading(false); }
+            const response = await fetch(`/api/workspaces/${workspaceId}/chats?page=${currentPage}&limit=${itemsPerPage}`);
+
+            if (response.ok) {
+                const { data, count } = await response.json();
+                setChatLogs(data);
+                setTotalChats(count || 0);
+            } else {
+                throw new Error('Failed to load chat history');
+            }
+        } catch (error: any) {
+            setFeedback(`${t('common.errorPrefix')}: ${error.message}`);
+            setChatLogs([]); // Limpiar en caso de error
+            setTotalChats(0);
+        } finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchHistoryList(); }, [workspaceId]);
+    useEffect(() => { fetchHistoryList(); }, [workspaceId, currentPage, itemsPerPage]);
 
     const handleViewChat = async (chatId: string) => {
         try {
@@ -138,6 +152,13 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId, botConf
                             ))}
                         </tbody>
                     </table>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalItems={totalChats}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onItemsPerPageChange={setItemsPerPage}
+                    />
                 </div>
             </div>
 
@@ -153,7 +174,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ workspaceId, botConf
 
                         <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-white rounded-b-lg">
                             {selectedChatHistory.map(msg => {
-                                
+
                                 const isUser = msg.role === 'user';
                                 const isAgent = msg.role === 'agent';
                                 const isBot = msg.role === 'assistant';

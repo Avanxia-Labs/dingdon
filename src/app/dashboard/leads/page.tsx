@@ -23,6 +23,7 @@ const LeadsPage = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    
     // --- ESTADOS PARA LA PAGINACIÓN ---
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
