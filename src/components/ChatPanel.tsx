@@ -41,7 +41,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         activeBotConfig,
         setActiveBotConfig,
         clearActiveChatView,
-        updateActiveChatStatus
+        updateActiveChatStatus,
+        addRequest
     } = useDashboardStore();
 
     const [input, setInput] = useState("");
@@ -52,6 +53,34 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [summaryText, setSummaryText] = useState('');
     const [isSummarizing, setIsSummarizing] = useState(false);
+
+    // useEffect para hacer el fetch inicial de los chats pendientes al cargar el componente.
+    useEffect(() => {
+        if (!workspaceId) return;
+
+        const fetchInitialPendingChats = async () => {
+            try {
+                const response = await fetch(`/api/workspaces/${workspaceId}/pending-chats`);
+
+                if (!response.ok) {
+                    throw new Error(`Error fetching pending chats: ${response.statusText}`);
+                }
+
+                const initialChats: ChatRequest[] = await response.json();
+
+                // Aquí actualizamos el estado global con las solicitudes obtenidas
+                initialChats.forEach(chat => {
+                    addRequest(chat);
+                });
+
+            } catch (error) {
+                console.error("Could not fetch initial pending chats:", error);
+            }
+        }
+
+        fetchInitialPendingChats();
+
+    }, [workspaceId, addRequest]);
 
     useEffect(() => {
         if (!socket) return;
