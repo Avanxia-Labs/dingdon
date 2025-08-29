@@ -17,11 +17,14 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
     const { data: session } = useSession();
     const pathname = usePathname();
-    const { language, setLanguage } = useDashboardStore();
+    const { language, setLanguage, requests } = useDashboardStore();
     useSyncLanguage(language);
 
     const [workspaceName, setWorkspaceName] = useState('Loading...');
     const [agentName, setAgentName] = useState(session?.user?.name || 'Loading...');
+
+    // Estado para controlar si hay requests pendientes
+    const hasRequestsPending = requests.length > 0;
 
     useEffect(() => {
         if (session?.user?.workspaceId) {
@@ -74,6 +77,9 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
                         workspaceRole && item.requiredRole.includes(workspaceRole) && (
                             <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700'}`}>
                                 {item.icon}<span>{item.label}</span>
+                                
+                                {/* Bolita de Live Chats */}
+                                {item.href === '/dashboard' && hasRequestsPending &&  <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
                             </Link>
                         )
                     ))}
