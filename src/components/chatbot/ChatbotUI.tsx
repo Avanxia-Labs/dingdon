@@ -84,24 +84,62 @@ const ChatInterface = () => {
     };
 
     // Form para enviar Leads
+    // const handleLeadSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     setIsSubmitting(true);
+    //     setFormError('');
+    //     try {
+    //         await apiClient.post('/leads', { workspaceId, name, email, phone });
+    //         setLeadCollected(true);
+    //     } catch (err) {
+    //         setFormError("There was an issue. Please try again.");
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
+    // };
+
     const handleLeadSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setFormError('');
+
         try {
-            await apiClient.post('/leads', { workspaceId, name, email, phone });
+            const response = await apiClient.post('/leads', {
+                workspaceId,
+                name,
+                email,
+                phone
+            });
+
+            if (response.status === 200) {
+                console.log("IFRAME: Intentando enviar postMessage con datos:", {
+                    type: 'CHATBOT_LEAD_CAPTURE',
+                    data: { name, email, phone }
+                });
+
+                // Despues de que la lead se ha guardado con exito, enviamos un mensaje a la ventana de padre
+                parent.postMessage({
+                    type: 'CHATBOT_LEAD_CAPTURE',
+                    data: {
+                        name: name,
+                        email: email,
+                        phone: phone
+                    }
+                }, '*')
+            }
+
+            // Si todo va bien, actualizamos el estado para mostrar el chat
             setLeadCollected(true);
-        } catch (err) {
-            setFormError("There was an issue. Please try again.");
+
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.error || "There was an issue. Please try again.";
+            setFormError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const isHidden = leadCollected ? '' : 'hidden';
-
-    console.log("Avatar URL:", config.botAvatarUrl);
-    console.log("Messages:", messages);
 
     return (
         <div className={`h-full w-full bg-white rounded-lg flex flex-col overflow-hidden ${language === 'ar' ? 'rtl' : 'ltr'}`}>
@@ -124,29 +162,6 @@ const ChatInterface = () => {
                         {messages.map((message) => (
                             <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
-                                {/* {(message.role === 'assistant' || message.role === 'agent') && (
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10">
-
-                                        {message.avatarUrl
-                                            ?
-                                            (<img
-                                                src={message.role === 'agent' && message.avatarUrl ? message.avatarUrl : ''} // Por ahora, el agente también usa el avatar del bot
-                                                alt="Avatar"
-                                                className="w-full h-full rounded-full object-cover"
-                                            />
-                                            )
-                                            :
-                                            (
-                                                <div className="w-full h-full flex items-center justify-center text-black/60">
-                                                    <User />
-                                                </div>
-                                            )
-                                        }
-
-
-
-                                    </div>
-                                )} */}
                                 {(message.role === 'assistant' || message.role === 'agent') && (
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10 overflow-hidden">
                                         {/* Determinar qué avatar mostrar */}
@@ -221,18 +236,6 @@ const ChatInterface = () => {
 
                         {/* Muestra el formulario si el lead NO ha sido recolectado */}
                         {!leadCollected && (
-                            // <div className="p-4 bg-gray-50 rounded-lg border border-black/10 max-w-[80%]">
-                            //     <form onSubmit={handleLeadSubmit} className="space-y-3">
-                            //         <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('chatbotUI.leadFormName')} required className="w-full px-3 py-2 border border-black/10 rounded-lg" />
-                            //         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('chatbotUI.leadFormEmail')} required className="w-full px-3 py-2 border border-black/10 rounded-lg" />
-                            //         <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('chatbotUI.leadFormPhone')} className="w-full px-3 py-2 border border-black/10 rounded-lg" />
-                            //         {formError && <p className="text-red-500 text-sm text-center">{formError}</p>}
-                            //         <button type="submit" disabled={isSubmitting} style={{ backgroundColor: config.botColor }} className="w-full py-2 text-white font-semibold rounded-lg hover:opacity-90 disabled:bg-gray-400">
-                            //             {isSubmitting ? t('chatbotUI.leadFormLoading') : t('chatbotUI.leadFormButton')}
-                            //         </button>
-                            //     </form>
-                            // </div>
-
                             // Ajustes para que se le vea a TAURO en modo oscuro (Actualizar cuando se implemente los dos modos)
                             <div className="p-4 bg-gray-50 rounded-lg border border-black max-w-[80%]">
                                 <form onSubmit={handleLeadSubmit} className="space-y-3">
