@@ -45,7 +45,8 @@
     "profile": "Mi Perfil",
     "signOut": "Cerrar Sesión",
     "leads": "Leads",
-    "leadClassification": "Clasificación de Leads"
+    "leadClassification": "Clasificación de Leads",
+    "reports": "Reportes"
   },
   "leads": {
     "pageTitle": "Leads Recolectados",
@@ -174,7 +175,9 @@
     "quickActions": "Acciones Rápidas",
     "reclassifyAction": "Reclasificar Lead",
     "scheduleFollowup": "Programar Seguimiento",
-    "exportConversation": "Exportar Conversación"
+    "exportConversation": "Exportar Conversación",
+    "conversationSummary": "Resumen de la Conversación",
+    "close": "Cerrar"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -301,7 +304,7 @@
     "description": "Analiza automáticamente las conversaciones para identificar leads calientes, tibios y fríos",
     "stats": {
       "totalChats": "Total Chats",
-      "classified": "Clasificados", 
+      "classified": "Clasificados",
       "hot": "HOT 🔥",
       "warm": "WARM 🟡",
       "cold": "COLD ❄️"
@@ -314,7 +317,7 @@
     },
     "keywords": {
       "configuration": "Configuración de Palabras Clave",
-      "hot": "CALIENTE 🔥", 
+      "hot": "CALIENTE 🔥",
       "warm": "TIBIA 🟡",
       "cold": "FRÍA ❄️",
       "hotPlaceholder": "Nueva palabra caliente...",
@@ -347,5 +350,20 @@
       "title": "Resultados de Clasificación",
       "noResults": "No hay resultados de clasificación disponibles"
     }
+  },
+  "reports": {
+    "pageTitle": "Reportes Diarios",
+    "pageSubtitle": "Revisa los resúmenes diarios y las métricas clave de la actividad de tu bot.",
+    "summary": { "title": "Resumen Ejecutivo" },
+    "metrics": {
+      "newConversations": "Conversaciones Nuevas",
+      "totalMessages": "Mensajes Totales",
+      "avgResponseTime": "Tiempo de R. Promedio",
+      "handoffs": "Traspasos a Agente",
+      "botResolution": "Tasa de Resolución del Bot"
+    },
+    "topics": { "title": "Temas y Tendencias" },
+    "actions": { "title": "Acciones Recomendadas" },
+    "leads": { "title": "Análisis de Leads" }
   }
 }

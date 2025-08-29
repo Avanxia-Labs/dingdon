@@ -47,7 +47,8 @@
     "profile": "我的个人资料",
     "signOut": "退出",
     "leads": "潜在客户",
-    "leadClassification": "潜在客户分类"
+    "leadClassification": "潜在客户分类",
+    "reports": "报告"
   },
   "leads": {
     "pageTitle": "收集的潜在客户",
@@ -143,7 +144,9 @@
     "inputPlaceholder": "请输入您的回复...",
     "inputPlaceholderDisconnected": "等待连接...",
     "selectChatPrompt": "选择对话开始",
-    "chatClosed": "对话已关闭"
+    "chatClosed": "对话已关闭",
+    "conversationSummary": "对话摘要",
+    "close": "关闭"
   },
   "chatbotUI": {
     "botLabel": "机器人",
@@ -296,5 +299,21 @@
       "keywordsConfigSaved": "关键词配置保存成功",
       "keywordAdded": "已添加关键词：\"{{keyword}}\""
     }
+  },
+
+  "reports": {
+    "pageTitle": "每日报告",
+    "pageSubtitle": "查看您的机器人活动的每日摘要和关键指标。",
+    "summary": { "title": "执行摘要" },
+    "metrics": {
+      "newConversations": "新对话",
+      "totalMessages": "总消息数",
+      "avgResponseTime": "平均响应时间",
+      "handoffs": "转接客服次数",
+      "botResolution": "机器人解决率"
+    },
+    "topics": { "title": "主题与趋势" },
+    "actions": { "title": "可行性见解" },
+    "leads": { "title": "潜在客户分析" }
   }
 }

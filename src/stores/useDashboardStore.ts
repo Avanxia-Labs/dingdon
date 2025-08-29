@@ -15,7 +15,7 @@ interface ActiveChat {
     status: ChatSessionStatus;
 }
 
-interface BotConfig {
+export interface BotConfig {
     name?: string;
     avatarUrl?: string;
 }
@@ -46,6 +46,7 @@ interface DashboardState {
     updateActiveChatStatus: (status: ChatSessionStatus) => void;
     addMessageToActiveChat: (message: Message) => void;
     closeActiveChat: () => void;
+    clearActiveChatView: () => void;
     
     // Acciones para notificaciones
     setNotificationsEnabled: (enabled: boolean) => void;
@@ -124,6 +125,12 @@ export const useDashboardStore = create<DashboardState>()(
                     status: 'closed'
                 } : null
             })),
+
+            clearActiveChatView: () => set({
+                activeChat: null,
+                //activeBotConfig: null,
+            }),
+
             
             setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
 

@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
+import { Pagination } from '@/components/Pagination';
 
 // Interfaz para el tipado de un lead
 interface Lead {
@@ -22,6 +23,11 @@ const LeadsPage = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    
+    // --- ESTADOS PARA LA PAGINACIÓN ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalLeads, setTotalLeads] = useState(0);
 
     const workspaceId = session?.user?.workspaceId;
 
@@ -29,8 +35,13 @@ const LeadsPage = () => {
         if (!workspaceId) return;
         setIsLoading(true);
         try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/leads`);
-            setLeads(response.data);
+            const response = await apiClient.get(`/workspaces/${workspaceId}/leads?page=${currentPage}&limit=${itemsPerPage}`);
+            
+            if (response.status !== 200) throw new Error('Failed to fetch leads');
+
+            const { data, count } = await response.data; // <-- Obtiene los datos y el conteo
+            setLeads(data);
+            setTotalLeads(count || 0);
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || 'Failed to fetch leads';
             setFeedback({ message: `${t('common.errorPrefix')}: ${errorMessage}`, type: 'error' });
@@ -43,7 +54,7 @@ const LeadsPage = () => {
         if (workspaceId) {
             fetchLeads();
         }
-    }, [workspaceId]);
+    }, [workspaceId, currentPage, itemsPerPage]);
 
     const handleDeleteLead = async (leadId: string) => {
         if (!workspaceId || !confirm(t('leads.deleteConfirm'))) return;
@@ -56,19 +67,19 @@ const LeadsPage = () => {
             setFeedback({ message: `${t('common.errorPrefix')}: ${errorMessage}`, type: 'error' });
         }
     };
-    
+
     const handleDeleteAllLeads = async () => {
         if (!workspaceId) return;
         const confirmation = prompt(t('leads.deleteAllConfirm', { count: leads.length }));
         if (confirmation !== 'DELETE') {
-            if (confirmation !== null) { 
+            if (confirmation !== null) {
                 setFeedback({ message: t('leads.deleteCancelled'), type: 'error' });
             }
             return;
         }
-        
+
         try {
-            setFeedback({ message: t('leads.feedback.deletingAll'), type: 'success'});
+            setFeedback({ message: t('leads.feedback.deletingAll'), type: 'success' });
             await apiClient.delete(`/workspaces/${workspaceId}/leads`);
             setFeedback({ message: t('leads.feedback.deletedAllSuccess'), type: 'success' });
             fetchLeads();
@@ -83,12 +94,12 @@ const LeadsPage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <h1 className="text-3xl font-bold text-gray-800">{t('leads.pageTitle')}</h1>
                 {session?.user?.workspaceRole === 'admin' && leads.length > 0 && (
-                     <button 
-                        onClick={handleDeleteAllLeads} 
+                    <button
+                        onClick={handleDeleteAllLeads}
                         className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                     >
-                         {t('leads.deleteAllButton')}
-                     </button>
+                    >
+                        {t('leads.deleteAllButton')}
+                    </button>
                 )}
             </div>
 
@@ -131,6 +142,13 @@ const LeadsPage = () => {
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={totalLeads}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
             </div>
         </div>
     );

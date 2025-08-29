@@ -173,6 +173,43 @@ async function generateKimiResponse(prompt: string, apiKey: string, modelName: s
   return response.data.choices[0].message.content.trim();
 }
 
+// --- Funcion para resumir conversacion 
+// async function summarizeConversation(history: Message[], language: string, config: ChatbotConfig, aiConfig: { model: string, apiKey: string }): Promise<string> {
+
+//   const conversationText = history
+//     .map(msg => `${msg.role}: ${msg.content}`)
+//     .join('\n');
+
+//   const languageInstructions: Record<string, string> = {
+//     es: `Eres un asistente experto en resumir conversaciones de soporte. Tu tarea es generar un resumen conciso en Español.`,
+//     en: `You are an expert support conversation summarizer. Your task is to generate a concise summary in English.`,
+//     // ... (otros idiomas)
+//   };
+
+//   const prompt = `
+//         ${languageInstructions[language] || languageInstructions.es}
+        
+//         Resume the following conversation in 3-4 concise bullet points. Focus on the customer's main issue, the key information provided, and the last action taken or question asked.
+        
+//         CONVERSATION:
+//         ---
+//         ${conversationText}
+//         ---
+
+//         Summary (in ${language}):
+//     `;
+
+//   // Reutilizamos la lógica de llamada a la IA que ya tienes
+//   if (aiConfig.model.startsWith('gemini')) {
+//     return await generateGeminiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+//   } else if (aiConfig.model.startsWith('moonshot')) {
+//     return await generateKimiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+//   } else {
+//     // Fallback
+//     return await generateGeminiResponse(prompt, aiConfig.apiKey, 'gemini-1.5-flash');
+//   }
+// }
+
 
 /**
  * Genera una respuesta al prompt del usuario, usando la configuración dinámica del workspace.
@@ -246,17 +283,17 @@ async function generateChatbotResponse(workspaceId: string, userPrompt: string, 
       console.log(`[AI Backend] Routing to Kimi (Moonshot) with model: ${modelName}`);
       textResponse = await generateKimiResponse(fullPrompt, apiKey, modelName);
     } else {
-        // Fallback si el modelo no es reconocido
-        console.warn(`[AI Backend] Unknown model '${modelName}'. Falling back to default Gemini.`);
-        const defaultApiKey = process.env.GEMINI_API_KEY_DEFAULT;
-        if (!defaultApiKey) throw new Error("Default Gemini API Key is not configured.");
-        textResponse = await generateGeminiResponse(fullPrompt, defaultApiKey, 'gemini-2.0-flash');
+      // Fallback si el modelo no es reconocido
+      console.warn(`[AI Backend] Unknown model '${modelName}'. Falling back to default Gemini.`);
+      const defaultApiKey = process.env.GEMINI_API_KEY_DEFAULT;
+      if (!defaultApiKey) throw new Error("Default Gemini API Key is not configured.");
+      textResponse = await generateGeminiResponse(fullPrompt, defaultApiKey, 'gemini-2.0-flash');
     }
 
     if (textResponse) {
       return textResponse.trim();
     }
-    
+
     throw new Error('Invalid or empty response from AI API');
 
   } catch (error) {

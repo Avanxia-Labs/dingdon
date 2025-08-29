@@ -46,7 +46,8 @@
     "profile": "Мой профиль",
     "signOut": "Выйти",
     "leads": "Лиды",
-    "leadClassification": "Классификация лидов"
+    "leadClassification": "Классификация лидов",
+    "reports": "Отчеты"
   },
   "leads": {
     "pageTitle": "Собранные лиды",
@@ -142,7 +143,9 @@
     "inputPlaceholder": "Введите ваш ответ...",
     "inputPlaceholderDisconnected": "Ожидание подключения...",
     "selectChatPrompt": "Выберите чат для начала",
-    "chatClosed": "Чат был закрыт"
+    "chatClosed": "Чат был закрыт",
+    "conversationSummary": "Резюме разговора",
+    "close": "Закрыть"
   },
   "chatbotUI": {
     "botLabel": "Бот",
@@ -270,7 +273,7 @@
     "totalChats": "Всего чатов",
     "classifiedChats": "Классифицированные чаты",
     "hotLeads": "Горячие лиды",
-    "warmLeads": "Теплые лиды", 
+    "warmLeads": "Теплые лиды",
     "coldLeads": "Холодные лиды",
     "classifyButton": "Классифицировать все чаты",
     "classifyingButton": "Классификация...",
@@ -295,5 +298,20 @@
       "keywordsConfigSaved": "Конфигурация ключевых слов успешно сохранена",
       "keywordAdded": "Добавлено ключевое слово: \"{{keyword}}\""
     }
+  },
+  "reports": {
+    "pageTitle": "Ежедневные отчеты",
+    "pageSubtitle": "Просматривайте ежедневные сводки и ключевые метрики активности вашего бота.",
+    "summary": { "title": "Итоговый отчет" },
+    "metrics": {
+      "newConversations": "Новые диалоги",
+      "totalMessages": "Всего сообщений",
+      "avgResponseTime": "Среднее время ответа",
+      "handoffs": "Передачи агенту",
+      "botResolution": "Уровень решения ботом"
+    },
+    "topics": { "title": "Темы и тенденции" },
+    "actions": { "title": "Рекомендуемые действия" },
+    "leads": { "title": "Анализ лидов" }
   }
 }

@@ -1,13 +1,13 @@
 // app/api/workspaces/[workspaceId]/leads/route.ts
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 // --- FUNCIÓN GET: Obtener todos los leads de un workspace ---
 export async function GET(
-    request: Request,
+    request: NextRequest,
     context: {
         params: Promise<{ workspaceId: string }>
     }
@@ -21,15 +21,24 @@ export async function GET(
     }
 
     try {
-        const { data, error } = await supabaseAdmin
+
+        // Logica de paginacion
+        const searchParams = request.nextUrl.searchParams;
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = parseInt(searchParams.get('limit') || '10', 10);
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        const { data, error, count } = await supabaseAdmin
             .from('leads')
-            .select('*')
+            .select('*', {count: 'exact'})
             .eq('workspace_id', workspaceId)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .range(from, to);
 
         if (error) throw error;
         
-        return NextResponse.json(data);
+        return NextResponse.json({data, count});
 
     } catch (error: any) {
         console.error("Error fetching leads:", error);

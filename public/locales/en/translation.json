@@ -45,7 +45,8 @@
     "profile": "My Profile",
     "signOut": "Sign Out",
     "leads": "Leads",
-    "leadClassification": "Lead Classification"
+    "leadClassification": "Lead Classification",
+    "reports": "Reports"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -174,7 +175,9 @@
     "quickActions": "Quick Actions",
     "reclassifyAction": "Reclassify Lead",
     "scheduleFollowup": "Schedule Follow-up",
-    "exportConversation": "Export Conversation"
+    "exportConversation": "Export Conversation",
+    "conversationSummary": "Conversation Summary",
+    "close": "Close"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -303,7 +306,7 @@
     "description": "Automatically analyze conversations to identify hot, warm and cold leads",
     "stats": {
       "totalChats": "Total Chats",
-      "classified": "Classified", 
+      "classified": "Classified",
       "hot": "HOT 🔥",
       "warm": "WARM 🟡",
       "cold": "COLD ❄️"
@@ -316,7 +319,7 @@
     },
     "keywords": {
       "configuration": "Keywords Configuration",
-      "hot": "HOT 🔥", 
+      "hot": "HOT 🔥",
       "warm": "WARM 🟡",
       "cold": "COLD ❄️",
       "hotPlaceholder": "New hot keyword...",
@@ -349,5 +352,21 @@
       "title": "Classification Results",
       "noResults": "No classification results available"
     }
+  },
+
+  "reports": {
+    "pageTitle": "Daily Reports",
+    "pageSubtitle": "Review daily summaries and key metrics of your bot's activity.",
+    "summary": { "title": "Executive Summary" },
+    "metrics": {
+      "newConversations": "New Conversations",
+      "totalMessages": "Total Messages",
+      "avgResponseTime": "Avg. Response Time",
+      "handoffs": "Handoffs to Agent",
+      "botResolution": "Bot Resolution Rate"
+    },
+    "topics": { "title": "Topics & Trends" },
+    "actions": { "title": "Actionable Insights" },
+    "leads": { "title": "Lead Analysis" }
   }
 }
