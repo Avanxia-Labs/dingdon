@@ -153,17 +153,6 @@ nextApp.prepare().then(() => {
         res.status(200).send('Message forwarded');
     });
 
-    // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
-    // const io = new Server(server, {
-    //     cors: { origin: CLIENT_ORIGIN_URL },
-    //     pingTimeout: 60000,
-    //     pingInterval: 25000,
-    //     reconnection: true,
-    //     reconnectionAttempts: 5,
-    //     reconnectionDelay: 1000,
-    //     transports: ['websocket', 'polling']
-    // });
-
     io.attach(server, {
         cors: { origin: CLIENT_ORIGIN_URL },
         pingTimeout: 60000,
