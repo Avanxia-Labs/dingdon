@@ -167,6 +167,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         console.error(`[DB Upsert Error] Fallo al guardar la sesión de bot ${sessionId}:`, dbError);
       }
 
+      // Notificamos al servidor de agentes para que actualice los paneles de monitoreo en tiempo real.
+      const isDev = process.env.NODE_ENV !== 'production';
+      const internalApiUrl = isDev
+        ? 'http://localhost:3001/api/internal/bot-chat-update'
+        : `http://localhost:${process.env.PORT || 3001}/api/internal/bot-chat-update`;
+
+      // Preparamos los datos que el frontend de monitoreo necesita.
+      // Usamos el último mensaje del bot como 'initialMessage' porque es el más relevante para el preview.
+      const chatDataForMonitoring = {
+        sessionId: sessionId,
+        initialMessage: botMessage,
+      };
+
+      // Hacemos la llamada "fire-and-forget" para no retrasar la respuesta al usuario.
+      fetch(internalApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.INTERNAL_API_SECRET || ''
+        },
+        body: JSON.stringify({
+          workspaceId: workspaceId,
+          chatData: chatDataForMonitoring
+        })
+      }).catch(err => {
+        console.error('[API Route] Error llamando al notificador de monitoreo:', err);
+      });
+
       // This is a standard AI-generated response.
       return createCorsResponse({ reply: aiResponse })
     }

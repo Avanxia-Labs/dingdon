@@ -3,7 +3,6 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { error } from 'console';
 
 export async function GET(
     request: NextRequest,

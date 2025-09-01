@@ -78,3 +78,22 @@ export interface TeamMember {
   role: WorkspaceRole;
 }
 
+// Estructura de un workspace en la aplicación.
+export interface ChatRequest {
+    sessionId: string;
+    initialMessage: Message;
+    isTransfer?: boolean;
+}
+
+// Estado para el chat que se está viendo en detalle
+export interface ActiveChat {
+    sessionId: string;
+    messages: Message[];
+    status: ChatSessionStatus;
+}
+
+// Configuración del bot 
+export interface BotConfig {
+    name?: string;
+    avatarUrl?: string;
+}

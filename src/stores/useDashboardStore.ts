@@ -35,6 +35,9 @@ interface DashboardState {
 
     // Estado del idioma
     language: string;
+
+    // Chats de monitoreo
+    monitoringChats: ChatRequest[];
     
     // Acciones para las solicitudes
     addRequest: (request: ChatRequest) => void;
@@ -47,6 +50,11 @@ interface DashboardState {
     addMessageToActiveChat: (message: Message) => void;
     closeActiveChat: () => void;
     clearActiveChatView: () => void;
+
+    // Acciones de monitoreo de chats
+    setMonitoringChats: (chats: ChatRequest[]) => void;
+    addMonitoringChat: (chat: ChatRequest) => void;
+    removeMonitoringChat: (sessionId: string) => void;
     
     // Acciones para notificaciones
     setNotificationsEnabled: (enabled: boolean) => void;
@@ -66,6 +74,7 @@ export const useDashboardStore = create<DashboardState>()(
         (set, get) => ({
             requests: [],
             activeChat: null,
+            monitoringChats: [],
             notificationsEnabled: false,
             language: 'en',
             activeBotConfig: null,
@@ -118,6 +127,20 @@ export const useDashboardStore = create<DashboardState>()(
                     }
                 };
             }),
+
+            setMonitoringChats: (chats) => set({
+                monitoringChats: chats
+            }),
+
+            addMonitoringChat: (chats) => set((state) => ({
+                monitoringChats: state.monitoringChats.some(c => c.sessionId === chats.sessionId)
+                    ? state.monitoringChats
+                    : [...state.monitoringChats, chats]
+            })),
+
+            removeMonitoringChat: (sessionId) => set((state) => ({
+                monitoringChats: state.monitoringChats.filter(c => c.sessionId !== sessionId)
+            })),
             
             closeActiveChat: () => set((state) => ({
                 activeChat: state.activeChat ? {
