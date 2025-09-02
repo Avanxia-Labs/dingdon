@@ -129,6 +129,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
     useEffect(() => {
         if (!socket) return;
+
+        console.log("[ChatPanel] Registrando listener para 'assignment_success'...");
+
         const handleAssignmentSuccess = ({
             sessionId,
             history,
@@ -138,6 +141,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             history: Message[];
             botConfig: BotConfig
         }) => {
+            console.log(`[ChatPanel] ¡EVENTO 'assignment_success' RECIBIDO! Para la sesión: ${sessionId}`);
             setActiveChat(sessionId, history);
             setActiveBotConfig(botConfig);
         };
@@ -147,6 +151,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         socket.on("assignment_success", handleAssignmentSuccess);
         socket.on("assignment_failure", handleAssignmentFailure);
         return () => {
+            console.log("[ChatPanel] Limpiando listener de 'assignment_success'.");
             socket.off("assignment_success", handleAssignmentSuccess);
             socket.off("assignment_failure", handleAssignmentFailure);
         };

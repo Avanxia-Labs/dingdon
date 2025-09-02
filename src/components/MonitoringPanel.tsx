@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useSocket } from '@/providers/SocketContext';
 import { ChatRequest, Message, BotConfig } from '@/types/chatbot'; // Importa los tipos necesarios
 import { User, Bot } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface MonitoringPanelProps {
     workspaceId: string;
@@ -22,7 +23,8 @@ interface ActiveMonitoringChat {
 export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId }) => {
     const { data: session } = useSession();
     const { socket } = useSocket();
-    const { monitoringChats, setMonitoringChats, removeMonitoringChat } = useDashboardStore();
+    const router = useRouter();
+    const { monitoringChats, setMonitoringChats, removeMonitoringChat, setActiveChat: setGlobalActiveChat, activeBotConfig } = useDashboardStore();
 
     // --- NUEVO ESTADO PARA LA VISTA DETALLADA ---
     const [activeChat, setActiveChat] = useState<ActiveMonitoringChat | null>(null);
@@ -51,9 +53,29 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
     // Lógica para la intervención del agente
     const handleIntervene = (sessionId: string) => {
         if (socket && session?.user?.id) {
-            socket.emit('agent_intervene', { workspaceId, sessionId, agentId: session.user.id });
-            removeMonitoringChat(sessionId);
-            setActiveChat(null); // Limpiamos la vista activa
+            // a. Obtenemos el historial del chat que ya tenemos en la vista activa.
+            //    Si no hay un chat activo seleccionado, no podemos intervenir.
+            if (activeChat?.sessionId !== sessionId) {
+                alert("Please select a chat to view its history before intervening.");
+                return;
+            }
+            const currentHistory = activeChat.messages;
+
+            // b. Actualizamos el estado global INMEDIATAMENTE.
+            //    Esto establece el chat como activo en el store persistente.
+            setGlobalActiveChat(sessionId, currentHistory);
+
+            // c. Navegamos al dashboard principal.
+            router.push('/dashboard');
+
+            // d. Notificamos al servidor de lo que hemos hecho.
+            //    El servidor se encargará de actualizar el estado en la DB
+            //    y notificar a otros agentes.
+            socket.emit('agent_intervene', {
+                workspaceId,
+                sessionId,
+                agentId: session.user.id
+            });
         }
     };
 
@@ -62,14 +84,14 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
         try {
             // Hacemos un fetch al historial completo de la sesión
             const response = await fetch(`/api/chats/${sessionId}`);
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `Failed to fetch history with status: ${response.status}`);
             }
 
             const { history } = await response.json();
-            
+
             setActiveChat({ sessionId, messages: history });
 
         } catch (error) {
@@ -161,7 +183,14 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                                     <div className={`max-w-[70%] px-4 py-2 rounded-xl ${msg.role === 'assistant' ? "bg-slate-700 text-white" : "bg-gray-200 text-gray-800"}`}>
                                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                                     </div>
-                                    {msg.role === 'assistant' && <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border"><Bot className="w-full h-full text-gray-500 p-1.5" /></div>}
+                                    {msg.role === 'assistant' && <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border">
+                                        {/* <Bot className="w-full h-full text-gray-500 p-1.5" /> */}
+                                        <img
+                                            src={activeBotConfig?.avatarUrl || '/default-bot-avatar.png'}
+                                            alt={activeBotConfig?.name || 'Bot'}
+                                            className="w-full h-full rounded-full object-cover"
+                                        />
+                                    </div>}
                                 </div>
                             ))}
                             <div ref={messagesEndRef} />
