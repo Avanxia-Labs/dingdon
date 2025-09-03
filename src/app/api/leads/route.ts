@@ -1,6 +1,7 @@
 // app/api/leads/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { emailService } from "@/lib/email/server";
 
 
 // Funcion para crear respuestas con CORS
@@ -33,6 +34,10 @@ export async function POST(req: NextRequest) {
         if (error) {
             throw error
         }
+
+        // Enviamos la notificación por email (si está configurada)
+        // Esta llamada es "fire-and-forget" (sin await) para no retrasar la respuesta al cliente.
+        emailService.sendNewLeadNotification(workspaceId, { name, email, phone });
 
         return createCorsResponse({ success: true })
 

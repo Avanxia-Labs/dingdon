@@ -245,6 +245,16 @@
       "label": "Introducción del Bot",
       "description": "Una introducción corta y amigable que aparece debajo del nombre del bot.",
       "placeholder": "Tu asistente virtual de IA."
+    },
+    "notifications": {
+      "sectionTitle": "Configuración de Notificaciones",
+      "emailLabel": "Correo para Notificaciones (Para)",
+      "emailDescription": "La dirección de correo donde quieres recibir las notificaciones de leads y solicitudes de agente.",
+      "fromEmailLabel": "Correo de Envío (Desde)",
+      "fromEmailDescription": "La dirección de correo verificada en tu cuenta de Resend que enviará las notificaciones.",
+      "apiKeyLabel": "API Key de Resend",
+      "apiKeyDescription": "Tu clave API secreta de tu cuenta de Resend. Se almacenará de forma segura.",
+      "apiKeyPlaceholder": "Dejar en blanco para mantener la clave actual"
     }
   },
   "profile": {

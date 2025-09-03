@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { chatbotServiceBackend } from "@/services/server/chatbotServiceBackend";
 import { getTranslations } from "@/lib/server/translations"
 import { Message } from "@/types/chatbot";
+import { emailService } from "@/lib/email/server";
 
 
 export async function POST(req: NextRequest) {
@@ -203,6 +204,11 @@ export async function POST(req: NextRequest) {
 
                 botReply = t('whatsapp.chatReady');
 
+                emailService.sendNewLeadNotification(workspaceId, {
+                    name: leadName,
+                    email: userMessage,
+                    phone: userPhone.replace('whatsapp:', '')
+                });
 
                 break;
 
@@ -284,6 +290,15 @@ export async function POST(req: NextRequest) {
                         }).catch(err => {
                             console.error('[API Route] Error llamando al notificador interno de handoff:', err);
                         });
+                        
+                        // Enviamos la notificación por email (si está configurada)
+                        if (firstUserMessage) {
+                            emailService.sendHandoffNotification(
+                                workspaceId,
+                                session.id,
+                                firstUserMessage.content
+                            );
+                        }
 
                         // Informar al usuario que se le contactará con un agente
                     } else if (typeof aiResponse === 'string') {

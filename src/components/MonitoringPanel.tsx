@@ -92,6 +92,10 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
 
             const { history } = await response.json();
 
+            // --- LOG #5: ¿QUÉ HISTORIAL MUESTRA EL FETCH INICIAL? ---
+            console.log(`[MonitoringPanel] Historial de FETCH para ${sessionId}. Tiene ${history.length} mensajes. Últimos 2:`, JSON.stringify(history.slice(-2).map((m: Message) => ({ role: m.role, content: m.content.slice(0, 20) }))));
+
+
             setActiveChat({ sessionId, messages: history });
 
         } catch (error) {
@@ -114,6 +118,10 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
 
         // --- CORRECCIÓN DE TIPADO ---
         const handleBotChatUpdate = (updatedChat: ChatRequest) => {
+
+            // --- LOG #6: ¿QUÉ MENSAJES LLEGAN POR SOCKET? ---
+            console.log(`[MonitoringPanel] Evento 'bot_chat_updated' recibido para ${updatedChat.sessionId}. Último mensaje:`, JSON.stringify({ role: updatedChat.initialMessage.role, content: updatedChat.initialMessage.content.slice(0, 20) }));
+
             useDashboardStore.setState(state => {
                 const existingChatIndex = state.monitoringChats.findIndex(c => c.sessionId === updatedChat.sessionId);
                 let newChats = [...state.monitoringChats];
