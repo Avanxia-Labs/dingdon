@@ -149,12 +149,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         console.log(`[SocketProvider] El chat activo ha cambiado. Uniéndose a la sesión: ${sessionId}`);
         socket.emit('join_session', sessionId);
 
-        // Opcional: Salir de la sala anterior si es necesario.
-        // return () => {
-        //     console.log(`[SocketProvider] Saliendo de la sesión: ${sessionId}`);
-        //     socket.emit('leave_session', sessionId);
-        // }
-
     }, [activeChat?.sessionId]); // Solo depende del ID de la sesión activa.
 
     const contextValue: SocketContextType = {

@@ -9,7 +9,7 @@ import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
 import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2 } from "lucide-react";
-import { useChatbot } from "@/hooks/useChatbot";
+
 
 interface ChatRequest {
     sessionId: string;
@@ -41,7 +41,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         activeBotConfig,
         setActiveBotConfig,
         clearActiveChatView,
-        updateActiveChatStatus
+        updateActiveChatStatus,
+        addRequest
     } = useDashboardStore();
 
     const [input, setInput] = useState("");
@@ -52,6 +53,34 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [summaryText, setSummaryText] = useState('');
     const [isSummarizing, setIsSummarizing] = useState(false);
+
+    // useEffect para hacer el fetch inicial de los chats pendientes al cargar el componente.
+    useEffect(() => {
+        if (!workspaceId) return;
+
+        const fetchInitialPendingChats = async () => {
+            try {
+                const response = await fetch(`/api/workspaces/${workspaceId}/pending-chats`);
+
+                if (!response.ok) {
+                    throw new Error(`Error fetching pending chats: ${response.statusText}`);
+                }
+
+                const initialChats: ChatRequest[] = await response.json();
+
+                // Aquí actualizamos el estado global con las solicitudes obtenidas
+                initialChats.forEach(chat => {
+                    addRequest(chat);
+                });
+
+            } catch (error) {
+                console.error("Could not fetch initial pending chats:", error);
+            }
+        }
+
+        fetchInitialPendingChats();
+
+    }, [workspaceId, addRequest]);
 
     useEffect(() => {
         if (!socket) return;
@@ -100,6 +129,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
     useEffect(() => {
         if (!socket) return;
+
+        console.log("[ChatPanel] Registrando listener para 'assignment_success'...");
+
         const handleAssignmentSuccess = ({
             sessionId,
             history,
@@ -109,6 +141,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             history: Message[];
             botConfig: BotConfig
         }) => {
+            console.log(`[ChatPanel] ¡EVENTO 'assignment_success' RECIBIDO! Para la sesión: ${sessionId}`);
             setActiveChat(sessionId, history);
             setActiveBotConfig(botConfig);
         };
@@ -118,6 +151,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         socket.on("assignment_success", handleAssignmentSuccess);
         socket.on("assignment_failure", handleAssignmentFailure);
         return () => {
+            console.log("[ChatPanel] Limpiando listener de 'assignment_success'.");
             socket.off("assignment_success", handleAssignmentSuccess);
             socket.off("assignment_failure", handleAssignmentFailure);
         };

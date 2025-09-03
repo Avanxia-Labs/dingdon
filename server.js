@@ -153,16 +153,24 @@ nextApp.prepare().then(() => {
         res.status(200).send('Message forwarded');
     });
 
-    // 🔧 CONFIGURACIÓN MEJORADA: Socket.IO con mejor gestión de reconexión
-    // const io = new Server(server, {
-    //     cors: { origin: CLIENT_ORIGIN_URL },
-    //     pingTimeout: 60000,
-    //     pingInterval: 25000,
-    //     reconnection: true,
-    //     reconnectionAttempts: 5,
-    //     reconnectionDelay: 1000,
-    //     transports: ['websocket', 'polling']
-    // });
+    // --- NUEVA RUTA INTERNA PARA NOTIFICAR ACTUALIZACIONES DE CHATS DE BOT ---
+    app.post('/api/internal/bot-chat-update', express.json(), (req, res) => {
+        const { workspaceId, chatData } = req.body;
+        const secret = req.headers['x-internal-secret'];
+
+        if (secret !== process.env.INTERNAL_API_SECRET) {
+            return res.status(401).send('Unauthorized');
+        }
+        if (!workspaceId || !chatData) {
+            return res.status(400).send('Missing data');
+        }
+
+        // Emitimos un evento a todos los dashboards de ese workspace
+        io.to(`dashboard_${workspaceId}`).emit('bot_chat_updated', chatData);
+
+        console.log(`[Bot Monitor] Actualización de chat ${chatData.sessionId} enviada al dashboard.`);
+        res.status(200).send('Update forwarded');
+    });
 
     io.attach(server, {
         cors: { origin: CLIENT_ORIGIN_URL },
@@ -606,6 +614,71 @@ nextApp.prepare().then(() => {
             } catch (error) {
                 console.error("Error al generar el resumen:", error.message);
                 socket.emit('command_error', { message: 'Failed to generate summary.' });
+            }
+        });
+
+        socket.on('agent_intervene', async ({ workspaceId, sessionId, agentId }) => {
+            console.log(`[AUDITORÍA] Intento de 'agent_intervene' recibido. Agente: ${agentId}, Sesión: ${sessionId}`);
+            if (!workspaceId || !sessionId || !agentId) return;
+
+            try {
+                // 1. Verificamos que el chat todavía está en estado 'bot'
+                const { data: currentSession, error: fetchError } = await supabase
+                    .from('chat_sessions')
+                    .select(`
+                        status,
+                        history,
+                        workspaces ( bot_name, bot_avatar_url )
+                    `)
+                    .eq('id', sessionId)
+                    .single();
+
+                if (fetchError || !currentSession || currentSession.status !== 'bot') {
+                    console.warn(`[Intervención] RECHAZADA para sesión ${sessionId}. Estado actual: ${currentSession?.status}.`);
+                    socket.emit('assignment_failure', { message: "Este chat ya no está disponible para intervención." });
+                    // Notificar a este agente que lo quite de su lista
+                    socket.emit('remove_from_monitoring', { sessionId });
+                    return;
+                }
+
+                // 2. Si está disponible, lo actualizamos a 'in_progress' y asignamos el agente
+                const { error: updateError } = await supabase
+                    .from('chat_sessions')
+                    .update({ status: 'in_progress', assigned_agent_id: agentId })
+                    .eq('id', sessionId);
+
+                if (updateError) throw updateError;
+                console.log(`[Intervención] APROBADA para sesión ${sessionId}. Asignando a agente ${agentId}.`);
+
+                // 3. El agente que interviene se une a la sala
+                socket.join(sessionId);
+                addSocketToSession(sessionId, socket.id);
+                console.log(`[Intervención] Agente ${agentId} (${socket.id}) se unió a la sala ${sessionId}`);
+
+                const botConfigData = currentSession.workspaces;
+
+                // 4. Notificamos al agente que la asignación fue exitosa (igual que en agent_joined)
+                socket.emit('assignment_success', {
+                    sessionId,
+                    history: currentSession.history,
+                    botConfig: {
+                        name: botConfigData?.bot_name,
+                        avatarUrl: botConfigData?.bot_avatar_url
+                    }
+                });
+                console.log(`[Intervención] 'assignment_success' enviado al agente ${agentId}.`);
+
+                // 5. Notificamos al cliente (ChatbotUI) que el estado ha cambiado a 'in_progress'
+                io.to(sessionId).emit('status_change', 'in_progress');
+                console.log(`[Intervención] 'status_change' a 'in_progress' enviado al cliente en la sala ${sessionId}.`);
+
+                // 6. Notificamos a TODOS los dashboards que este chat ya no debe ser monitoreado
+                io.to(`dashboard_${workspaceId}`).emit('remove_from_monitoring', { sessionId });
+                console.log(`[Intervención] 'remove_from_monitoring' enviado a todos los dashboards.`);
+
+            } catch (error) {
+                console.error(`[Critical Error] en agent_intervene para sesión ${sessionId}:`, error);
+                socket.emit('assignment_failure', { message: "Ocurrió un error al intervenir el chat." });
             }
         });
 
