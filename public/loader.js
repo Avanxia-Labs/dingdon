@@ -1,4 +1,5 @@
 // public/loader.js
+
 (function () {
     if (window.ChatbotLoaded) return;
     window.ChatbotLoaded = true;
@@ -20,9 +21,9 @@
     function createChatbotUI(config) {
         let botColor = config.bot_color || '#1d4ed8';
         const avatarUrl = config.bot_avatar_url || `${chatbotAppUrl}/default-bot-avatar.png`;
-        const introText = config.bot_introduction || 'How can I help you today?'; 
-        
-         // --- IFRAME ---
+        const introText = config.bot_introduction || 'How can I help you today?';
+
+        // --- IFRAME ---
         const iframe = document.createElement('iframe');
         iframe.id = 'chatbot-iframe';
         iframe.src = `${chatbotAppUrl}/chatbot-widget?workspaceId=${workspaceId}`;
@@ -44,7 +45,7 @@
         iframe.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         document.body.appendChild(iframe);
 
-         // --- ToogleButton ---
+        // --- ToogleButton ---
         const toggleButton = document.createElement('button');
         toggleButton.id = 'chatbot-toggle-button';
         toggleButton.setAttribute('aria-label', 'Open Chat');
@@ -62,6 +63,9 @@
         toggleButton.style.backgroundImage = `url('${avatarUrl}')`;
         toggleButton.style.backgroundSize = 'cover';
         toggleButton.style.backgroundPosition = 'center';
+        toggleButton.style.display = 'flex';
+        toggleButton.style.alignItems = 'center';
+        toggleButton.style.justifyContent = 'center';
         const closeIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
         document.body.appendChild(toggleButton);
 
@@ -70,11 +74,11 @@
         introTooltip.id = 'chatbot-intro-tooltip';
         introTooltip.textContent = introText;
         introTooltip.style.position = 'fixed';
-        introTooltip.style.bottom = '95px'; 
+        introTooltip.style.bottom = '95px';
         introTooltip.style.right = '20px';
         introTooltip.style.padding = '10px 16px';
-        introTooltip.style.backgroundColor = botColor; 
-        introTooltip.style.color = 'white';         
+        introTooltip.style.backgroundColor = botColor;
+        introTooltip.style.color = 'white';
         introTooltip.style.borderRadius = '12px';
         introTooltip.style.boxShadow = '0 5px 15px rgba(0,0,0,.2)';
         introTooltip.style.fontSize = '15px';
@@ -86,11 +90,11 @@
         introTooltip.style.visibility = 'hidden';
         introTooltip.style.opacity = '0';
         introTooltip.style.transform = 'translateY(10px) scale(0.95)';
-        introTooltip.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'; 
+        introTooltip.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
         introTooltip.style.pointerEvents = 'none';
         document.body.appendChild(introTooltip);
         // --- FIN DE LOS CAMBIOS DE ESTILO ---
-        
+
         let tooltipTimeout;
 
         const showTooltip = () => {
@@ -139,7 +143,7 @@
             if (event.data && event.data.type === 'CHATBOT_COLOR_UPDATE' && event.data.color) {
                 const newColor = event.data.color;
                 toggleButton.style.backgroundColor = newColor;
-                introTooltip.style.backgroundColor = newColor; 
+                introTooltip.style.backgroundColor = newColor;
                 botColor = newColor;
             }
 
@@ -148,7 +152,7 @@
 
                 const leadData = event.data.data;
 
-                if (leadData && leadData.name && leadData.email ) {
+                if (leadData && leadData.name && leadData.email) {
 
                     console.log('Chatbot Loader: Evento de lead capturado recibido!', leadData);
 
@@ -179,7 +183,7 @@
         })
         .catch(error => {
             console.error("Chatbot: Failed to fetch config, using defaults.", error);
-            createChatbotUI({}); 
+            createChatbotUI({});
         });
 
 })();

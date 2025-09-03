@@ -162,7 +162,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { redirect, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3 } from 'lucide-react';
+import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3, Monitor } from 'lucide-react';
 import { SocketProvider } from '@/providers/SocketContext';
 import { I18nProvider } from '@/providers/I18nProvider';
 import { useTranslation } from 'react-i18next';
@@ -174,11 +174,14 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
     const { data: session } = useSession();
     const pathname = usePathname();
-    const { language, setLanguage } = useDashboardStore();
+    const { language, setLanguage, requests } = useDashboardStore();
     useSyncLanguage(language);
 
     const [workspaceName, setWorkspaceName] = useState('Loading...');
     const [agentName, setAgentName] = useState(session?.user?.name || 'Loading...');
+
+    // Estado para controlar si hay requests pendientes
+    const hasRequestsPending = requests.length > 0;
 
     useEffect(() => {
         if (session?.user?.workspaceId) {
@@ -217,6 +220,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/history', label: t('dashboardLayout.chatHistory'), icon: <History className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/leads', label: t('dashboardLayout.leads'), icon: <Star className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/profile', label: t('dashboardLayout.profile'), icon: <UserCircle className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/monitoring', label: "Monitoring", icon: <Monitor className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
         { href: '/dashboard/lead-classification', label: t('dashboardLayout.leadClassification'), icon: <Target className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/reports', label: t('dashboardLayout.reports'), icon: <BarChart3 className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }
@@ -231,6 +235,9 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
                         workspaceRole && item.requiredRole.includes(workspaceRole) && (
                             <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700'}`}>
                                 {item.icon}<span>{item.label}</span>
+                                
+                                {/* Bolita de Live Chats */}
+                                {item.href === '/dashboard' && hasRequestsPending &&  <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
                             </Link>
                         )
                     ))}
