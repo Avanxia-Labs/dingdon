@@ -30,6 +30,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [notificationEmail, setNotificationEmail] = useState('');
+    const [resendApiKey, setResendApiKey] = useState('');
+    const [resendFromEmail, setResendFromEmail] = useState('');
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -42,6 +45,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                     setBotColor(data.bot_color || '#007bff');
                     setBotAvatarUrl(data.bot_avatar_url || '');
                     setBotIntroduction(data.bot_introduction || '');
+                    setNotificationEmail(data.notification_email || '');
+                    setResendFromEmail(data.resend_from_email || '');
                 } else {
                     throw new Error(data.error || 'Failed to load settings');
                 }
@@ -65,12 +70,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                     bot_name: botName,
                     bot_color: botColor,
                     bot_avatar_url: botAvatarUrl,
-                    bot_introduction: botIntroduction
+                    bot_introduction: botIntroduction,
+                    notification_email: notificationEmail,
+                    resend_api_key: resendApiKey || undefined,
+                    resend_from_email: resendFromEmail,
                 }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to save settings');
             setFeedback(t('settings.feedback.savedSuccess'));
+            setResendApiKey(''); // Limpiamos el campo de Resend API Key después de guardar
         } catch (error: any) {
             setFeedback(`${t('common.errorPrefix')}: ${error.message}`);
         }
@@ -181,7 +190,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                                     <p className="text-xs text-gray-500 mb-3">{t('settings.botName.description')}</p>
                                     <input id="botName" type="text" value={botName} onChange={(e) => setBotName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder={t('settings.botName.placeholder')} />
                                 </div>
-                                
+
                                 <div>
                                     <label htmlFor="botColor" className="block text-sm font-medium text-gray-700 mb-2">{t('settings.primaryColor.label')}</label>
                                     <p className="text-xs text-gray-500 mb-3">{t('settings.primaryColor.description')}</p>
@@ -190,7 +199,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                                         <input type="text" value={botColor} onChange={(e) => setBotColor(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="#007bff" />
                                     </div>
                                 </div>
-                                
+
                                 {/* --- INICIO DEL NUEVO BLOQUE DE AVATAR --- */}
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -217,8 +226,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                                         />
                                         {botAvatarUrl && ( // Solo muestra el botón si hay un avatar personalizado
                                             <button
-                                                type="button" 
-                                                onClick={() => setBotAvatarUrl('')} 
+                                                type="button"
+                                                onClick={() => setBotAvatarUrl('')}
                                                 className="py-2 px-3 border border-transparent rounded-md text-sm font-medium text-red-600 hover:text-red-800"
                                                 title="Remove custom avatar"
                                             >
@@ -247,6 +256,37 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                                     />
                                 </div>
                                 {/* --- FIN DEL BLOQUE DE INTRODUCCIÓN --- */}
+
+                                {/* --- BLOQUE DE NOTIFICACIONES --- */}
+                                <div className="md:col-span-2 border-t pt-6">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                        {t('settings.notifications.sectionTitle')}
+                                    </h3>
+
+                                    {/* CAMPO: Notification Email (TO) */}
+                                    <div className="mb-4">
+                                        <label htmlFor="notificationEmail" className="block text-sm font-medium text-gray-700">{t('settings.notifications.emailLabel')}</label>
+                                        <p className="text-xs text-gray-500 mt-1">{t('settings.notifications.emailDescription')}</p>
+                                        <input id="notificationEmail" type="email" value={notificationEmail} onChange={(e) => setNotificationEmail(e.target.value)} className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                                    </div>
+
+                                    {/* CAMPO: Resend From Email (FROM) */}
+                                    <div className="mb-4">
+                                        <label htmlFor="resendFromEmail" className="block text-sm font-medium text-gray-700">{t('settings.notifications.fromEmailLabel')}</label>
+                                        <p className="text-xs text-gray-500 mt-1">{t('settings.notifications.fromEmailDescription')}</p>
+                                        <input id="resendFromEmail" type="email" value={resendFromEmail} onChange={(e) => setResendFromEmail(e.target.value)} className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                                    </div>
+
+                                    {/* CAMPO: Resend API Key */}
+                                    <div>
+                                        <label htmlFor="resendApiKey" className="block text-sm font-medium text-gray-700">{t('settings.notifications.apiKeyLabel')}</label>
+                                        <p className="text-xs text-gray-500 mt-1">{t('settings.notifications.apiKeyDescription')}</p>
+                                        <input id="resendApiKey" type="password" value={resendApiKey} onChange={(e) => setResendApiKey(e.target.value)} className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder={t('settings.notifications.apiKeyPlaceholder')} />
+                                    </div>
+                                </div>
+
+
+
                             </div>
                             <div className="mt-6 flex justify-end"><button type="submit" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">{t('settings.saveButton')}</button></div>
                         </form>

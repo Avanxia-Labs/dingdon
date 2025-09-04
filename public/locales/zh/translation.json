@@ -249,6 +249,16 @@
       "label": "机器人介绍",
       "description": "显示在机器人名称下方的简短友好介绍。",
       "placeholder": "您的人工智能虚拟助手。"
+    },
+    "notifications": {
+      "sectionTitle": "通知设置",
+      "emailLabel": "通知邮箱 (收件人)",
+      "emailDescription": "您希望接收潜在客户和客服请求通知的电子邮件地址。",
+      "fromEmailLabel": "发件邮箱 (发件人)",
+      "fromEmailDescription": "您 Resend 帐户中已验证的、将用于发送通知的电子邮件地址。",
+      "apiKeyLabel": "Resend API 密钥",
+      "apiKeyDescription": "您 Resend 帐户的秘密 API 密钥。它将被安全地存储。",
+      "apiKeyPlaceholder": "留空以保留当前密钥"
     }
   },
   "profile": {
