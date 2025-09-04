@@ -314,6 +314,10 @@ export const useChatbot = () => {
     // Solo llamamos a la IA si el estado es 'bot'
     if (status === 'bot') {
       const updatedHistory = [...messages, userMessage];
+
+      // --- LOG #1: ¿QUÉ HISTORIAL ESTAMOS ENVIANDO? ---
+      console.log(`[useChatbot] Enviando a /api/chat. El historial tiene ${updatedHistory.length} mensajes.`, JSON.stringify(updatedHistory.map(m => ({ role: m.role, content: m.content.slice(0, 20) }))));
+
       // --- CAMBIO: Pasamos el workspaceId a la mutación ---
       mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory, language });
     }

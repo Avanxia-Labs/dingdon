@@ -280,6 +280,16 @@
       "label": "Bot Introduction",
       "description": "A short, friendly introduction that appears under the bot's name.",
       "placeholder": "Your AI virtual assistant."
+    },
+    "notifications": {
+      "sectionTitle": "Notification Settings",
+      "emailLabel": "Notification Email (To)",
+      "emailDescription": "The email address where you want to receive lead and handoff notifications.",
+      "fromEmailLabel": "Sending Email (From)",
+      "fromEmailDescription": "The verified email address on your Resend account that will send the notifications.",
+      "apiKeyLabel": "Resend API Key",
+      "apiKeyDescription": "Your secret API key from your Resend account. It will be stored securely.",
+      "apiKeyPlaceholder": "Leave blank to keep the current key"
     }
   },
 

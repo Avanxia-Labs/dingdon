@@ -7,6 +7,7 @@ import { Message } from '@/types/chatbot';
 import path from 'path';
 import { readFile } from 'fs/promises';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { emailService } from '@/lib/email/server';
 
 
 // --- Helper para crear respuestas con cabeceras CORS ---
@@ -64,6 +65,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const body = await req.json();
     const { workspaceId, message, sessionId, history, language } = body;
+
+    // --- LOG #2: ¿QUÉ HISTORIAL RECIBIÓ LA API? ---
+    console.log(`[/api/chat] Petición recibida. El historial tiene ${history.length} mensajes.`);
+
 
     if (!workspaceId) {
       return createCorsResponse({ error: 'Workspace ID is required.' }, 400);
@@ -124,6 +129,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
 
 
+      // Enviamos la notificación por email (si está configurada) 
+      if (firstUserMessage) {
+        emailService.sendHandoffNotification(
+          workspaceId,
+          sessionId,
+          firstUserMessage.content
+        );
+      }
+
       // Load the appropriate translation file on the server.
       const translations = await getServerTranslations(language);
       console.log("Translation: ", translations)
@@ -152,6 +166,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const currentHistory = history || [];
       const updatedHistory = [...currentHistory, userMessage, botMessage];
 
+       // --- LOG #3: ¿QUÉ HISTORIAL VAMOS A GUARDAR? ---
+      console.log(`[/api/chat] Haciendo Upsert. El historial ahora tiene ${updatedHistory.length} mensajes. Últimos 2:`, JSON.stringify(updatedHistory.slice(-2).map(m => ({ role: m.role, content: m.content.slice(0, 20) }))));
+
       const { error: dbError } = await supabaseAdmin
         .from('chat_sessions')
         .upsert({
@@ -179,6 +196,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         sessionId: sessionId,
         initialMessage: botMessage,
       };
+
+      // --- LOG #4: ¿QUÉ ESTAMOS ENVIANDO AL MONITOR? ---
+      console.log(`[/api/chat] Notificando al monitor con el último mensaje:`, JSON.stringify({ role: chatDataForMonitoring.initialMessage.role, content: chatDataForMonitoring.initialMessage.content.slice(0, 20) }));
 
       // Hacemos la llamada "fire-and-forget" para no retrasar la respuesta al usuario.
       fetch(internalApiUrl, {
