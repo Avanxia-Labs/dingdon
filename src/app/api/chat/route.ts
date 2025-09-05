@@ -164,7 +164,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       };
 
       const currentHistory = history || [];
-      const updatedHistory = [...currentHistory, userMessage, botMessage];
+      const updatedHistory = [...currentHistory];
 
        // --- LOG #3: ¿QUÉ HISTORIAL VAMOS A GUARDAR? ---
       console.log(`[/api/chat] Haciendo Upsert. El historial ahora tiene ${updatedHistory.length} mensajes. Últimos 2:`, JSON.stringify(updatedHistory.slice(-2).map(m => ({ role: m.role, content: m.content.slice(0, 20) }))));
