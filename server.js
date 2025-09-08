@@ -273,73 +273,97 @@ nextApp.prepare().then(() => {
 
             console.log(`[Socket.IO] Agent ${agentId} (${socket.id}) attempting to join session ${sessionId}`);
 
-            const sessionInMemory = workspacesData[workspaceId]?.[sessionId];
+            try {
 
-            if (sessionInMemory && sessionInMemory.status === 'pending') {
-                sessionInMemory.status = 'in_progress';
-                sessionInMemory.assignedAgentId = agentId;
-
-                // 🔧 MEJORADO: Registrar que este socket maneja esta sesión
-                const agentInfo = agentSockets.get(socket.id) || {};
-                agentInfo.agentId = agentId;
-                agentInfo.workspaceId = workspaceId;
-                agentInfo.sessionId = sessionId;
-                agentSockets.set(socket.id, agentInfo);
-
-                // El agente se une a la sala
-                socket.join(sessionId);
-                addSocketToSession(sessionId, socket.id);
-                console.log(`[Socket.IO] Agent ${agentId} (${socket.id}) joined session room ${sessionId}`);
-
-                // Actualizar DB
-                const { error } = await supabase
+                // 1. Obtener el estado ACTUAL de la sesión desde la DB
+                const { data: currentSession, error: fetchError } = await supabase
                     .from('chat_sessions')
-                    .update({ status: 'in_progress', assigned_agent_id: agentId })
-                    .eq('id', sessionId);
-                if (error) {
-                    console.error(`[DB Error] No se pudo actualizar ${sessionId} a 'in_progress':`, error.message);
-                }
-
-                // 1. Obtén la configuración MÁS RECIENTE del bot desde la base de datos
-                const { data: workspaceConfig } = await supabase
-                    .from('workspaces')
-                    .select('bot_name, bot_avatar_url')
-                    .eq('id', workspaceId)
+                    .select('status, history, assigned_agent_id')
+                    .eq('id', sessionId)
                     .single();
 
+                if (fetchError || !currentSession) {
+                    console.error(`[DB Error] No se pudo obtener la sesión ${sessionId} para asignación.`, fetchError?.message);
+                    socket.emit('assignment_failure', { message: "Chat no disponible." });
+                    return;
+                }
 
-                // 🔧 MEJORADO: Secuencia de emisión con delays y mejor logging
-                setTimeout(() => {
-                    // Emitir status_change a toda la sala
-                    const sessionSockets = io.sockets.adapter.rooms.get(sessionId);
-                    console.log(`[Socket.IO] Session ${sessionId} has ${sessionSockets?.size || 0} connected sockets`);
+                // 2. Verificar que el estado es 'pending' y no tiene agente asignado
+                if (currentSession && currentSession.status === 'pending' && currentSession.assigned_agent_id === null) {
 
-                    io.to(sessionId).emit('status_change', 'in_progress');
-                    console.log(`[Socket.IO] Status change 'in_progress' emitido a sala ${sessionId}`);
-                }, 100);
+                    const sessionInMemory = workspacesData[workspaceId]?.[sessionId];
 
-                setTimeout(() => {
-                    // Enviar historial al agente
-                    socket.emit('assignment_success', {
-                        sessionId,
-                        history: sessionInMemory.history,
-                        botConfig: {
-                            name: workspaceConfig?.bot_name,
-                            avatarUrl: workspaceConfig?.bot_avatar_url
-                        }
-                    });
-                    console.log(`[Socket.IO] Assignment success enviado para sesión ${sessionId}`);
-                }, 200);
+                    if (sessionInMemory) {
+                        sessionInMemory.status = 'in_progress';
+                        sessionInMemory.assignedAgentId = agentId;
+                    }
 
-                setTimeout(() => {
-                    // Notificar a otros agentes que el chat fue tomado
-                    socket.to(`dashboard_${workspaceId}`).emit('chat_taken', { sessionId });
-                    console.log(`[Socket.IO] Chat taken notificado para sesión ${sessionId}`);
-                }, 300);
+                    // 🔧 MEJORADO: Registrar que este socket maneja esta sesión
+                    const agentInfo = agentSockets.get(socket.id) || {};
+                    agentInfo.agentId = agentId;
+                    agentInfo.workspaceId = workspaceId;
+                    agentInfo.sessionId = sessionId;
+                    agentSockets.set(socket.id, agentInfo);
 
-            } else {
-                console.log(`[Socket.IO] Assignment failed for session ${sessionId} - not available`);
-                socket.emit('assignment_failure', { message: "Chat no disponible." });
+                    // El agente se une a la sala
+                    socket.join(sessionId);
+                    addSocketToSession(sessionId, socket.id);
+                    console.log(`[Socket.IO] Agent ${agentId} (${socket.id}) joined session room ${sessionId}`);
+
+                    // Actualizar DB
+                    const { error } = await supabase
+                        .from('chat_sessions')
+                        .update({ status: 'in_progress', assigned_agent_id: agentId })
+                        .eq('id', sessionId);
+                    if (error) {
+                        console.error(`[DB Error] No se pudo actualizar ${sessionId} a 'in_progress':`, error.message);
+                        throw error;
+                    }
+
+                    // 1. Obtén la configuración MÁS RECIENTE del bot desde la base de datos
+                    const { data: workspaceConfig } = await supabase
+                        .from('workspaces')
+                        .select('bot_name, bot_avatar_url')
+                        .eq('id', workspaceId)
+                        .single();
+
+
+                    // 🔧 MEJORADO: Secuencia de emisión con delays y mejor logging
+                    setTimeout(() => {
+                        // Emitir status_change a toda la sala
+                        const sessionSockets = io.sockets.adapter.rooms.get(sessionId);
+                        console.log(`[Socket.IO] Session ${sessionId} has ${sessionSockets?.size || 0} connected sockets`);
+
+                        io.to(sessionId).emit('status_change', 'in_progress');
+                        console.log(`[Socket.IO] Status change 'in_progress' emitido a sala ${sessionId}`);
+                    }, 100);
+
+                    setTimeout(() => {
+                        // Enviar historial al agente
+                        socket.emit('assignment_success', {
+                            sessionId,
+                            history: currentSession.history,
+                            botConfig: {
+                                name: workspaceConfig?.bot_name,
+                                avatarUrl: workspaceConfig?.bot_avatar_url
+                            }
+                        });
+                        console.log(`[Socket.IO] Assignment success enviado para sesión ${sessionId}`);
+                    }, 200);
+
+                    setTimeout(() => {
+                        // Notificar a otros agentes que el chat fue tomado
+                        socket.to(`dashboard_${workspaceId}`).emit('chat_taken', { sessionId });
+                        console.log(`[Socket.IO] Chat taken notificado para sesión ${sessionId}`);
+                    }, 300);
+
+                } else {
+                    console.log(`[Socket.IO] Assignment failed for session ${sessionId} - DB status is '${currentSession?.status}'`);
+                    socket.emit('assignment_failure', { message: "Chat no disponible." });
+                }
+            } catch (error) {
+                console.error(`[Critical Error] en agent_joined para sesión ${sessionId}:`, error);
+                socket.emit('assignment_failure', { message: "Ocurrió un error al intentar tomar el chat." });
             }
         });
 
@@ -463,10 +487,10 @@ nextApp.prepare().then(() => {
             }
         });
 
-        socket.on('toggle_bot_status', async ({ workspaceId, sessionId }) => {
+        socket.on('toggle_bot_status', async ({ workspaceId, sessionId, agentId }) => {
 
-            if (!workspaceId || !sessionId) {
-                console.log(`[Socket.IO] toggle_bot_status: workspaceId o sessionId no proporcionados.`);
+            if (!workspaceId || !sessionId || !agentId) {
+                console.log(`[Socket.IO] toggle_bot_status: workspaceId o sessionId o agentId no proporcionados.`);
                 return;
             }
 
@@ -482,27 +506,31 @@ nextApp.prepare().then(() => {
                     throw new Error("Session not found");
                 }
 
-                // Seguridad: Solo el agente asignado puede cambiar el estado
-                // const agentInfo = agentSockets.get(socket.id);
+                // Verificamos que el estado sea 'in_progress' y que el agente sea el asignado.
+                // Esto previene cualquier acción si el estado ya ha cambiado por otra razón.
+                if (currentSession.status !== 'in_progress' || currentSession.assigned_agent_id !== agentId) {
+                    console.warn(`[Bot Control] Acción de 'toggle_bot_status' rechazada para sesión ${sessionId}. Estado actual: ${currentSession.status}, Agente solicitante: ${agentId}`);
+                    socket.emit('bot_control_error', { sessionId, message: 'La acción ya no es válida.' });
+                    return;
+                }
 
-                // if (agentInfo?.agentId !== currentSession.assigned_agent_id) {
-                //     console.warn(`[Bot Control] Intento no autorizado de cambiar estado por agente ${agentInfo?.agentId}`);
-                //     socket.emit('bot_control_error', { sessionId, message: 'Not authorized.' });
-                //     return;
-                // }
-
-                // 2. Determina el nuevo estado
-                const newStatus = currentSession.status === 'bot' ? 'in_progress' : 'bot';
+                // 2. El nuevo estado siempre será 'bot' y el agente se desasigna.
+                const updatePayload = {
+                    status: 'bot',
+                    assigned_agent_id: null
+                };
 
                 // 3. Actualiza la base de datos
                 const { error: updateError } = await supabase
                     .from('chat_sessions')
-                    .update({ status: newStatus })
+                    .update(updatePayload)
                     .eq('id', sessionId);
 
                 if (updateError) throw updateError;
 
-                console.log(`[Bot Control] Estado de la sesión ${sessionId} cambiado a: ${newStatus}`);
+                console.log(`[Bot Control] Sesión ${sessionId} devuelta al bot por el agente ${agentId}.`);
+
+                const newStatus = 'bot';
 
                 // 4. Notifica al panel para que actualice la UI
                 io.to(`dashboard_${workspaceId}`).emit('session_status_changed', { sessionId, newStatus });
@@ -528,15 +556,15 @@ nextApp.prepare().then(() => {
                 console.log(`[Transfer] Agente solicitó transferir la sesión ${sessionId} a la cola.`);
 
                 // 1. Actualiza el estado de la sesión en la DB de vuelta a 'pending'.
-                // Mantenemos el 'assigned_agent_id' por si queremos saber quién lo atendió antes.
                 await supabase
                     .from('chat_sessions')
-                    .update({ status: 'pending' })
+                    .update({ status: 'pending', assigned_agent_id: null })
                     .eq('id', sessionId);
 
                 // Actualizar el estado en memoria
                 if (workspacesData[workspaceId] && workspacesData[workspaceId][sessionId]) {
                     workspacesData[workspaceId][sessionId].status = 'pending';
+                    workspacesData[workspaceId][sessionId].assignedAgentId = null;
                 }
 
                 // 2. Obtiene el mensaje inicial para darle contexto a otro agente

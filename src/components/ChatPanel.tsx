@@ -241,8 +241,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             console.log(`[ChatPanel] Emitiendo toggle_bot_status para sesión ${activeChat.sessionId}`);
             socket.emit('toggle_bot_status', {
                 workspaceId,
-                sessionId: activeChat.sessionId
+                sessionId: activeChat.sessionId,
+                agentId: session?.user.id
             });
+            // Cerramos la vista del chat para el agente actual.
+            clearActiveChatView();
         }
     };
 
