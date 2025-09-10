@@ -46,7 +46,8 @@
     "signOut": "Sign Out",
     "leads": "Leads",
     "leadClassification": "Lead Classification",
-    "reports": "Reports"
+    "reports": "Reports",
+    "monitoring": "Monitoring Panel"
   },
   "leads": {
     "pageTitle": "Collected Leads",
@@ -268,6 +269,16 @@
       "avatarUpdated": "Avatar updated! Click 'Save' to apply the changes.",
       "saveSuccess": "Profile saved successfully!"
     }
+  },
+
+  "monitoringPanel": {
+    "title": "Bot Conversations",
+    "sessionLabel": "Session:",
+    "lastMessageLabel": "Last:",
+    "noChats": "No active bot chats.",
+    "activeChatTitle": "Monitoring Session:",
+    "interveneButton": "Intervene",
+    "selectPrompt": "Select a conversation to monitor."
   },
 
   "whatsapp": {

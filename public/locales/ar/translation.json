@@ -49,7 +49,8 @@
     "signOut": "تسجيل الخروج",
     "leads": "العملاء المحتملون",
     "leadClassification": "تصنيف العملاء المحتملين",
-    "reports": "التقارير"
+    "reports": "التقارير",
+    "monitoring": "لوحة المراقبة"
   },
   "leads": {
     "pageTitle": "العملاء المحتملون الذين تم جمعهم",
@@ -271,6 +272,17 @@
       "saveSuccess": "تم حفظ الملف الشخصي بنجاح!"
     }
   },
+
+  "monitoringPanel": {
+    "title": "محادثات البوت ",
+    "sessionLabel": "الجلسة:",
+    "lastMessageLabel": "الأخير:",
+    "noChats": "لا توجد محادثات نشطة مع البوت حاليًا.",
+    "activeChatTitle": "مراقبة الجلسة:",
+    "interveneButton": "تدخل",
+    "selectPrompt": "اختر محادثة لمراقبتها."
+  },
+
   "whatsapp": {
     "welcome": "أهلاً بك! للبدء، ما هو اسمك الكامل؟",
     "welcomeBack": "أهلاً بعودتك، {{name}}! كيف يمكنني مساعدتك اليوم؟",

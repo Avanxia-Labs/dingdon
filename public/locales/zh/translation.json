@@ -48,7 +48,8 @@
     "signOut": "退出",
     "leads": "潜在客户",
     "leadClassification": "潜在客户分类",
-    "reports": "报告"
+    "reports": "报告",
+    "monitoring": "监控面板"
   },
   "leads": {
     "pageTitle": "收集的潜在客户",
@@ -270,6 +271,17 @@
       "saveSuccess": "个人资料已成功保存！"
     }
   },
+
+  "monitoringPanel": {
+    "title": "机器人会话",
+    "sessionLabel": "会话：",
+    "lastMessageLabel": "最新：",
+    "noChats": "当前没有与机器人进行的会话。",
+    "activeChatTitle": "监控会话：",
+    "interveneButton": "介入",
+    "selectPrompt": "选择一个会话进行监控。"
+  },
+
   "whatsapp": {
     "welcome": "您好！欢迎。请问您的全名是？",
     "welcomeBack": "欢迎回来，{{name}}！今天有什么可以帮您？",
@@ -282,16 +294,14 @@
     "pageSubtitle": "查看您的机器人活动的每日摘要和关键指标。",
     "summary": { "title": "执行摘要" },
     "metrics": {
-        "newConversations": "新对话",
-        "totalMessages": "总消息数",
-        "avgResponseTime": "平均响应时间",
-        "handoffs": "转接客服次数",
-        "botResolution": "机器人解决率"
+      "newConversations": "新对话",
+      "totalMessages": "总消息数",
+      "avgResponseTime": "平均响应时间",
+      "handoffs": "转接客服次数",
+      "botResolution": "机器人解决率"
     },
     "topics": { "title": "主题与趋势" },
     "actions": { "title": "可行性见解" },
     "leads": { "title": "潜在客户分析" }
-}
-
-
+  }
 }
