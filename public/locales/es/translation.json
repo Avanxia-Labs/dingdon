@@ -46,7 +46,8 @@
     "signOut": "Cerrar Sesión",
     "leads": "Leads",
     "leadClassification": "Clasificación de Leads",
-    "reports": "Reportes"
+    "reports": "Reportes",
+    "monitoring": "Panel de Monitoreo"
   },
   "leads": {
     "pageTitle": "Leads Recolectados",
@@ -303,6 +304,17 @@
       "saveSuccess": "¡Perfil guardado con éxito!"
     }
   },
+
+  "monitoringPanel": {
+    "title": "Conversaciones del Bot",
+    "sessionLabel": "Sesión:",
+    "lastMessageLabel": "Último:",
+    "noChats": "No hay chats activos con el bot.",
+    "activeChatTitle": "Monitoreando Sesión:",
+    "interveneButton": "Intervenir",
+    "selectPrompt": "Selecciona una conversación para monitorear."
+  },
+
   "whatsapp": {
     "welcome": "¡Hola! Bienvenido. Para comenzar, ¿cuál es tu nombre completo?",
     "welcomeBack": "¡Hola de nuevo, {{name}}! ¿En qué puedo ayudarte hoy?",
