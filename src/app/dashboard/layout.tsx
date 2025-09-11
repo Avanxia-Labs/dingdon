@@ -230,7 +230,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/history', label: t('dashboardLayout.chatHistory'), icon: <History className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/leads', label: t('dashboardLayout.leads'), icon: <Star className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/profile', label: t('dashboardLayout.profile'), icon: <UserCircle className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
-        { href: '/dashboard/monitoring', label: "Monitoring", icon: <Monitor className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/monitoring', label: t('dashboardLayout.monitoring'), icon: <Monitor className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
         { href: '/dashboard/lead-classification', label: t('dashboardLayout.leadClassification'), icon: <Target className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/reports', label: t('dashboardLayout.reports'), icon: <BarChart3 className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
         { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }

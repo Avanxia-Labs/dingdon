@@ -47,7 +47,8 @@
     "signOut": "Выйти",
     "leads": "Лиды",
     "leadClassification": "Классификация лидов",
-    "reports": "Отчеты"
+    "reports": "Отчеты",
+    "monitoring": "Панель мониторинга"
   },
   "leads": {
     "pageTitle": "Собранные лиды",
@@ -271,6 +272,17 @@
       "saveSuccess": "Профиль успешно сохранен!"
     }
   },
+
+  "monitoringPanel": {
+    "title": "Диалоги с ботом",
+    "sessionLabel": "Сессия:",
+    "lastMessageLabel": "Посл.:",
+    "noChats": "Нет активных диалогов с ботом.",
+    "activeChatTitle": "Мониторинг сессии:",
+    "interveneButton": "Вмешаться",
+    "selectPrompt": "Выберите диалог для мониторинга."
+  },
+
   "whatsapp": {
     "welcome": "Здравствуйте! Добро пожаловать. Для начала, как ваше полное имя?",
     "welcomeBack": "С возвращением, {{name}}! Чем я могу вам помочь сегодня?",

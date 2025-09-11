@@ -5,9 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSession } from 'next-auth/react';
 import { useSocket } from '@/providers/SocketContext';
-import { ChatRequest, Message, BotConfig } from '@/types/chatbot'; // Importa los tipos necesarios
+import { ChatRequest, Message, BotConfig } from '@/types/chatbot'; 
 import { User, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 
 interface MonitoringPanelProps {
     workspaceId: string;
@@ -25,6 +26,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
     const { socket } = useSocket();
     const router = useRouter();
     const { monitoringChats, setMonitoringChats, removeMonitoringChat, setActiveChat: setGlobalActiveChat, activeBotConfig } = useDashboardStore();
+    const { t } = useTranslation();
 
     // --- NUEVO ESTADO PARA LA VISTA DETALLADA ---
     const [activeChat, setActiveChat] = useState<ActiveMonitoringChat | null>(null);
@@ -155,7 +157,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
         <div className="flex h-full">
             {/* Columna Izquierda: Lista de Chats en Monitoreo */}
             <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
-                <h2 className="text-xl font-bold mb-4">Bot Conversations ({monitoringChats.length})</h2>
+                <h2 className="text-xl font-bold mb-4">{t('monitoringPanel.title')} ({monitoringChats.length})</h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {monitoringChats.map(chat => (
                         <div
@@ -163,11 +165,11 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                             onClick={() => handleSelectChat(chat.sessionId)}
                             className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`}
                         >
-                            <p className="font-semibold">Session: {chat.sessionId.slice(-6)}</p>
-                            <p className="text-sm truncate">Last: {chat.initialMessage.content}</p>
+                            <p className="font-semibold">{t('monitoringPanel.sessionLabel')} {chat.sessionId.slice(-6)}</p>
+                            <p className="text-sm truncate">{t('monitoringPanel.lastMessageLabel')} {chat.initialMessage.content}</p>
                         </div>
                     ))}
-                    {monitoringChats.length === 0 && <p className="text-gray-500">No active bot chats.</p>}
+                    {monitoringChats.length === 0 && <p className="text-gray-500">{t('monitoringPanel.noChats')}</p>}
                 </div>
             </div>
 
@@ -176,12 +178,12 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                 {activeChat ? (
                     <>
                         <div className="p-4 border-b bg-white flex justify-between items-center">
-                            <h3 className="text-lg font-bold">Monitoring Session: {activeChat.sessionId.slice(-6)}</h3>
+                            <h3 className="text-lg font-bold">{t('monitoringPanel.activeChatTitle')} {activeChat.sessionId.slice(-6)}</h3>
                             <button
                                 onClick={() => handleIntervene(activeChat.sessionId)}
                                 className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                             >
-                                Intervene
+                                {t('monitoringPanel.interveneButton')}
                             </button>
                         </div>
                         <div className="flex-1 p-4 overflow-y-auto space-y-4">
@@ -206,7 +208,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                     </>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <p className="text-xl text-gray-500">Select a conversation to monitor.</p>
+                        <p className="text-xl text-gray-500">{t('monitoringPanel.selectPrompt')}</p>
                     </div>
                 )}
             </div>
