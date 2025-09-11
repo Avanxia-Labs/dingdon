@@ -8,7 +8,8 @@ import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
-import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2 } from "lucide-react";
+import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2, Menu, X } from "lucide-react";
+import { useTheme } from '@/providers/ThemeProvider';
 
 
 interface ChatRequest {
@@ -31,6 +32,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const { socket, notificationsEnabled, enableNotifications } = useSocket();
     const { language } = useDashboardStore();
     useSyncLanguage(language);
+    const { theme } = useTheme();
 
     const {
         requests,
@@ -48,6 +50,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [input, setInput] = useState("");
     const [isConnected, setIsConnected] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -270,8 +273,25 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
     console.log("ACTIVE BOT CONFIG", activeBotConfig);
 
+    // Theme classes
+    const mainBg = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50';
+    const sidebarBg = theme === 'dark' ? 'bg-gray-800' : 'bg-white';
+    const sidebarBorderColor = theme === 'dark' ? 'border-gray-700' : 'border-gray-200';
+    const cardBg = theme === 'dark' ? 'bg-gray-800' : 'bg-white';
+    const cardHoverBg = theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200';
+    const activeChatBg = theme === 'dark' ? 'bg-blue-700' : 'bg-blue-600';
+    const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-800';
+    const textSecondary = theme === 'dark' ? 'text-gray-400' : 'text-gray-500';
+    const inputBg = theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300';
+    const inputDisabledBg = theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200';
+    const modalBg = theme === 'dark' ? 'bg-gray-800' : 'bg-white';
+    const modalTextColor = theme === 'dark' ? 'text-gray-200' : 'text-gray-700';
+    const buttonCloseBg = theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300';
+    const userMsgBg = theme === 'dark' ? 'bg-gray-700 text-gray-100' : 'bg-gray-200 text-gray-800';
+    const botMsgBg = theme === 'dark' ? 'bg-slate-600' : 'bg-slate-700';
+
     return (
-        <div className="flex h-full relative">
+        <div className={`flex h-full relative ${mainBg}`}>
             {!notificationsEnabled && (
                 <div className="absolute top-4 right-4 bg-yellow-100 border-yellow-300 text-yellow-800 p-3 rounded-lg shadow-md z-10">
                     <p className="font-semibold">{t("chatPanel.notifications.title")}</p>
@@ -287,8 +307,33 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                 </div>
             )}
 
-            {/* Chat Requests y Connection */}
-            <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
+            {/* Mobile Header - Solo visible en móvil hasta 768px */}
+            <div className={`md:hidden fixed top-0 left-0 right-0 h-14 ${cardBg} border-b ${sidebarBorderColor} px-4 flex items-center justify-between z-50`}>
+                <button
+                    onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                    className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+                >
+                    {isMobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+                <h1 className={`font-bold text-lg ${textPrimary}`}>{t("chatPanel.requestsTitle")}</h1>
+                <div className="w-10" />
+            </div>
+
+            {/* Mobile Sidebar Overlay */}
+            {isMobileSidebarOpen && (
+                <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setIsMobileSidebarOpen(false)} />
+            )}
+
+            {/* Chat Requests Sidebar - Responsive */}
+            <div className={`
+                ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                md:translate-x-0 md:relative md:w-1/3 lg:w-1/4
+                fixed top-0 left-0 h-full w-64 sm:w-72
+                border-r ${sidebarBorderColor} ${sidebarBg}
+                p-4 flex flex-col z-50 md:z-0
+                transition-transform duration-300 ease-in-out
+                pt-16 md:pt-4
+            `}>
                 <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm mb-2 ${isConnected
                         ? "bg-green-100 text-green-800"
@@ -323,7 +368,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     )}
                 </div>
-                <h2 className="text-xl font-bold mb-4">
+                <h2 className={`text-xl font-bold mb-4 hidden md:block ${textPrimary}`}>
                     {t("chatPanel.requestsTitle")}
                 </h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
@@ -337,10 +382,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 ${req.isTransfer ? 'border-2 border-orange-400' : ''}
                                 
                                 ${activeChat?.sessionId === req.sessionId
-                                    ? "bg-blue-600 text-white"
+                                    ? `${activeChatBg} text-white`
                                     : isConnected
-                                        ? "bg-gray-100 hover:bg-gray-200"
-                                        : "bg-gray-50 cursor-not-allowed opacity-50"
+                                        ? cardHoverBg
+                                        : theme === 'dark' ? "bg-gray-900 cursor-not-allowed opacity-50" : "bg-gray-50 cursor-not-allowed opacity-50"
                                 }`}
                         >
                             <p className="font-semibold">
@@ -352,19 +397,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     ))}
                     {requests.length === 0 && (
-                        <p className="text-gray-500 text-sm mt-2">
+                        <p className={`text-sm mt-2 ${textSecondary}`}>
                             {t("chatPanel.noRequests")}
                         </p>
                     )}
                 </div>
             </div>
 
-            {/* CHATS */}
-            <div className="flex-1 flex flex-col bg-gray-50">
+            {/* CHATS - Main Content Area */}
+            <div className={`flex-1 flex flex-col ${mainBg} pt-14 md:pt-0`}>
                 {activeChat && ["in_progress", "bot"].includes(activeChat.status) ? (
                     <>
-                        <div className="p-4 border-b bg-white flex justify-between items-center">
-                            <h3 className="text-lg font-bold">
+                        <div className={`p-4 border-b ${cardBg} ${sidebarBorderColor} flex flex-wrap sm:flex-nowrap justify-between items-center gap-2`}>
+                            <h3 className={`text-base sm:text-lg font-bold ${textPrimary}`}>
                                 {t("chatPanel.activeChatTitle", {
                                     id: activeChat.sessionId.slice(-6),
                                 })}
@@ -373,7 +418,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             {/* --- BOTÓN DE TRANSFERENCIA --- */}
                             <button
                                 onClick={handleTransferToQueue}
-                                className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm flex items-center gap-1.5"
+                                className="px-2 sm:px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5"
                             >
                                 <Users size={14} />
                                 <span>Transfer</span>
@@ -382,9 +427,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
                             <button
                                 onClick={handleToggleBotStatus} // <-- Llama a la función toggle
-                                className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${activeChat.status === 'in_progress'
-                                    ? 'bg-green-500 hover:bg-green-600 text-white' // Estilo para "Resume Bot"
-                                    : 'bg-yellow-500 hover:bg-yellow-600 text-white' // Estilo para "Pause Bot"
+                                className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors ${activeChat.status === 'in_progress'
+                                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                                    : 'bg-yellow-500 hover:bg-yellow-600 text-white'
                                     }`}
                             >
                                 {activeChat.status === 'in_progress' ? (
@@ -403,7 +448,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             {/* --- BOTÓN DE RESUMEN --- */}
                             <button
                                 onClick={handleGetSummary}
-                                className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm flex items-center gap-1.5"
+                                className="px-2 sm:px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5"
                             >
                                 <FileText size={14} />
                                 <span>Summarize</span>
@@ -413,9 +458,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <button
                                 onClick={handleCloseChat}
                                 disabled={!isConnected}
-                                className={`px-3 py-1 rounded-lg text-sm ${isConnected
+                                className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm ${isConnected
                                     ? "bg-red-500 text-white hover:bg-red-600"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : theme === 'dark' ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                     }`}
                             >
                                 {t("chatPanel.closeChatButton")}
@@ -451,9 +496,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
                                         {/* --- CUERPO DEL MENSAJE (EN EL MEDIO) --- */}
                                         <div
-                                            className={`max-w-[70%] px-4 py-2 rounded-xl ${isAgent ? "bg-blue-500 text-white" :        // Mensaje del agente
-                                                isBot ? "bg-slate-700 text-white" :         // Mensaje del bot (color distinto para diferenciarlo)
-                                                    "bg-gray-200 border border-black/10 text-gray-800"             // Mensaje del usuario
+                                            className={`max-w-[70%] px-3 sm:px-4 py-2 rounded-xl ${isAgent ? "bg-blue-500 text-white" :
+                                                isBot ? botMsgBg + " text-white" :
+                                                    userMsgBg + " border border-black/10"
                                                 }`}
                                         >
                                             {/* Nombre del remitente (si es agente o bot) */}
@@ -486,7 +531,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <div className="p-4 bg-white border-t">
+                        <div className={`p-3 sm:p-4 ${cardBg} border-t ${sidebarBorderColor}`}>
                             <div className="flex space-x-2">
                                 <input
                                     type="text"
@@ -495,8 +540,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                                     disabled={!isConnected || activeChat.status === "bot"}
                                     className={`flex-1 p-2 border rounded-lg ${!isConnected || activeChat.status === "bot"
-                                        ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-20"  // estilos deshabilitado
-                                        : "border-gray-300 focus:border-blue-500"                     // estilos habilitado
+                                        ? inputDisabledBg + " cursor-not-allowed opacity-50"
+                                        : inputBg + " focus:border-blue-500"
                                         }`}
                                     placeholder={
                                         isConnected
@@ -507,9 +552,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!isConnected || !input.trim()}
-                                    className={`px-4 py-2 rounded-lg ${isConnected && input.trim()
+                                    className={`px-3 sm:px-4 py-2 rounded-lg ${isConnected && input.trim()
                                         ? "bg-blue-600 text-white hover:bg-blue-700"
-                                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        : theme === 'dark' ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                         }`}
                                 >
                                     <Send size={18} />
@@ -519,7 +564,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     </>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <p className="text-xl text-gray-500">
+                        <p className={`text-lg sm:text-xl ${textSecondary}`}>
                             {activeChat?.status === "closed"
                                 ? t("chatPanel.chatClosed")
                                 : t("chatPanel.selectChatPrompt")}
@@ -533,21 +578,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             {/* Modal de Resumen */}
             {isSummaryModalOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-                        <h3 className="text-lg font-bold mb-4">{t("chatPanel.conversationSummary")}</h3>
+                    <div className={`${modalBg} rounded-lg shadow-xl w-full max-w-lg p-6`}>
+                        <h3 className={`text-lg font-bold mb-4 ${textPrimary}`}>{t("chatPanel.conversationSummary")}</h3>
                         {isSummarizing ? (
                             <div className="flex items-center justify-center h-24">
                                 <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
                             </div>
                         ) : (
-                            <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                            <div className={`text-sm ${modalTextColor} whitespace-pre-wrap max-h-96 overflow-y-auto`}>
                                 {summaryText}
                             </div>
                         )}
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setIsSummaryModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                                className={`px-4 py-2 ${buttonCloseBg} ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'} rounded-md`}
                             >
                                 {t("chatPanel.close")}
                             </button>

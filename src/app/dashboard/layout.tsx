@@ -162,13 +162,16 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { redirect, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3, Monitor } from 'lucide-react';
+import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3, Monitor, Menu, X } from 'lucide-react';
 import { SocketProvider } from '@/providers/SocketContext';
 import { I18nProvider } from '@/providers/I18nProvider';
 import { useTranslation } from 'react-i18next';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import ThemeToggle  from '@/components/ThemeToggle';
+import { useTheme } from '@/providers/ThemeProvider';
+
 
 function DashboardUI({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
@@ -176,9 +179,11 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { language, setLanguage, requests } = useDashboardStore();
     useSyncLanguage(language);
+    const { theme } = useTheme();
 
     const [workspaceName, setWorkspaceName] = useState('Loading...');
     const [agentName, setAgentName] = useState(session?.user?.name || 'Loading...');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Estado para controlar si hay requests pendientes
     const hasRequestsPending = requests.length > 0;
@@ -196,6 +201,11 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
             fetchWorkspaceName();
         } else if (session?.user?.role !== 'superadmin') { setWorkspaceName('No Workspace'); }
     }, [session?.user?.workspaceId, session?.user?.role]);
+
+    // Cerrar menú móvil cuando cambia la ruta
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
 
     useEffect(() => {
         if (session?.user?.name === session?.user?.email) {
@@ -226,23 +236,83 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }
     ];
 
+    const mainBg = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50';
+    const sidebarBg = theme === 'dark' ? 'bg-gray-950' : 'bg-gray-800';
+    const sidebarBorderColor = theme === 'dark' ? 'border-gray-800' : 'border-gray-700';
+    const headerBg = theme === 'dark' ? 'bg-gray-800' : 'bg-white';
+    const headerBorderColor = theme === 'dark' ? 'border-gray-700' : 'border-gray-200';
+    const headerTextColor = theme === 'dark' ? 'text-gray-100' : 'text-gray-800';
+    const buttonBg = theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200';
+    const navItemActive = theme === 'dark' ? 'bg-gray-800' : 'bg-gray-900';
+    const navItemHover = theme === 'dark' ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-300 hover:bg-gray-700';
+    const overlayBg = theme === 'dark' ? 'bg-gray-900 bg-opacity-75' : 'bg-gray-600 bg-opacity-75';
+
     return (
-        <div className="flex h-screen bg-gray-50">
-            <aside className="w-64 bg-gray-800 text-white flex flex-col">
-                <div className="p-4 font-bold text-xl border-b border-gray-700">{workspaceName}</div>
-                <nav className="flex-1 px-2 py-4 space-y-1">
+        <div className={`flex h-screen ${mainBg}`}>
+            {/* Mobile Header - Solo visible en móvil hasta 1024px */}
+            <div className={`lg:hidden fixed top-0 left-0 right-0 ${headerBg} border-b ${headerBorderColor} px-4 py-3 flex justify-between items-center z-50`}>
+                <h1 className={`font-bold text-lg ${headerTextColor} truncate max-w-[200px]`}>{workspaceName}</h1>
+                <ThemeToggle/>
+                <button 
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className={`p-2 rounded-lg ${buttonBg} transition-colors`}
+                >
+                    {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+            </div>
+
+            {/* Mobile Menu - Drawer que se muestra en móvil */}
+            <div className={`lg:hidden fixed inset-0 z-40 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+                <div className={`fixed inset-0 ${overlayBg}`} onClick={() => setIsMobileMenuOpen(false)}></div>
+                <aside className={`fixed top-0 left-0 bottom-0 w-64 sm:w-72 md:w-80 ${sidebarBg} text-white flex flex-col transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <div className={`p-4 font-bold text-lg sm:text-xl border-b ${sidebarBorderColor}`}>{workspaceName}</div>
+                    <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+                        {navItems.map(item => (
+                            workspaceRole && item.requiredRole.includes(workspaceRole) && (
+                                <Link 
+                                    key={item.href} 
+                                    href={item.href} 
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? navItemActive : navItemHover}`}
+                                >
+                                    {item.icon}<span>{item.label}</span>
+                                    
+                                    {/* Bolita de Live Chats */}
+                                    {item.href === '/dashboard' && hasRequestsPending && <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
+                                </Link>
+                            )
+                        ))}
+                    </nav>
+                    <div className={`p-4 border-t ${sidebarBorderColor} space-y-4`}>
+                        <div>
+                            <p className="text-sm font-semibold truncate">{agentName}</p>
+                            <p className="text-xs text-gray-400 mb-2 truncate">{email}</p>
+                            <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full py-2 bg-red-600 rounded-lg text-sm font-medium hover:bg-red-500">{t('dashboardLayout.signOut')}</button>
+                        </div>
+                        <LanguageSwitcher setLanguage={setLanguage} />
+                    </div>
+                </aside>
+            </div>
+
+            {/* Desktop Sidebar - Solo visible desde 1024px */}
+            <aside className={`hidden lg:flex w-64 ${sidebarBg} text-white flex-col flex-shrink-0`}>
+                <div className={`p-4 font-bold text-xl border-b ${sidebarBorderColor} flex items-center justify-between`}>
+                    <span>{workspaceName}</span>
+                    <ThemeToggle/>
+                </div>
+                <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
                     {navItems.map(item => (
                         workspaceRole && item.requiredRole.includes(workspaceRole) && (
-                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700'}`}>
+                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? navItemActive : navItemHover}`}>
                                 {item.icon}<span>{item.label}</span>
                                 
                                 {/* Bolita de Live Chats */}
-                                {item.href === '/dashboard' && hasRequestsPending &&  <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
+                                {item.href === '/dashboard' && hasRequestsPending && <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
                             </Link>
                         )
                     ))}
                 </nav>
-                <div className="p-4 border-t border-gray-700 space-y-4">
+                <div className={`p-4 border-t ${sidebarBorderColor} space-y-4`}>
                     <div>
                         <p className="text-sm font-semibold">{agentName}</p>
                         <p className="text-xs text-gray-400 mb-2">{email}</p>
@@ -251,7 +321,9 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
                     <LanguageSwitcher setLanguage={setLanguage} />
                 </div>
             </aside>
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            
+            {/* Main Content - Con padding-top en móvil para el header */}
+            <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">{children}</main>
         </div>
     );
 }
