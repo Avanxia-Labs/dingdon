@@ -28,6 +28,7 @@ const availableModels = [
     { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
     { value: 'moonshot-v1-8k', label: 'Kimi (Moonshot) 8k' },
     { value: 'moonshot-v1-32k', label: 'Kimi (Moonshot) 32k' },
+    { value: 'deepseek-chat', label: 'DeepSeek Chat' },
 ];
 
 const availableApiKeys = [
@@ -35,6 +36,7 @@ const availableApiKeys = [
     { value: 'GEMINI_API_KEY_1', label: 'Gemini Key 1' },
     { value: 'KIMI_API_KEY_1', label: 'Kimi Key 1' },
     { value: 'KIMI_API_KEY_2', label: 'Kimi Key 2' },
+    { value: 'DEEPSEEK_API_KEY_1', label: 'DeepSeek Key 1' },
 ];
 
 // const availableTwilioConfigs = [
