@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - API Leads</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Simple del Endpoint /api/leads</h1>
+    
+    <form id="leadForm">
+        <input type="text" id="name" placeholder="Nombre" required value="Test User">
+        <input type="email" id="email" placeholder="Email" required value="test@example.com">
+        <input type="tel" id="phone" placeholder="Teléfono" value="123456789">
+        <button type="submit">Enviar Lead</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        const form = document.getElementById('leadForm');
+        const result = document.getElementById('result');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                workspaceId: 'e524d0ba-1cb9-45bd-bc8c-726485474bcb',
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+            
+            result.innerHTML = 'Enviando...';
+            result.className = '';
+            
+            try {
+                // Intentar con ruta relativa primero
+                const response = await fetch('/api/leads', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '✅ Lead enviado exitosamente!<br>Respuesta: ' + JSON.stringify(responseData);
+                    result.className = 'success';
+                } else {
+                    result.innerHTML = '❌ Error: ' + JSON.stringify(responseData);
+                    result.className = 'error';
+                }
+            } catch (error) {
+                result.innerHTML = '❌ Error de red: ' + error.message;
+                result.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

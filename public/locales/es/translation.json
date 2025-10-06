@@ -42,7 +42,28 @@
     "teamMembers": "Miembros",
     "chatHistory": "Historial de Chats",
     "settingsAndBot": "Ajustes y Bot",
-    "signOut": "Cerrar Sesión"
+    "profile": "Mi Perfil",
+    "signOut": "Cerrar Sesión",
+    "leads": "Leads",
+    "leadClassification": "Clasificación de Leads",
+    "reports": "Reportes"
+  },
+  "leads": {
+    "pageTitle": "Leads Recolectados",
+    "deleteAllButton": "Eliminar Todos los Leads",
+    "tableHeaderName": "Nombre",
+    "tableHeaderEmail": "Email",
+    "tableHeaderPhone": "Teléfono",
+    "tableHeaderDate": "Fecha",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este lead?",
+    "deleteAllConfirm": "Esto eliminará TODOS los {{count}} leads permanentemente. Esta acción no se puede deshacer. Por favor, escribe \"DELETE\" para confirmar.",
+    "deleteCancelled": "Eliminación cancelada.",
+    "noLeads": "Aún no se han recolectado leads.",
+    "feedback": {
+      "deletedSuccess": "Lead eliminado con éxito.",
+      "deletingAll": "Eliminando todos los leads...",
+      "deletedAllSuccess": "Todos los leads han sido eliminados."
+    }
   },
   "superadmin": {
     "pageTitle": "Gestionar Workspaces de Clientes",
@@ -65,7 +86,8 @@
       "updating": "Actualizando...",
       "updatedSuccess": "¡Workspace actualizado con éxito!"
     },
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar el workspace \"{{name}}\"? Esta acción es irreversible."
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar el workspace \"{{name}}\"? Esta acción es irreversible.",
+    "configsTitle": "Configuraciones de Twilio"
   },
   "agents": {
     "pageTitle": "Miembros del Equipo",
@@ -98,7 +120,8 @@
     "feedback": {
       "deletingAll": "Eliminando todos los historiales...",
       "deletedAllSuccess": "Todos los historiales de chat han sido eliminados."
-    }
+    },
+    "tableHeaderChannel": "Canal"
   },
   "chatPanel": {
     "notifications": {
@@ -113,13 +136,48 @@
       "reconnect": "Reconectar"
     },
     "requestsTitle": "Solicitudes de Chat",
-    "noRequests": "No hay solicitudes pendientes.",
+    "noRequests": "No hay solicitudes pendientes",
+    "myActiveChatsTitle": "Mis Chats Activos",
+    "noActiveChats": "No hay chats activos aún. ¡Toma uno de las solicitudes de arriba!",
     "activeChatTitle": "Chat Activo: {{id}}",
     "closeChatButton": "Cerrar Chat",
     "inputPlaceholder": "Escribe tu respuesta...",
     "inputPlaceholderDisconnected": "Esperando conexión...",
     "selectChatPrompt": "Selecciona un chat para comenzar",
-    "chatClosed": "El chat fue cerrado"
+    "chatClosed": "El chat fue cerrado",
+    "sessionLabel": "Sesión",
+    "messagesCount": "{{count}} mensajes",
+    "transferredLabel": "Transferido",
+    "transferredFrom": "De: {{agent}}",
+    "status": {
+      "in_progress": "en progreso",
+      "pending": "pendiente",
+      "completed": "completado",
+      "closed": "cerrado"
+    }
+  },
+  "leadInfo": {
+    "title": "Información del Lead",
+    "contact": "Datos de Contacto",
+    "noContactInfo": "Sin información de contacto disponible",
+    "classification": "Clasificación",
+    "reclassify": "Reclasificar",
+    "stats": "Estadísticas",
+    "totalMessages": "Mensajes",
+    "sessions": "Sesiones",
+    "lastInteraction": "Última interacción",
+    "tags": "Etiquetas",
+    "noTags": "Sin etiquetas",
+    "addTagPlaceholder": "Nueva etiqueta...",
+    "notes": "Notas Internas",
+    "noNotes": "Sin notas internas",
+    "addNotePlaceholder": "Añadir nota interna...",
+    "quickActions": "Acciones Rápidas",
+    "reclassifyAction": "Reclasificar Lead",
+    "scheduleFollowup": "Programar Seguimiento",
+    "exportConversation": "Exportar Conversación",
+    "conversationSummary": "Resumen de la Conversación",
+    "close": "Cerrar"
   },
   "chatbotUI": {
     "botLabel": "Bot",
@@ -134,7 +192,17 @@
     "inputPlaceholder": "Pregunta sobre nuestros servicios...",
     "inputPlaceholderAgent": "Responde al agente",
     "inputPlaceholderPending": "Esperando que un agente se conecte...",
-    "handoffMessage": "Entendido. Estoy buscando un agente para ayudarte. Por favor, espera."
+    "handoffMessage": "Entendido. Estoy buscando un agente para ayudarte. Por favor, espera.",
+    "leadFormTitle": "Antes de comenzar...",
+    "leadFormSubtitle": "Por favor, danos tus datos de contacto para poder ayudarte mejor.",
+    "leadFormName": "Nombre Completo",
+    "leadFormEmail": "Dirección de Email",
+    "leadFormPhone": "Teléfono (Opcional)",
+    "leadFormButton": "Iniciar Chat",
+    "leadFormLoading": "Iniciando...",
+    "formError": "Hubo un problema. Por favor, inténtalo de nuevo.",
+    "technicalError": "Lo siento, estoy teniendo algunas dificultades técnicas. Por favor, inténtalo de nuevo más tarde.",
+    "disclaimer": "Soy una IA y puedo cometer errores. Considera verificar la información importante."
   },
   "settings": {
     "pageTitle": "Configuración del Bot",
@@ -145,7 +213,8 @@
       "uploading": "Subiendo y procesando archivo...",
       "uploadSuccess": "¡Base de conocimiento actualizada con éxito!",
       "copied": "¡Código copiado al portapapeles!",
-      "selectFile": "Por favor, selecciona un archivo primero."
+      "selectFile": "Por favor, selecciona un archivo primero.",
+      "avatarUpdated": "¡Avatar actualizado! Haz clic en 'Guardar Configuración' para hacer el cambio permanente."
     },
     "customization": {
       "title": "Personalización del Bot",
@@ -199,6 +268,112 @@
       "subtitle": "Entrena a tu bot automáticamente desde el contenido del sitio web",
       "description": "Introduce la URL de tu sitio web para rastrear y extraer contenido automáticamente para la base de conocimiento de tu chatbot.",
       "crawlButton": "Rastrear y Entrenar"
+    },
+    "botAvatar": {
+      "label": "URL del Avatar del Bot",
+      "description": "Proporciona una URL directa a una imagen para el avatar del bot. Déjalo vacío para usar el avatar por defecto.",
+      "placeholder": "https://ejemplo.com/avatar.png",
+      "uploadingButton": "Subiendo...",
+      "changeButton": "Cambiar Imagen"
+    },
+    "botIntro": {
+      "label": "Introducción del Bot",
+      "description": "Una introducción corta y amigable que aparece debajo del nombre del bot.",
+      "placeholder": "Tu asistente virtual de IA."
+    },
+    "notifications": {
+      "sectionTitle": "Configuración de Notificaciones",
+      "emailLabel": "Correo para Notificaciones (Para)",
+      "emailDescription": "La dirección de correo donde quieres recibir las notificaciones de leads y solicitudes de agente.",
+      "fromEmailLabel": "Correo de Envío (Desde)",
+      "fromEmailDescription": "La dirección de correo verificada en tu cuenta de Resend que enviará las notificaciones.",
+      "apiKeyLabel": "API Key de Resend",
+      "apiKeyDescription": "Tu clave API secreta de tu cuenta de Resend. Se almacenará de forma segura.",
+      "apiKeyPlaceholder": "Dejar en blanco para mantener la clave actual"
     }
+  },
+  "profile": {
+    "pageTitle": "Mi Perfil",
+    "avatarLabel": "Foto de Perfil",
+    "changeButton": "Cambiar",
+    "uploadingButton": "Subiendo...",
+    "savingButton": "Guardando...",
+    "feedback": {
+      "avatarUpdated": "¡Avatar actualizado! Haz clic en 'Guardar' para aplicar los cambios.",
+      "saveSuccess": "¡Perfil guardado con éxito!"
+    }
+  },
+  "whatsapp": {
+    "welcome": "¡Hola! Bienvenido. Para comenzar, ¿cuál es tu nombre completo?",
+    "welcomeBack": "¡Hola de nuevo, {{name}}! ¿En qué puedo ayudarte hoy?",
+    "askEmail": "¡Gracias! Ahora, por favor, dime tu correo electrónico.",
+    "chatReady": "¡Perfecto, gracias! Ya puedes comenzar a chatear. ¿En qué puedo ayudarte hoy?"
+  },
+  "leadClassification": {
+    "title": "Clasificación de Leads",
+    "description": "Analiza automáticamente las conversaciones para identificar leads calientes, tibios y fríos",
+    "stats": {
+      "totalChats": "Total Chats",
+      "classified": "Clasificados",
+      "hot": "HOT 🔥",
+      "warm": "WARM 🟡",
+      "cold": "COLD ❄️"
+    },
+    "buttons": {
+      "classifying": "Clasificando...",
+      "classifyAll": "Clasificar Todos los Chats",
+      "configureKeywords": "Configurar Palabras Clave",
+      "saveConfig": "Guardar Configuración"
+    },
+    "keywords": {
+      "configuration": "Configuración de Palabras Clave",
+      "hot": "CALIENTE 🔥",
+      "warm": "TIBIA 🟡",
+      "cold": "FRÍA ❄️",
+      "hotPlaceholder": "Nueva palabra caliente...",
+      "warmPlaceholder": "Nueva palabra tibia...",
+      "coldPlaceholder": "Nueva palabra fría...",
+      "added": "Palabra clave agregada exitosamente",
+      "removed": "Palabra clave eliminada exitosamente",
+      "duplicate": "Esta palabra clave ya existe",
+      "emptyKeyword": "Por favor ingresa una palabra clave",
+      "configSaved": "Configuración guardada (las palabras clave se guardan automáticamente)"
+    },
+    "classification": {
+      "starting": "Iniciando clasificación...",
+      "noChats": "No hay chats por clasificar",
+      "processing": "Procesando...",
+      "completed": "Clasificación completada"
+    },
+    "errors": {
+      "loadKeywords": "Error cargando palabras clave",
+      "classification": "Error en la clasificación",
+      "addKeyword": "Error al agregar palabra clave",
+      "removeKeyword": "Error al eliminar palabra clave"
+    },
+    "table": {
+      "classification": "Clasificación",
+      "analysis": "Análisis del Lead",
+      "date": "Fecha"
+    },
+    "results": {
+      "title": "Resultados de Clasificación",
+      "noResults": "No hay resultados de clasificación disponibles"
+    }
+  },
+  "reports": {
+    "pageTitle": "Reportes Diarios",
+    "pageSubtitle": "Revisa los resúmenes diarios y las métricas clave de la actividad de tu bot.",
+    "summary": { "title": "Resumen Ejecutivo" },
+    "metrics": {
+      "newConversations": "Conversaciones Nuevas",
+      "totalMessages": "Mensajes Totales",
+      "avgResponseTime": "Tiempo de R. Promedio",
+      "handoffs": "Traspasos a Agente",
+      "botResolution": "Tasa de Resolución del Bot"
+    },
+    "topics": { "title": "Temas y Tendencias" },
+    "actions": { "title": "Acciones Recomendadas" },
+    "leads": { "title": "Análisis de Leads" }
   }
 }

@@ -1,6 +1,6 @@
 // app/api/workspaces/[workspaceId]/members/route.ts
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase/server';
@@ -18,7 +18,7 @@ interface MemberFromDB {
 }
 
 export async function GET(
-    request: Request,
+    request: NextRequest,
     //{ params }: { params: { workspaceId: string } }
     context: {
         params: Promise<{ workspaceId: string }>
@@ -32,15 +32,23 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        // --- CONSULTA CON TIPADO GENÉRICO ---
+        // Logica de paginacion
+        const searchParams = request.nextUrl.searchParams;
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = parseInt(searchParams.get('limit') || '10', 10);
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        
         // Le decimos a Supabase qué forma esperamos que tengan los datos.
-        const { data, error } = await supabaseAdmin
+        const { data, error, count } = await supabaseAdmin
             .from('workspace_members')
             .select<string, MemberFromDB>(`
                 role,
                 profiles!inner ( id, name, email )
-            `) // Usamos .select<string, MemberFromDB>(...)
-            .eq('workspace_id', workspaceId);
+            `, {count: 'exact'}) // Usamos .select<string, MemberFromDB>(...)
+            .eq('workspace_id', workspaceId)
+            .range(from, to);
 
         if (error) {
             console.error("Error fetching workspace members:", error);
@@ -57,7 +65,7 @@ export async function GET(
                 role: item.role,
             }));
 
-        return NextResponse.json(members);
+        return NextResponse.json({data: members, count});
 
     } catch (e) {
         console.error("Unexpected error in GET /api/workspaces/[workspaceId]/members:", e);

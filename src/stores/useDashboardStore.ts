@@ -6,6 +6,7 @@ import { Message, ChatSessionStatus } from '@/types/chatbot'
 interface ChatRequest {
     sessionId: string;
     initialMessage: Message;
+    isTransfer?: boolean;
 }
 
 interface ActiveChat {
@@ -14,18 +15,29 @@ interface ActiveChat {
     status: ChatSessionStatus;
 }
 
+export interface BotConfig {
+    name?: string;
+    avatarUrl?: string;
+}
+
 interface DashboardState {
     // Estado de las solicitudes pendientes
     requests: ChatRequest[];
     
     // Estado del chat activo
     activeChat: ActiveChat | null;
+
+    // Estado del bot para el ChatPanel
+    activeBotConfig: BotConfig | null;
     
     // Estado de notificaciones
     notificationsEnabled: boolean;
 
     // Estado del idioma
     language: string;
+
+    // Chats de monitoreo
+    monitoringChats: ChatRequest[];
     
     // Acciones para las solicitudes
     addRequest: (request: ChatRequest) => void;
@@ -34,14 +46,24 @@ interface DashboardState {
     
     // Acciones para el chat activo
     setActiveChat: (sessionId: string, initialMessages?: Message[]) => void;
+    updateActiveChatStatus: (status: ChatSessionStatus) => void;
     addMessageToActiveChat: (message: Message) => void;
     closeActiveChat: () => void;
+    clearActiveChatView: () => void;
+
+    // Acciones de monitoreo de chats
+    setMonitoringChats: (chats: ChatRequest[]) => void;
+    addMonitoringChat: (chat: ChatRequest) => void;
+    removeMonitoringChat: (sessionId: string) => void;
     
     // Acciones para notificaciones
     setNotificationsEnabled: (enabled: boolean) => void;
 
     // Acciones para el idioma
     setLanguage: (language: string) => void;
+
+    // Acciones para la config del bot
+    setActiveBotConfig: (config: BotConfig) => void;
     
     // Utilidades
     resetDashboard: () => void;
@@ -52,8 +74,10 @@ export const useDashboardStore = create<DashboardState>()(
         (set, get) => ({
             requests: [],
             activeChat: null,
+            monitoringChats: [],
             notificationsEnabled: false,
             language: 'en',
+            activeBotConfig: null,
             
             addRequest: (request) => set((state) => ({
                 requests: state.requests.some(r => r.sessionId === request.sessionId) 
@@ -78,6 +102,16 @@ export const useDashboardStore = create<DashboardState>()(
                     }
                 }));
             },
+
+            updateActiveChatStatus: (status) => set((state) => {
+                if (!state.activeChat) return {}; // No hagas nada si no hay chat activo
+                return {
+                    activeChat: {
+                        ...state.activeChat,
+                        status: status, // <-- Actualiza solo el status
+                    }
+                };
+            }),
             
             addMessageToActiveChat: (message) => set((state) => {
                 if (!state.activeChat) return state;
@@ -93,6 +127,20 @@ export const useDashboardStore = create<DashboardState>()(
                     }
                 };
             }),
+
+            setMonitoringChats: (chats) => set({
+                monitoringChats: chats
+            }),
+
+            addMonitoringChat: (chats) => set((state) => ({
+                monitoringChats: state.monitoringChats.some(c => c.sessionId === chats.sessionId)
+                    ? state.monitoringChats
+                    : [...state.monitoringChats, chats]
+            })),
+
+            removeMonitoringChat: (sessionId) => set((state) => ({
+                monitoringChats: state.monitoringChats.filter(c => c.sessionId !== sessionId)
+            })),
             
             closeActiveChat: () => set((state) => ({
                 activeChat: state.activeChat ? {
@@ -100,10 +148,18 @@ export const useDashboardStore = create<DashboardState>()(
                     status: 'closed'
                 } : null
             })),
+
+            clearActiveChatView: () => set({
+                activeChat: null,
+                //activeBotConfig: null,
+            }),
+
             
             setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
 
             setLanguage: (language) => set({ language }),
+
+            setActiveBotConfig: (config) => set({ activeBotConfig: config }),
             
             resetDashboard: () => set({
                 requests: [],
@@ -119,6 +175,7 @@ export const useDashboardStore = create<DashboardState>()(
                 activeChat: state.activeChat,
                 notificationsEnabled: state.notificationsEnabled,
                 language: state.language,
+                activeBotConfig: state.activeBotConfig,
             })
         }
     )

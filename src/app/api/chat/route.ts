@@ -6,8 +6,11 @@ import { notificationService } from '@/lib/server/notificationService';
 import { Message } from '@/types/chatbot';
 import path from 'path';
 import { readFile } from 'fs/promises';
+import { supabaseAdmin } from '@/lib/supabase/server';
+import { emailService } from '@/lib/email/server';
 
-// --- AÑADIDO: Helper para crear respuestas con cabeceras CORS ---
+
+// --- Helper para crear respuestas con cabeceras CORS ---
 function createCorsResponse(body: any, status: number = 200) {
   const response = NextResponse.json(body, { status });
   response.headers.set('Access-Control-Allow-Origin', '*'); // Permite cualquier origen
@@ -63,6 +66,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const body = await req.json();
     const { workspaceId, message, sessionId, history, language } = body;
 
+    // --- LOG #2: ¿QUÉ HISTORIAL RECIBIÓ LA API? ---
+    console.log(`[/api/chat] Petición recibida. El historial tiene ${history.length} mensajes.`);
+
+
     if (!workspaceId) {
       return createCorsResponse({ error: 'Workspace ID is required.' }, 400);
     }
@@ -97,7 +104,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
 
       // La URL de nuestro propio servidor. Render se encarga de resolver esto internamente.
-      const internalApiUrl = `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`;
+      //const internalApiUrl = `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`;
+      const isDev = process.env.NODE_ENV !== 'production';
+      const internalApiUrl = isDev
+        ? 'http://localhost:3001/api/internal/notify-handoff'  // Express server en desarrollo
+        : `http://localhost:${process.env.PORT || 3001}/api/internal/notify-handoff`; // Mismo servidor en producción
+
+      console.log("INTERNALURL: ", internalApiUrl)
 
       fetch(internalApiUrl, {
         method: 'POST',
@@ -116,6 +129,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
 
 
+      // Enviamos la notificación por email (si está configurada) 
+      if (firstUserMessage) {
+        emailService.sendHandoffNotification(
+          workspaceId,
+          sessionId,
+          firstUserMessage.content
+        );
+      }
+
       // Load the appropriate translation file on the server.
       const translations = await getServerTranslations(language);
       console.log("Translation: ", translations)
@@ -126,6 +148,73 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         reply: handoffReply
       });
     } else if (typeof aiResponse === 'string') {
+      // Construimos los mensajes de respuesta
+      const userMessage: Message = {
+        id: `user-${Date.now()}`, // <-- ID como lo pediste
+        role: 'user',
+        content: message,
+        timestamp: new Date(),
+      };
+
+      const botMessage: Message = {
+        id: `assistant-${Date.now()}`, // ID similar para el bot
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date(),
+      };
+
+      const currentHistory = history || [];
+      const updatedHistory = [...currentHistory, userMessage, botMessage];
+
+       // --- LOG #3: ¿QUÉ HISTORIAL VAMOS A GUARDAR? ---
+      console.log(`[/api/chat] Haciendo Upsert. El historial ahora tiene ${updatedHistory.length} mensajes. Últimos 2:`, JSON.stringify(updatedHistory.slice(-2).map(m => ({ role: m.role, content: m.content.slice(0, 20) }))));
+
+      const { error: dbError } = await supabaseAdmin
+        .from('chat_sessions')
+        .upsert({
+          id: sessionId,
+          workspace_id: workspaceId,
+          status: 'bot',
+          history: updatedHistory,
+        }, {
+          onConflict: 'id'
+        });
+
+      if (dbError) {
+        console.error(`[DB Upsert Error] Fallo al guardar la sesión de bot ${sessionId}:`, dbError);
+      }
+
+      // Notificamos al servidor de agentes para que actualice los paneles de monitoreo en tiempo real.
+      const isDev = process.env.NODE_ENV !== 'production';
+      const internalApiUrl = isDev
+        ? 'http://localhost:3001/api/internal/bot-chat-update'
+        : `http://localhost:${process.env.PORT || 3001}/api/internal/bot-chat-update`;
+
+      // Preparamos los datos que el frontend de monitoreo necesita.
+      // Usamos el último mensaje del bot como 'initialMessage' porque es el más relevante para el preview.
+      const chatDataForMonitoring = {
+        sessionId: sessionId,
+        initialMessage: botMessage,
+      };
+
+      // --- LOG #4: ¿QUÉ ESTAMOS ENVIANDO AL MONITOR? ---
+      console.log(`[/api/chat] Notificando al monitor con el último mensaje:`, JSON.stringify({ role: chatDataForMonitoring.initialMessage.role, content: chatDataForMonitoring.initialMessage.content.slice(0, 20) }));
+
+      // Hacemos la llamada "fire-and-forget" para no retrasar la respuesta al usuario.
+      fetch(internalApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.INTERNAL_API_SECRET || ''
+        },
+        body: JSON.stringify({
+          workspaceId: workspaceId,
+          chatData: chatDataForMonitoring
+        })
+      }).catch(err => {
+        console.error('[API Route] Error llamando al notificador de monitoreo:', err);
+      });
+
       // This is a standard AI-generated response.
       return createCorsResponse({ reply: aiResponse })
     }
@@ -140,5 +229,4 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return createCorsResponse({ error: 'An internal server error occurred.' }, 500);
   }
 }
-
 

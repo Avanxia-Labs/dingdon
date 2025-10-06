@@ -25,7 +25,8 @@ export interface Message {
   content: string;
   role: Roles 
   timestamp: Date;
-  agentName?: string; // Optional, used for agent messages
+  agentName?: string; 
+  avatarUrl?: string;
 }
 
 /**
@@ -44,13 +45,13 @@ export interface ChatbotConfig {
 export interface ChatApiResponse {
   reply: string;
 }
-
+ 
 /**
  * Represents a chat session, which includes the messages exchanged and the session status.
  */
 export type ChatSessionStatus = 
   'bot'             // The bot is handling the session 
-| 'pending_agent'   // The session is waiting for an agent to take over
+| 'pending'   // The session is waiting for an agent to take over
 | 'in_progress'     // The session is currently being handled by an agent
 | 'closed';         // The session has been closed
 
@@ -77,3 +78,22 @@ export interface TeamMember {
   role: WorkspaceRole;
 }
 
+// Estructura de un workspace en la aplicación.
+export interface ChatRequest {
+    sessionId: string;
+    initialMessage: Message;
+    isTransfer?: boolean;
+}
+
+// Estado para el chat que se está viendo en detalle
+export interface ActiveChat {
+    sessionId: string;
+    messages: Message[];
+    status: ChatSessionStatus;
+}
+
+// Configuración del bot 
+export interface BotConfig {
+    name?: string;
+    avatarUrl?: string;
+}

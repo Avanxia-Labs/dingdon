@@ -5,23 +5,21 @@ import { ChatbotConfig, Message } from '@/types/chatbot';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// --- CONFIGURACIÓN DE LA IA ---
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-  console.warn("CRITICAL: GEMINI_API_KEY is not defined.");
+// Interfaz que incluye tanto la base de conocimiento como la config de IA
+interface WorkspaceFullConfig extends ChatbotConfig {
+  ai_model: string;
+  ai_api_key_name: string | null;
 }
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
-
 
 /**
  * Obtiene la configuración de conocimiento específica de un workspace desde Supabase.
  * @param {string} workspaceId - El ID del workspace.
  * @returns {Promise<ChatbotConfig | null>} La configuración o null si no se encuentra.
  */
-async function getWorkspaceConfig(workspaceId: string): Promise<ChatbotConfig | null> {
+async function getWorkspaceConfig(workspaceId: string): Promise<WorkspaceFullConfig | null> {
   const { data, error } = await supabaseAdmin
     .from('workspaces')
-    .select('knowledge_base')
+    .select('knowledge_base, ai_model, ai_api_key_name')
     .eq('id', workspaceId)
     .single();
 
@@ -30,7 +28,11 @@ async function getWorkspaceConfig(workspaceId: string): Promise<ChatbotConfig | 
     return null;
   }
   // La columna 'knowledge_base' es de tipo JSONB, por lo que es un objeto directamente.
-  return data.knowledge_base as ChatbotConfig;
+  return {
+    ...(data.knowledge_base as ChatbotConfig), // La base de conocimiento
+    ai_model: data.ai_model || 'gemini-2.0-flash', // Fallback al modelo por defecto
+    ai_api_key_name: data.ai_api_key_name, // El nombre de referencia de la clave
+  };
 }
 
 /**
@@ -60,9 +62,9 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
   const formattedQA = config.commonQuestions.map(qa => `Q: ${qa.question}\nA: ${qa.answer}`).join('\n\n');
 
   const conversationHistory = history.map(msg => {
-      if (msg.role === 'user') return `User: ${msg.content}`;
-      if (msg.role === 'assistant') return `Assistant: ${msg.content}`;
-      return ''; // Ignorar otros roles
+    if (msg.role === 'user') return `User: ${msg.content}`;
+    if (msg.role === 'assistant') return `Assistant: ${msg.content}`;
+    return ''; // Ignorar otros roles
   }).filter(Boolean).join(`\n`);
 
   console.log("HISTORY:", conversationHistory)
@@ -128,6 +130,10 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
 
     8. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
 
+    9. YOUR RESPONSE CAN'T BE MORE THAN 1500 CHARACTERS LONG
+
+    10. REMEMBER. DON'T SAY HOLA, HELLO, ETC (DEPENDING ON THE LANGUAGE) EVERY TIME YOU RESPOND, JUST AT THE BEGINING OF THE CONVERSATION OR IF THE USER SAYS HI, HELLO, ETC. ALSO DON'T REPEAT THE USER'S NAME EVERY TIME YOU ANSWER
+
     APPROPRIATE RESPONSE EXAMPLES:
       - User: "Hi" → "Hello! Welcome to ${config.companyName}. How can I help you today?"
       - User: "How much does it cost?" → Provide general price ranges if available, or explain factors that affect the cost.
@@ -141,6 +147,69 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
     ${selectedResponseInstruction};
   `;
 }
+
+
+// --- FUNCIONES ESPECÍFICAS PARA CADA PROVEEDOR DE IA ---
+async function generateGeminiResponse(prompt: string, apiKey: string, modelName: string): Promise<string> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName
+  })
+  const result = await model.generateContent(prompt)
+  return result.response.text().trim();
+}
+
+async function generateKimiResponse(prompt: string, apiKey: string, modelName: string): Promise<string> {
+  const response = await axios.post('https://api.moonshot.cn/v1/chat/completions', {
+    model: modelName,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+  return response.data.choices[0].message.content.trim();
+}
+
+// --- Funcion para resumir conversacion 
+// async function summarizeConversation(history: Message[], language: string, config: ChatbotConfig, aiConfig: { model: string, apiKey: string }): Promise<string> {
+
+//   const conversationText = history
+//     .map(msg => `${msg.role}: ${msg.content}`)
+//     .join('\n');
+
+//   const languageInstructions: Record<string, string> = {
+//     es: `Eres un asistente experto en resumir conversaciones de soporte. Tu tarea es generar un resumen conciso en Español.`,
+//     en: `You are an expert support conversation summarizer. Your task is to generate a concise summary in English.`,
+//     // ... (otros idiomas)
+//   };
+
+//   const prompt = `
+//         ${languageInstructions[language] || languageInstructions.es}
+        
+//         Resume the following conversation in 3-4 concise bullet points. Focus on the customer's main issue, the key information provided, and the last action taken or question asked.
+        
+//         CONVERSATION:
+//         ---
+//         ${conversationText}
+//         ---
+
+//         Summary (in ${language}):
+//     `;
+
+//   // Reutilizamos la lógica de llamada a la IA que ya tienes
+//   if (aiConfig.model.startsWith('gemini')) {
+//     return await generateGeminiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+//   } else if (aiConfig.model.startsWith('moonshot')) {
+//     return await generateKimiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+//   } else {
+//     // Fallback
+//     return await generateGeminiResponse(prompt, aiConfig.apiKey, 'gemini-1.5-flash');
+//   }
+// }
+
 
 /**
  * Genera una respuesta al prompt del usuario, usando la configuración dinámica del workspace.
@@ -183,26 +252,52 @@ async function generateChatbotResponse(workspaceId: string, userPrompt: string, 
     return localAnswer;
   }
 
-  // 3. Si no hay respuesta local, llamar a la IA con el contexto dinámico.
-  console.log(`[AI Fallback] Llamando a Gemini para workspace ${workspaceId}.`);
-  if (!GEMINI_API_KEY) {
-    return selectedErrorMessage;
-  }
-
+  // 3. Preparar el prompt
   const fullPrompt = generateAIContext(config, userPrompt, language, history);
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const textResponse = response.text();
+    // 4. Determinar qué clave API usar
+    let apiKey: string | undefined;
+    if (config.ai_api_key_name) {
+      apiKey = process.env[config.ai_api_key_name]
+    }
+
+    // Si no se encontró una clave específica (o no se configuró ninguna), usar la del sistema por defecto
+    if (!apiKey) {
+      apiKey = process.env.GEMINI_API_KEY_DEFAULT;
+    }
+
+    if (!apiKey) {
+      throw new Error(`API Key not found. Reference name: ${config.ai_api_key_name || 'default'}`);
+    }
+
+    const modelName = config.ai_model;
+
+    // --- 5. Enrutador de Modelos ---
+    let textResponse: string;
+
+    if (modelName.startsWith('gemini')) {
+      console.log(`[AI Backend] Routing to Gemini with model: ${modelName}`);
+      textResponse = await generateGeminiResponse(fullPrompt, apiKey, modelName);
+    } else if (modelName.startsWith('moonshot')) {
+      console.log(`[AI Backend] Routing to Kimi (Moonshot) with model: ${modelName}`);
+      textResponse = await generateKimiResponse(fullPrompt, apiKey, modelName);
+    } else {
+      // Fallback si el modelo no es reconocido
+      console.warn(`[AI Backend] Unknown model '${modelName}'. Falling back to default Gemini.`);
+      const defaultApiKey = process.env.GEMINI_API_KEY_DEFAULT;
+      if (!defaultApiKey) throw new Error("Default Gemini API Key is not configured.");
+      textResponse = await generateGeminiResponse(fullPrompt, defaultApiKey, 'gemini-2.0-flash');
+    }
 
     if (textResponse) {
       return textResponse.trim();
     }
-    throw new Error('Invalid response structure from Gemini API');
+
+    throw new Error('Invalid or empty response from AI API');
+
   } catch (error) {
-    console.error('Error llamando a la API de Gemini:', error);
+    console.error('Error in AI API call:', error);
     return selectedErrorMessage;
   }
 }
@@ -213,6 +308,3 @@ async function generateChatbotResponse(workspaceId: string, userPrompt: string, 
 export const chatbotServiceBackend = {
   generateChatbotResponse,
 };
-
-
-

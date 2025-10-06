@@ -26,9 +26,6 @@ body {
 }
 
 
-
-/* app/globals.css */
-
 /* Estas reglas solo las usaremos para el layout del widget */
 html.widget-layout,
 html.widget-layout body,
@@ -39,4 +36,165 @@ html.widget-layout #__next {
   width: 100%;
   background-color: transparent;
   overflow: hidden;
+}
+
+
+
+
+.phone-input-container .PhoneInputInput {
+    width: 100%;
+    padding: 0.5rem 0.75rem; 
+    border: 1px solid rgba(0, 0, 0, 0.1); 
+    border-radius: 0.5rem; 
+    font-size: small;
+}
+
+/* Responsive design for very small screens (320px and up) */
+@media (max-width: 320px) {
+  /* Sidebar adjustments */
+  .sidebar-panel {
+    padding: 0.25rem !important;
+  }
+  
+  /* Chat input adjustments */
+  .chat-input {
+    font-size: 14px !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Button adjustments */
+  .control-button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 11px !important;
+  }
+  
+  /* Modal adjustments */
+  .modal-container {
+    margin: 0.5rem !important;
+    padding: 0.75rem !important;
+  }
+  
+  /* Text size adjustments */
+  .text-responsive {
+    font-size: 11px !important;
+  }
+  
+  /* Message bubbles */
+  .message-bubble {
+    max-width: 95% !important;
+    font-size: 12px !important;
+    padding: 0.375rem 0.5rem !important;
+  }
+}
+
+/* Mobile menu slide animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.mobile-menu-enter {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.mobile-menu-exit {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+/* BLOQUEO TOTAL DEL WIDGET FLOTANTE EN DASHBOARD */
+/* Esto previene que el widget interfiera con la UI del dashboard */
+.dashboard-layout #chatbot-animated-container,
+.dashboard-layout #chatbot-head,
+.dashboard-layout #chatbot-body,
+.dashboard-layout #chatbot-left-arm,
+.dashboard-layout #chatbot-right-arm,
+.dashboard-layout #chatbot-left-hand,
+.dashboard-layout #chatbot-right-hand,
+.dashboard-layout #chatbot-left-leg,
+.dashboard-layout #chatbot-right-leg,
+.dashboard-layout #chatbot-left-foot,
+.dashboard-layout #chatbot-right-foot,
+.dashboard-layout #chatbot-iframe,
+.dashboard-layout #chatbot-toggle-button,
+/* También por si aparecen sin el contenedor padre */
+body:has(.dashboard-layout) #chatbot-animated-container,
+body:has(.dashboard-layout) #chatbot-head,
+body:has(.dashboard-layout) #chatbot-body,
+body:has(.dashboard-layout) #chatbot-left-arm,
+body:has(.dashboard-layout) #chatbot-right-arm,
+body:has(.dashboard-layout) #chatbot-left-hand,
+body:has(.dashboard-layout) #chatbot-right-hand,
+body:has(.dashboard-layout) #chatbot-left-leg,
+body:has(.dashboard-layout) #chatbot-right-leg,
+body:has(.dashboard-layout) #chatbot-left-foot,
+body:has(.dashboard-layout) #chatbot-right-foot,
+body:has(.dashboard-layout) #chatbot-iframe,
+body:has(.dashboard-layout) #chatbot-toggle-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    position: absolute !important;
+    left: -10000px !important;
+    top: -10000px !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    transform: scale(0) !important;
+}
+
+/* Bloquear cualquier elemento con z-index muy alto que pueda ser del widget */
+.dashboard-layout [style*="z-index: 2147483647"],
+body:has(.dashboard-layout) [style*="z-index: 2147483647"] {
+    display: none !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    opacity: 0 !important;
+    transform: scale(0) !important;
+}
+
+/* EXCEPCIÓN: Permitir el widget en páginas de prueba */
+.widget-test-page #chatbot-animated-container,
+.widget-test-page #chatbot-head,
+.widget-test-page #chatbot-body,
+.widget-test-page #chatbot-left-arm,
+.widget-test-page #chatbot-right-arm,
+.widget-test-page #chatbot-left-hand,
+.widget-test-page #chatbot-right-hand,
+.widget-test-page #chatbot-left-leg,
+.widget-test-page #chatbot-right-leg,
+.widget-test-page #chatbot-left-foot,
+.widget-test-page #chatbot-right-foot,
+.widget-test-page #chatbot-iframe,
+.widget-test-page #chatbot-toggle-button {
+    display: initial !important;
+    visibility: initial !important;
+    pointer-events: initial !important;
+    z-index: initial !important;
+    position: initial !important;
+    left: initial !important;
+    top: initial !important;
+    opacity: initial !important;
+    width: initial !important;
+    height: initial !important;
+    margin: initial !important;
+    padding: initial !important;
+    border: initial !important;
+    transform: initial !important;
 }

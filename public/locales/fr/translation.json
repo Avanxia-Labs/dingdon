@@ -1,0 +1,82 @@
+{
+  "common": {
+    "english": "Anglais",
+    "spanish": "Espagnol",
+    "loading": "Chargement...",
+    "save": "Sauvegarder",
+    "errorPrefix": "Erreur",
+    "successPrefix": "Succès",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "cancel": "Annuler",
+    "actions": "Actions",
+    "role": "Rôle",
+    "name": "Nom",
+    "email": "Email"
+  },
+  "login": {
+    "title": "Bot de Service Client",
+    "subtitle": "Accédez à votre panneau de contrôle",
+    "agentLogin": "Connexion Agent",
+    "googleButton": "Continuer avec Google",
+    "divider": "ou continuer avec email",
+    "emailLabel": "Adresse email",
+    "emailPlaceholder": "agent@entreprise.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "signInButton": "Se connecter au Tableau de Bord",
+    "signingInButton": "Connexion...",
+    "forgotPassword": "Mot de passe oublié?",
+    "invalidCredentialsError": "Email ou mot de passe invalide.",
+    "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+    "resetPasswordTitle": "Réinitialiser votre Mot de Passe",
+    "resetPasswordSubtitle": "Entrez l'adresse email associée à votre compte et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "resetPasswordError": "Impossible d'envoyer le lien. Vérifiez l'email et réessayez.",
+    "resetPasswordSuccess": "Lien envoyé! Veuillez vérifier votre email.",
+    "cancelButton": "Annuler",
+    "sendButton": "Envoyer le Lien",
+    "sendingButton": "Envoi..."
+  },
+  "dashboardLayout": {
+    "liveChats": "Chats en Direct",
+    "teamMembers": "Membres",
+    "chatHistory": "Historique des Chats",
+    "settingsAndBot": "Paramètres et Bot",
+    "signOut": "Se Déconnecter",
+    "leads": "Prospects",
+    "leadClassification": "Classification des Prospects"
+  },
+  "chatPanel": {
+    "notifications": {
+      "title": "Activer les Alertes",
+      "description": "Recevez des notifications sur le bureau et sonores.",
+      "button": "Activer"
+    },
+    "connection": {
+      "connected": "Connecté",
+      "reconnecting": "Reconnexion...",
+      "disconnected": "Déconnecté",
+      "reconnect": "Reconnecter"
+    },
+    "requestsTitle": "Demandes de Chat",
+    "noRequests": "Aucune demande en attente",
+    "myActiveChatsTitle": "Mes Chats Actifs",
+    "noActiveChats": "Aucun chat actif pour le moment. Prenez-en un dans les demandes ci-dessus!",
+    "activeChatTitle": "Chat Actif: {{id}}",
+    "closeChatButton": "Fermer le Chat",
+    "inputPlaceholder": "Tapez votre réponse...",
+    "inputPlaceholderDisconnected": "En attente de connexion...",
+    "selectChatPrompt": "Sélectionnez un chat pour commencer",
+    "chatClosed": "Le chat a été fermé",
+    "sessionLabel": "Session",
+    "messagesCount": "{{count}} messages",
+    "transferredLabel": "Transféré",
+    "transferredFrom": "De: {{agent}}",
+    "status": {
+      "in_progress": "en cours",
+      "pending": "en attente",
+      "completed": "terminé",
+      "closed": "fermé"
+    }
+  }
+}

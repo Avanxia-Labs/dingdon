@@ -1,6 +1,6 @@
 // stores/useChatStore.ts
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { ChatSessionStatus, Message } from '@/types/chatbot'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 interface ChatbotConfigState {
     botName: string;
     botColor: string;
+    botAvatarUrl: string;    
+    botIntroduction: string;
 }
 
 /**
@@ -29,6 +31,7 @@ interface ChatState {
     config: ChatbotConfigState;
     error: string | null;
     language: string;
+    leadCollected: boolean
 
     // ACTIONS
     /** Toggles the chat window's visibility */
@@ -57,7 +60,7 @@ interface ChatState {
     requestAgentHandoff: () => void;
 
     /**
-     * Sets the current session status, which can be 'bot', 'pending_agent', 'in_progress', or 'closed'
+     * Sets the current session status, which can be 'bot', 'pending', 'in_progress', or 'closed'
      * @param status - The new status of the chat session
      */
     setSessionStatus: (status: ChatSessionStatus) => void;
@@ -81,6 +84,8 @@ interface ChatState {
     setLanguage: (language: string) => void;
 
     initializeOrSyncWorkspace: (workspaceId: string) => void;
+
+    setLeadCollected: (collected: boolean) => void;
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -95,9 +100,25 @@ const initialMessages: Record<string, (botName: string) => Message> = {
 /**
  * The initial welcome message for the chatbot.
  */
+// const createInitialMessage = (botName: string, lang: string): Message => {
+//     const messageFn = initialMessages[lang] || initialMessages.es
+//     return messageFn(botName)
+// };
 const createInitialMessage = (botName: string, lang: string): Message => {
-    const messageFn = initialMessages[lang] || initialMessages.es
-    return messageFn(botName)
+    const messageFn = initialMessages[lang] || initialMessages.es;
+    const initialMsg = messageFn(botName);
+
+    // --- MENSAJE ADICIONAL ---
+    const leadPromptMessages: Record<string, string> = {
+        en: "\n\nPlease fill out the form below to get started.",
+        es: "\n\nPor favor, rellena el formulario de abajo para comenzar.",
+        ru: "\n\nПожалуйста, заполните форму ниже, чтобы начать.",
+        ar: "\n\nيرجى ملء النموذج أدناه للبدء.",
+        zh: "\n\n请填写下面的表格以开始。"
+    };
+
+    initialMsg.content += leadPromptMessages[lang] || leadPromptMessages.es;
+    return initialMsg;
 };
 
 /**
@@ -108,7 +129,9 @@ export const useChatStore = create<ChatState>()(
         (set, get) => {
             const initialConfig = {
                 botName: 'Asistente Virtual',
-                botColor: '#007bff'
+                botColor: '#007bff',
+                botAvatarUrl: '/default-bot-avatar.png',
+                botIntroduction: initialMessages.es('Asistente Virtual').content
             };
             const initialLanguage = 'es';
 
@@ -122,6 +145,7 @@ export const useChatStore = create<ChatState>()(
                 config: initialConfig,
                 error: null,
                 language: initialLanguage,
+                leadCollected: false,
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
@@ -142,7 +166,7 @@ export const useChatStore = create<ChatState>()(
                 requestAgentHandoff: () => {
                     const currentState = get();
                     if (currentState.status === 'bot') {
-                        set({ status: 'pending_agent' });
+                        set({ status: 'pending' });
                     }
                 },
 
@@ -186,7 +210,7 @@ export const useChatStore = create<ChatState>()(
                             error: null
                         });
                     }
-                    
+
                 },
 
                 setConfig: (newConfig) => set((state) => {
@@ -236,10 +260,13 @@ export const useChatStore = create<ChatState>()(
                     // Si los workspaceId coinciden, no hacemos nada. Significa que el usuario
                     // refrescó la página y la rehidratación desde localStorage es correcta.
                 },
+
+                setLeadCollected: (collected) => set({leadCollected: collected}),
             };
         },
         {
             name: 'chatbot-storage', // Nombre para localStorage
+
             partialize: (state) => ({
                 // Persistir todo excepto isOpen e isLoading
                 messages: state.messages,
@@ -248,7 +275,43 @@ export const useChatStore = create<ChatState>()(
                 workspaceId: state.workspaceId,
                 config: state.config,
                 language: state.language,
+                leadCollected: state.leadCollected,
+            }),
+
+            // Reseteo despues de 24h de inactividad
+            storage: createJSONStorage(() => localStorage, {
+                //Nombre para la clave de expiracion
+                reviver: (key, value: any) => {
+                    if (key === 'state' && value.sessionId) {
+                        const now = Date.now();
+                        const lastUpdated = value.lastUpdated || now;
+
+                        // 24 horas 
+                        const oneDay = 24 * 60 * 60 * 1000 // h * min * sec * milSec
+                        
+
+                        if (now - lastUpdated > oneDay) {
+                            // Si han pasado más de 24h, no cargamos la sesión vieja.
+                            // Devolvemos `undefined` para que Zustand use el estado inicial.
+                            console.warn("Chat session expired due to inactivity.");
+                            return undefined;
+                        }
+                    }
+                
+                    return value;
+                },
+
+                replacer: (key, value: any) => {
+                    // Añadir una marca de tiempo cada vez que se guarde el estado
+                    if (key === 'state') {
+                        return {...value, lastUpdated: Date.now()}
+                    }
+
+                    return value;
+                }
             })
+
+
         }
     )
 )

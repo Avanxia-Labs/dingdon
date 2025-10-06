@@ -44,7 +44,28 @@
     "teamMembers": "团队成员",
     "chatHistory": "对话历史",
     "settingsAndBot": "设置和机器人",
-    "signOut": "退出"
+    "profile": "我的个人资料",
+    "signOut": "退出",
+    "leads": "潜在客户",
+    "leadClassification": "潜在客户分类",
+    "reports": "报告"
+  },
+  "leads": {
+    "pageTitle": "收集的潜在客户",
+    "deleteAllButton": "删除所有潜在客户",
+    "tableHeaderName": "姓名",
+    "tableHeaderEmail": "邮箱",
+    "tableHeaderPhone": "电话",
+    "tableHeaderDate": "日期",
+    "deleteConfirm": "您确定要删除此潜在客户吗？",
+    "deleteAllConfirm": "这将永久删除所有 {{count}} 个潜在客户。此操作无法撤销。请输入 \"DELETE\" 确认。",
+    "deleteCancelled": "删除已取消。",
+    "noLeads": "尚未收集任何潜在客户。",
+    "feedback": {
+      "deletedSuccess": "潜在客户删除成功。",
+      "deletingAll": "正在删除所有潜在客户...",
+      "deletedAllSuccess": "所有潜在客户已删除。"
+    }
   },
   "superadmin": {
     "pageTitle": "管理客户工作空间",
@@ -67,7 +88,8 @@
       "updating": "更新中...",
       "updatedSuccess": "工作空间更新成功！"
     },
-    "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。"
+    "deleteConfirm": "您确定要删除工作空间 \"{{name}}\" 吗？此操作不可逆。",
+    "configsTitle": "Twilio 配置"
   },
   "agents": {
     "pageTitle": "团队成员",
@@ -100,7 +122,8 @@
     "feedback": {
       "deletingAll": "删除所有历史中...",
       "deletedAllSuccess": "所有对话历史已删除。"
-    }
+    },
+    "tableHeaderChannel": "渠道"
   },
   "chatPanel": {
     "notifications": {
@@ -121,7 +144,9 @@
     "inputPlaceholder": "请输入您的回复...",
     "inputPlaceholderDisconnected": "等待连接...",
     "selectChatPrompt": "选择对话开始",
-    "chatClosed": "对话已关闭"
+    "chatClosed": "对话已关闭",
+    "conversationSummary": "对话摘要",
+    "close": "关闭"
   },
   "chatbotUI": {
     "botLabel": "机器人",
@@ -136,7 +161,17 @@
     "inputPlaceholder": "询问我们的服务...",
     "inputPlaceholderAgent": "回复客服",
     "inputPlaceholderPending": "正在等待客服接入...",
-    "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。"
+    "handoffMessage": "好的，我正在为您寻找一位客服。请稍候。",
+    "leadFormTitle": "在我们开始之前...",
+    "leadFormSubtitle": "请提供您的联系方式，以便我们更好地为您提供帮助。",
+    "leadFormName": "全名",
+    "leadFormEmail": "电子邮件地址",
+    "leadFormPhone": "电话号码（可选）",
+    "leadFormButton": "开始聊天",
+    "leadFormLoading": "正在开始...",
+    "formError": "出现了问题。请重试。",
+    "technicalError": "抱歉，我遇到了一些技术问题。请稍后再试。",
+    "disclaimer": "我是一个人工智能，可能会犯错。请核实重要信息。"
   },
   "settings": {
     "pageTitle": "机器人设置",
@@ -147,7 +182,8 @@
       "uploading": "上传和处理文件中...",
       "uploadSuccess": "知识库更新成功！",
       "copied": "代码已复制到剪贴板！",
-      "selectFile": "请先选择文件。"
+      "selectFile": "请先选择文件。",
+      "avatarUpdated": "头像已更新！点击“保存设置”以使更改永久生效。"
     },
     "customization": {
       "title": "机器人自定义",
@@ -201,6 +237,93 @@
       "subtitle": "自动从网站内容训练您的机器人",
       "description": "输入您的网站 URL 以自动爬取和提取内容供您的聊天机器人知识库使用。",
       "crawlButton": "爬取并训练"
+    },
+    "botAvatar": {
+      "label": "机器人头像 URL",
+      "description": "提供机器人头像的直接图片 URL。留空以使用默认头像。",
+      "placeholder": "https://example.com/avatar.png",
+      "uploadingButton": "上传中...",
+      "changeButton": "更换图片"
+    },
+    "botIntro": {
+      "label": "机器人介绍",
+      "description": "显示在机器人名称下方的简短友好介绍。",
+      "placeholder": "您的人工智能虚拟助手。"
+    },
+    "notifications": {
+      "sectionTitle": "通知设置",
+      "emailLabel": "通知邮箱 (收件人)",
+      "emailDescription": "您希望接收潜在客户和客服请求通知的电子邮件地址。",
+      "fromEmailLabel": "发件邮箱 (发件人)",
+      "fromEmailDescription": "您 Resend 帐户中已验证的、将用于发送通知的电子邮件地址。",
+      "apiKeyLabel": "Resend API 密钥",
+      "apiKeyDescription": "您 Resend 帐户的秘密 API 密钥。它将被安全地存储。",
+      "apiKeyPlaceholder": "留空以保留当前密钥"
     }
+  },
+  "profile": {
+    "pageTitle": "我的个人资料",
+    "avatarLabel": "个人头像",
+    "changeButton": "更换",
+    "uploadingButton": "上传中...",
+    "savingButton": "保存中...",
+    "feedback": {
+      "avatarUpdated": "头像已更新！点击“保存”以应用更改。",
+      "saveSuccess": "个人资料已成功保存！"
+    }
+  },
+  "whatsapp": {
+    "welcome": "您好！欢迎。请问您的全名是？",
+    "welcomeBack": "欢迎回来，{{name}}！今天有什么可以帮您？",
+    "askEmail": "谢谢！现在，请告诉我您的电子邮件地址。",
+    "chatReady": "好的，谢谢！您现在可以开始聊天了。今天我能为您做些什么？"
+  },
+  "leadClassification": {
+    "pageTitle": "潜在客户分类",
+    "pageSubtitle": "根据对话模式自动分析和分类您的潜在客户",
+    "totalChats": "总聊天数",
+    "classifiedChats": "已分类聊天",
+    "hotLeads": "热门潜在客户",
+    "warmLeads": "温暖潜在客户",
+    "coldLeads": "冷淡潜在客户",
+    "classifyButton": "分类所有聊天",
+    "classifyingButton": "分类中...",
+    "configureKeywords": "配置关键词",
+    "hideKeywords": "隐藏关键词",
+    "saveConfiguration": "保存配置",
+    "keywordsConfigTitle": "关键词配置",
+    "newHotKeyword": "新的热门关键词...",
+    "newWarmKeyword": "新的温暖关键词...",
+    "newColdKeyword": "新的冷淡关键词...",
+    "resultsTitle": "分类结果",
+    "noResults": "还没有结果。运行分类以查看潜在客户分析。",
+    "tableHeaderChat": "聊天",
+    "tableHeaderScore": "分数",
+    "tableHeaderClassification": "分类",
+    "tableHeaderReasoning": "分析",
+    "tableHeaderDate": "日期",
+    "feedback": {
+      "classificationStarted": "分类已开始...",
+      "classificationComplete": "分类完成！已处理 {{count}} 个聊天。",
+      "classificationError": "分类过程中出错。请重试。",
+      "keywordsConfigSaved": "关键词配置保存成功",
+      "keywordAdded": "已添加关键词：\"{{keyword}}\""
+    }
+  },
+
+  "reports": {
+    "pageTitle": "每日报告",
+    "pageSubtitle": "查看您的机器人活动的每日摘要和关键指标。",
+    "summary": { "title": "执行摘要" },
+    "metrics": {
+      "newConversations": "新对话",
+      "totalMessages": "总消息数",
+      "avgResponseTime": "平均响应时间",
+      "handoffs": "转接客服次数",
+      "botResolution": "机器人解决率"
+    },
+    "topics": { "title": "主题与趋势" },
+    "actions": { "title": "可行性见解" },
+    "leads": { "title": "潜在客户分析" }
   }
 }

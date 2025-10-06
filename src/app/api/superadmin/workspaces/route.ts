@@ -13,9 +13,22 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    // const { data, error } = await supabaseAdmin
+    //     .from('workspaces')
+    //     .select('id, name, created_at, owner_id'); // Podríamos hacer un join para traer el nombre del owner
+
     const { data, error } = await supabaseAdmin
         .from('workspaces')
-        .select('id, name, created_at, owner_id'); // Podríamos hacer un join para traer el nombre del owner
+        .select(`
+            id,
+            name,
+            created_at,
+            owner_id,
+            ai_model,
+            ai_api_key_name,
+            twilio_config_id,
+            twilio_configs ( config_name )
+        `);
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });

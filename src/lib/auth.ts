@@ -115,6 +115,27 @@ export const authOptions: NextAuthOptions = {
             session.user.role = token.role;
             session.user.workspaceId = token.workspaceId;
             session.user.workspaceRole = token.workspaceRole;
+
+            // 2. Sincronizamos con la base de datos para obtener los datos más frescos.
+            // Esto asegura que si un usuario actualiza su perfil, la sesión lo refleje.
+            if (token.id) {
+                try {
+                    const { data: profile } = await supabaseAdmin
+                        .from('profiles')
+                        .select('name, avatar_url')
+                        .eq('id', token.id as string)
+                        .single();
+
+                    if (profile) {
+                        // Sobrescribimos el nombre y la imagen con los datos de la DB.
+                        session.user.name = profile.name;
+                        session.user.image = profile.avatar_url;
+                    }
+                } catch (error) {
+                    console.error("Error al sincronizar el perfil en la sesión:", error);
+                }
+            }
+            
             return session;
         },
     },

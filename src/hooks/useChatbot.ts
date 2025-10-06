@@ -7,7 +7,6 @@ import { useChatStore } from '@/stores/chatbotStore';
 import { Message, ChatSessionStatus } from '@/types/chatbot';
 import { chatbotServiceClient } from '@/services/client/chatbotServiceClient';
 import { io, Socket } from 'socket.io-client';
-import { v4 as uuidv4 } from 'uuid';
 
 
 /**
@@ -23,7 +22,28 @@ import { v4 as uuidv4 } from 'uuid';
  * functions to interact with it (toggleChat, sendMessage).
  */
 export const useChatbot = () => {
-  const { messages, addMessage, setIsLoading, toggleChat, status, sessionId, startSession, setSessionStatus, resetChat, workspaceId, setWorkspaceId, config, setConfig, error, setError, language, initializeOrSyncWorkspace } = useChatStore(
+  const {
+    messages,
+    addMessage,
+    setIsLoading,
+    toggleChat,
+    status,
+    sessionId,
+    startSession,
+    setSessionStatus,
+    resetChat,
+    workspaceId,
+    setWorkspaceId,
+    config,
+    setConfig,
+    error,
+    setError,
+    language,
+    initializeOrSyncWorkspace,
+    leadCollected,
+    setLeadCollected
+  } = useChatStore(
+
     // useShallow prevents re-renders if other parts of the state change
     useShallow((state) => ({
       messages: state.messages,
@@ -44,27 +64,16 @@ export const useChatbot = () => {
       error: state.error,
       setError: state.setError,
       language: state.language,
-      initializeOrSyncWorkspace: state.initializeOrSyncWorkspace
+      initializeOrSyncWorkspace: state.initializeOrSyncWorkspace,
+      leadCollected: state.leadCollected,
+      setLeadCollected: state.setLeadCollected
     }))
   );
 
   // Reference to the socket connection
   const socketRef = useRef<Socket | null>(null);
 
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined' && (window as any).chatbotConfig?.workspaceId) {
-  //     const id = (window as any).chatbotConfig.workspaceId;
-  //     if (id) {
-  //       setWorkspaceId(id);
-  //       setError(null); // Limpiar cualquier error anterior al encontrar un ID
-  //     } else {
-  //       // Si el ID está vacío, establecemos un error
-  //       setError("Configuration error: Workspace ID is missing.");
-  //     }
-  //   }
-  // }, [setWorkspaceId, setError]);
-
-  // --- EFECTO CLAVE: GESTOR DE CAMBIO DE WORKSPACE ---
+  // --- GESTOR DE CAMBIO DE WORKSPACE ---
   useEffect(() => {
     // 1. Obtiene el ID "real" del widget desde la configuración de la ventana.
     const newWorkspaceIdFromConfig = (window as any).chatbotConfig?.workspaceId;
@@ -174,19 +183,20 @@ export const useChatbot = () => {
             const newConfig = {
               botName: data.bot_name || 'Virtual Assistant',
               botColor: data.bot_color || '#007bff',
+              botAvatarUrl: data.bot_avatar_url,
+              botIntroduction: data.bot_introduction,
             };
             setConfig(newConfig);
 
-            // --- INICIO DEL CAMBIO ---
-            // Envía un mensaje a la ventana padre (la página anfitriona)
-            // con el nuevo color.
+
+            // Envía un mensaje a la ventana padre (la página anfitriona) con el nuevo color.
             if (window.parent) {
               window.parent.postMessage({
                 type: 'CHATBOT_COLOR_UPDATE', // Un identificador para nuestro mensaje
                 color: newConfig.botColor
               }, '*'); // '*' permite enviarlo a cualquier dominio anfitrión.
             }
-            // --- FIN DEL CAMBIO ---
+            
 
           }
         } catch (error) {
@@ -304,6 +314,10 @@ export const useChatbot = () => {
     // Solo llamamos a la IA si el estado es 'bot'
     if (status === 'bot') {
       const updatedHistory = [...messages, userMessage];
+
+      // --- LOG #1: ¿QUÉ HISTORIAL ESTAMOS ENVIANDO? ---
+      console.log(`[useChatbot] Enviando a /api/chat. El historial tiene ${updatedHistory.length} mensajes.`, JSON.stringify(updatedHistory.map(m => ({ role: m.role, content: m.content.slice(0, 20) }))));
+
       // --- CAMBIO: Pasamos el workspaceId a la mutación ---
       mutation.mutate({ workspaceId, message: content, sessionId, history: updatedHistory, language });
     }
@@ -332,7 +346,10 @@ export const useChatbot = () => {
     toggleChat,
     sendMessage,
     startNewChat,
-    error
+    error,
+    leadCollected,
+    setLeadCollected,
+    workspaceId
   };
 };
 
