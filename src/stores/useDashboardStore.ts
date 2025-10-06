@@ -39,6 +39,9 @@ interface DashboardState {
     // Chats de monitoreo
     monitoringChats: ChatRequest[];
     
+    // Estado del sidebar móvil
+    isMobileSidebarOpen: boolean;
+    
     // Acciones para las solicitudes
     addRequest: (request: ChatRequest) => void;
     removeRequest: (sessionId: string) => void;
@@ -65,6 +68,9 @@ interface DashboardState {
     // Acciones para la config del bot
     setActiveBotConfig: (config: BotConfig) => void;
     
+    // Acciones para el sidebar móvil
+    setMobileSidebarOpen: (isOpen: boolean) => void;
+    
     // Utilidades
     resetDashboard: () => void;
 }
@@ -78,6 +84,7 @@ export const useDashboardStore = create<DashboardState>()(
             notificationsEnabled: false,
             language: 'en',
             activeBotConfig: null,
+            isMobileSidebarOpen: false,
             
             addRequest: (request) => set((state) => ({
                 requests: state.requests.some(r => r.sessionId === request.sessionId) 
@@ -160,6 +167,8 @@ export const useDashboardStore = create<DashboardState>()(
             setLanguage: (language) => set({ language }),
 
             setActiveBotConfig: (config) => set({ activeBotConfig: config }),
+            
+            setMobileSidebarOpen: (isOpen) => set({ isMobileSidebarOpen: isOpen }),
             
             resetDashboard: () => set({
                 requests: [],

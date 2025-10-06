@@ -141,12 +141,13 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from 'react-i18next';
-import { I18nProvider } from '@/providers/I18nProvider';
 import { Loader2, User, Camera } from 'lucide-react';
+import { useTheme } from '@/providers/ThemeProvider';
 
 function ProfilePageContent() {
     const { t } = useTranslation();
     const { update: updateSession } = useSession();
+    const { theme } = useTheme();
     const [name, setName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -217,26 +218,37 @@ function ProfilePageContent() {
         }
     };
 
+    // Paleta de colores para modo claro y oscuro
+    const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
+    const cardBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const borderColor = theme === 'dark' ? 'border-[#2a3b47]' : 'border-[#EFF3F5]';
+    const textPrimary = theme === 'dark' ? 'text-[#EFF3F5]' : 'text-[#2A3B47]';
+    const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+    const inputBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const inputBorder = theme === 'dark' ? 'border-[#2a3b47]' : 'border-gray-300';
+    const buttonPrimary = theme === 'dark' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700';
+    const feedbackSuccess = theme === 'dark' ? 'bg-green-900/20 border-green-700 text-green-400' : 'bg-green-50 border-green-200 text-green-700';
+    const feedbackError = theme === 'dark' ? 'bg-red-900/20 border-red-700 text-red-400' : 'bg-red-50 border-red-200 text-red-700';
+    const avatarRing = theme === 'dark' ? 'ring-[#2a3b47]' : 'ring-gray-200';
+    const cameraBtnBg = theme === 'dark' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-500 hover:bg-blue-600';
+
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className={`h-full flex items-center justify-center ${mainBg}`}>
                 <div className="flex flex-col items-center space-y-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                    <Loader2 className={`h-8 w-8 animate-spin ${
+                        theme === 'dark' ? 'text-blue-400' : 'text-blue-500'
+                    }`} />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="h-full bg-gray-50 p-6">
+        <div className={`min-h-screen p-4 sm:p-6 ${mainBg}`}>
             {/* Header */}
-            <div className="text-center mb-8">
-                {/* <div className="flex justify-center items-center mb-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                        <User className="h-6 w-6 text-blue-500" />
-                    </div>
-                </div> */}
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="text-center mb-6 sm:mb-8">
+                <h1 className={`text-xl sm:text-2xl font-bold mb-2 ${textPrimary}`}>
                     {t('profile.pageTitle')}
                 </h1>
             </div>
@@ -245,18 +257,16 @@ function ProfilePageContent() {
             <div className="max-w-2xl mx-auto">
                 {/* Feedback Messages */}
                 {feedback && (
-                    <div className="mb-6">
-                        <div className={`p-4 rounded-lg border ${
-                            feedback.type === 'error' 
-                                ? 'bg-red-50 border-red-200 text-red-700' 
-                                : 'bg-green-50 border-green-200 text-green-700'
+                    <div className="mb-4 sm:mb-6">
+                        <div className={`p-3 sm:p-4 rounded-lg border ${
+                            feedback.type === 'error' ? feedbackError : feedbackSuccess
                         }`}>
                             <p className="text-sm font-medium">{feedback.message}</p>
                         </div>
                     </div>
                 )}
 
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className={`rounded-lg shadow-sm border ${cardBg} ${borderColor}`}>
                     {/* Header Section */}
                     {/* <div className="bg-blue-500 px-6 py-4 rounded-t-lg">
                         <h2 className="text-lg font-semibold text-white">
@@ -267,19 +277,21 @@ function ProfilePageContent() {
                         </p>
                     </div> */}
 
-                    <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
+                    <form onSubmit={handleSaveProfile} className="p-4 sm:p-6 space-y-6">
                         {/* Avatar Section */}
                         <div className="text-center">
-                            <label className="block text-sm font-semibold text-gray-700 mb-4">
+                            <label className={`block text-sm font-semibold mb-4 ${textPrimary}`}>
                                 {t('profile.avatarLabel')}
                             </label>
                             
                             <div className="relative inline-block">
                                 <div className="relative">
                                     <img 
-                                        src={avatarUrl || `https://ui-avatars.com/api/?name=${name.charAt(0) || 'P'}&background=e5e7eb&color=374151&size=120`} 
+                                        src={avatarUrl || `https://ui-avatars.com/api/?name=${name.charAt(0) || 'P'}&background=${theme === 'dark' ? '2a3b47' : 'e5e7eb'}&color=${theme === 'dark' ? 'EFF3F5' : '374151'}&size=120`} 
                                         alt="Avatar" 
-                                        className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md ring-2 ring-gray-200"
+                                        className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 shadow-md ring-2 ${
+                                            theme === 'dark' ? 'border-[#212E36]' : 'border-white'
+                                        } ${avatarRing}`}
                                     />
                                     {isUploading && (
                                         <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
@@ -290,7 +302,9 @@ function ProfilePageContent() {
                                 
                                 <label 
                                     htmlFor="avatar-upload" 
-                                    className="absolute bottom-1 right-1 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow-md transition-colors border-2 border-white"
+                                    className={`absolute bottom-0 right-0 sm:bottom-1 sm:right-1 text-white p-1.5 sm:p-2 rounded-full cursor-pointer shadow-md transition-colors border-2 ${
+                                        theme === 'dark' ? 'border-[#212E36]' : 'border-white'
+                                    } ${cameraBtnBg}`}
                                 >
                                     <Camera className="h-4 w-4" />
                                 </label>
@@ -310,7 +324,7 @@ function ProfilePageContent() {
                         <div>
                             <label 
                                 htmlFor="name" 
-                                className="block text-sm font-semibold text-gray-700 mb-2"
+                                className={`block text-sm font-semibold mb-2 ${textSecondary}`}
                             >
                                 {t('common.name')}
                             </label>
@@ -320,7 +334,7 @@ function ProfilePageContent() {
                                 value={name} 
                                 onChange={(e) => setName(e.target.value)} 
                                 required 
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className={`w-full px-3 sm:px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${inputBg} ${inputBorder} ${textPrimary}`}
                             />
                         </div>
 
@@ -339,17 +353,11 @@ function ProfilePageContent() {
 
 
                         {/* Action Buttons */}
-                        <div className="flex justify-end space-x-3">
-                            {/* <button 
-                                type="button"
-                                className="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                Cancel
-                            </button> */}
+                        <div className={`flex justify-end space-x-3 pt-4 border-t ${borderColor}`}>
                             <button 
                                 type="submit" 
                                 disabled={isSaving} 
-                                className="px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                                className={`px-4 sm:px-6 py-2 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 w-full sm:w-auto justify-center ${buttonPrimary}`}
                             >
                                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                                 <span>
@@ -365,9 +373,5 @@ function ProfilePageContent() {
 }
 
 export default function ProfilePage() {
-    return (
-        <I18nProvider>
-            <ProfilePageContent />
-        </I18nProvider>
-    );
+    return <ProfilePageContent />;
 }

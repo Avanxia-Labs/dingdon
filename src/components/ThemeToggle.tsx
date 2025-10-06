@@ -32,7 +32,7 @@ const ThemeToggle = () => {
         <Sun className="w-5 h-5 text-yellow-400" />
       ) : (
         // Icono de la luna para el tema claro
-        <Moon className="w-5 h-5 text-white" />
+        <Moon className="w-5 h-5 text-gray-400" />
       )}
     </button>
   )

@@ -155,7 +155,14 @@
       "pending": "pendiente",
       "completed": "completado",
       "closed": "cerrado"
-    }
+    },
+    "conversationSummary": "Resumen de la Conversación",
+    "close": "Cerrar",
+    "transferButton": "Transferir",
+    "pauseBotButton": "Pausar Bot",
+    "resumeBotButton": "Reanudar Bot",
+    "summarizeButton": "Resumir",
+    "viewRequests": "Ver Solicitudes"
   },
   "leadInfo": {
     "title": "Información del Lead",

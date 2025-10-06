@@ -155,7 +155,14 @@
       "pending": "pending",
       "completed": "completed",
       "closed": "closed"
-    }
+    },
+    "conversationSummary": "Conversation Summary",
+    "close": "Close",
+    "transferButton": "Transfer",
+    "pauseBotButton": "Pause Bot",
+    "resumeBotButton": "Resume Bot",
+    "summarizeButton": "Summarize",
+    "viewRequests": "View Requests"
   },
   "leadInfo": {
     "title": "Lead Information",
