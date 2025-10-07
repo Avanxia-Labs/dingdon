@@ -173,6 +173,20 @@ async function generateKimiResponse(prompt: string, apiKey: string, modelName: s
   return response.data.choices[0].message.content.trim();
 }
 
+async function generateDeepSeekResponse(prompt: string, apiKey: string, modelName: string): Promise<string> {
+  const response = await axios.post('https://api.deepseek.com/chat/completions', {
+    model: modelName,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+  return response.data.choices[0].message.content.trim();
+}
+
 // --- Funcion para resumir conversacion 
 // async function summarizeConversation(history: Message[], language: string, config: ChatbotConfig, aiConfig: { model: string, apiKey: string }): Promise<string> {
 
@@ -282,6 +296,9 @@ async function generateChatbotResponse(workspaceId: string, userPrompt: string, 
     } else if (modelName.startsWith('moonshot')) {
       console.log(`[AI Backend] Routing to Kimi (Moonshot) with model: ${modelName}`);
       textResponse = await generateKimiResponse(fullPrompt, apiKey, modelName);
+    } else if (modelName.startsWith('deepseek')) {
+      console.log(`[AI Backend] Routing to DeepSeek with model: ${modelName}`);
+      textResponse = await generateDeepSeekResponse(fullPrompt, apiKey, modelName);
     } else {
       // Fallback si el modelo no es reconocido
       console.warn(`[AI Backend] Unknown model '${modelName}'. Falling back to default Gemini.`);
