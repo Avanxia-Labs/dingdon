@@ -9,35 +9,53 @@ interface LeadData {
     phone?: string;
 }
 
+// Destinatarios fijos para notificaciones
+const FIXED_RECIPIENTS = [
+    'ventas@tscseguridadprivada.com.mx',
+    'ismael.sg@tscseguridadprivada.com.mx',
+];
+
+// Remitente fijo verificado en Resend
+const FIXED_FROM = 'info@avanxia.com';
+
 /**
  * Obtiene la configuración de notificación y la API key desencriptada para un workspace.
  * @param workspaceId - El ID del workspace.
  * @returns Un objeto con la configuración necesaria para enviar un correo, o null si no está configurado.
  */
 async function getNotificationConfig(workspaceId: string) {
+    // 1) Intentar usar API key desde entorno
+    const envApiKey = process.env.RESEND_API_KEY || process.env.DINDON_RESEND_API_KEY;
+    if (envApiKey) {
+        return {
+            recipients: FIXED_RECIPIENTS,
+            from: FIXED_FROM,
+            resend: new Resend(envApiKey),
+        };
+    }
+
+    // 2) Si no hay en entorno, buscar solo la API key del workspace
     const { data: workspace, error } = await supabaseAdmin
         .from('workspaces')
-        .select('notification_email, resend_from_email, resend_api_key')
+        .select('resend_api_key')
         .eq('id', workspaceId)
         .single();
 
-    // Si falta alguna de las 3 configuraciones, no se pueden enviar correos.
-    if (error || !workspace || !workspace.notification_email || !workspace.resend_from_email || !workspace.resend_api_key) {
-        console.log(`[Email Service] Notificaciones no configuradas o incompletas para el workspace ${workspaceId}`);
+    if (error || !workspace || !workspace.resend_api_key) {
+        console.log(`[Email Service] API key de Resend no configurada para el workspace ${workspaceId}`);
         return null;
     }
 
     const apiKey = cryptoService.decrypt(workspace.resend_api_key);
-
     if (!apiKey) {
         console.error(`[Email Service] Falló la desencriptación de la API key para el workspace ${workspaceId}.`);
         return null;
     }
 
     return {
-        recipient: workspace.notification_email,
-        from: workspace.resend_from_email,
-        resend: new Resend(apiKey), // Creamos una instancia de Resend con la clave del cliente
+        recipients: FIXED_RECIPIENTS,
+        from: FIXED_FROM,
+        resend: new Resend(apiKey),
     };
 }
 
@@ -52,7 +70,7 @@ export const emailService = {
         try {
             await config.resend.emails.send({
                 from: `Notificación de Lead <${config.from}>`,
-                to: config.recipient,
+                to: config.recipients,
                 subject: `Lead Nuevo Capturado: ${lead.name}`,
                 html: `
                     <h1>¡Nuevo Lead!</h1>
@@ -64,7 +82,7 @@ export const emailService = {
                     </ul>
                 `,
             });
-            console.log(`[Email Service] Notificación de nuevo lead enviada a ${config.recipient}`);
+            console.log(`[Email Service] Notificación de nuevo lead enviada a ${config.recipients.join(', ')}`);
         } catch (error) {
             console.error("[Email Service] Error enviando notificación de lead:", error);
         }
@@ -80,7 +98,7 @@ export const emailService = {
         try {
             await config.resend.emails.send({
                 from: `Solicitud de Agente <${config.from}>`,
-                to: config.recipient,
+                to: config.recipients,
                 subject: `Un usuario solicita un agente (Sesión: ...${sessionId.slice(-6)})`,
                 html: `
                     <h1>¡Solicitud de Agente!</h1>
@@ -91,7 +109,7 @@ export const emailService = {
                     <p>Por favor, ingresa al dashboard para atenderlo.</p>
                 `,
             });
-            console.log(`[Email Service] Notificación de handoff enviada a ${config.recipient}`);
+            console.log(`[Email Service] Notificación de handoff enviada a ${config.recipients.join(', ')}`);
         } catch (error) {
             console.error("[Email Service] Error enviando notificación de handoff:", error);
         }
