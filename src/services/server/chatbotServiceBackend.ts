@@ -231,17 +231,23 @@ async function generateDeepSeekResponse(prompt: string, apiKey: string, modelNam
 async function generateChatbotResponse(workspaceId: string, userPrompt: string, sessionId: string, language: string, history: Message[] = []): Promise<string | { handoff: true }> {
   console.log(`[Backend] Generating response for workspace: ${workspaceId} in language: ${language}`);
 
-  // --- Detección de Handoff ---
+  // --- Detección de Handoff (robusta e independiente del idioma) ---
   const normalizedQuery = userPrompt.toLowerCase();
   const handOffKeywords: Record<string, string[]> = {
     en: ['agent', 'human', 'speak to', 'talk to', 'representative'],
-    es: ['agente', 'persona', 'humano', 'hablar con', 'representante'],
+    es: ['agente', 'persona', 'humano', 'hablar con', 'representante', 'asesor'],
     ru: ['агент', 'человек', 'поговорить с', 'оператор'],
     ar: ['وكيل', 'شخص', 'أتحدث مع', 'إنسان', 'ممثل خدمة'],
     zh: ['人工', '客服', '真人', '谈谈', '接线员'],
   };
-  const keywordsForLang = handOffKeywords[language] || handOffKeywords.en;
-  if (keywordsForLang.some(keyword => normalizedQuery.includes(keyword))) {
+  // Unimos al menos inglés y español para tolerar desajustes de "language"
+  const universalKeywords = Array.from(new Set([
+    ...handOffKeywords.es,
+    ...handOffKeywords.en,
+  ]));
+  const matchedKeyword = universalKeywords.find(keyword => normalizedQuery.includes(keyword));
+  if (matchedKeyword) {
+    console.log(`[Handoff Detection] Triggered by keyword: ${matchedKeyword}`);
     return { handoff: true };
   }
 

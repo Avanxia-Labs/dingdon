@@ -8,6 +8,7 @@ const next = require('next')
 const io = require('./server-lib/socketInstance.js');
 const { sendWhatsAppMessage } = require('./src/lib/twilio.js');
 const { summarizeConversation } = require('./src/services/server/summaryService.js');
+const { Resend } = require('resend');
 
 // Cargar variables de entorno
 require('dotenv').config();
@@ -128,6 +129,38 @@ nextApp.prepare().then(() => {
         // --- CORRECCIÓN CLAVE ---
         // Usamos 'sessionId' directamente, no 'requestData.sessionId'
         console.log(`[Handoff Notifier] Notificación enviada para workspace: ${workspaceId}, sesión: ${sessionId}`);
+
+        // --- Envío de correo desde el notificador interno (Resend) ---
+        try {
+            const apiKey = process.env.RESEND_API_KEY || process.env.DINDON_RESEND_API_KEY;
+            console.log(`[Handoff Email] RESEND_API_KEY presente: ${Boolean(apiKey)}`);
+            if (!apiKey) {
+                console.warn('[Handoff Email] RESEND_API_KEY no está configurada en el entorno.');
+            } else {
+                const resend = new Resend(apiKey);
+                const recipients = [
+                    'ventas@tscseguridadprivada.com.mx',
+                    'ismael.sg@tscseguridadprivada.com.mx',
+                ];
+                const from = 'info@avanxia.com';
+                await resend.emails.send({
+                    from: `Solicitud de Agente <${from}>`,
+                    to: recipients,
+                    subject: `Un usuario solicita un agente (Sesión: ...${String(sessionId).slice(-6)})`,
+                    html: `
+                        <h1>¡Solicitud de Agente!</h1>
+                        <p>Un usuario ha solicitado hablar con un agente.</p>
+                        <p><strong>Sesión ID:</strong> ${sessionId}</p>
+                        <p><strong>Primer Mensaje:</strong></p>
+                        <blockquote style="border-left: 4px solid #ccc; padding-left: 1em; margin: 1em 0;">${initialMessage?.content || initialMessage}</blockquote>
+                        <p>Por favor, ingresa al dashboard para atenderlo.</p>
+                    `,
+                });
+                console.log(`[Handoff Email] Correo enviado a ${recipients.join(', ')}`);
+            }
+        } catch (emailErr) {
+            console.error('[Handoff Email] Error enviando correo:', emailErr);
+        }
 
         res.status(200).send('Notification sent');
     });
