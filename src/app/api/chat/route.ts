@@ -128,15 +128,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         console.error('[API Route] Error llamando al notificador interno de handoff:', err);
       });
 
-
-      // Enviamos la notificación por email (si está configurada) 
-      if (firstUserMessage) {
-        emailService.sendHandoffNotification(
-          workspaceId,
-          sessionId,
-          firstUserMessage.content
-        );
-      }
+      // Nota: El correo se envía desde el servidor interno (server.js) 
+      // para evitar duplicados. No enviamos desde aquí.
 
       // Load the appropriate translation file on the server.
       const translations = await getServerTranslations(language);

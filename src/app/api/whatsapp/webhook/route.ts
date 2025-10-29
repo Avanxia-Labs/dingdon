@@ -291,14 +291,8 @@ export async function POST(req: NextRequest) {
                             console.error('[API Route] Error llamando al notificador interno de handoff:', err);
                         });
                         
-                        // Enviamos la notificación por email (si está configurada)
-                        if (firstUserMessage) {
-                            emailService.sendHandoffNotification(
-                                workspaceId,
-                                session.id,
-                                firstUserMessage.content
-                            );
-                        }
+                        // Nota: El correo se envía desde el servidor interno (server.js) 
+                        // para evitar duplicados. No enviamos desde aquí.
 
                         // Informar al usuario que se le contactará con un agente
                     } else if (typeof aiResponse === 'string') {
