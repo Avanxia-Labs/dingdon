@@ -143,6 +143,37 @@ nextApp.prepare().then(() => {
                     'ismael.sg@tscseguridadprivada.com.mx',
                 ];
                 const from = 'info@avanxia.com';
+                // Intentamos obtener el lead más reciente del workspace para incluir datos de contacto
+                let leadSectionHtml = '';
+                try {
+                    const { data: latestLeads, error: leadQueryError } = await supabase
+                        .from('leads')
+                        .select('name,email,phone,created_at')
+                        .eq('workspace_id', workspaceId)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (leadQueryError) {
+                        console.warn('[Handoff Email] Error consultando lead más reciente:', leadQueryError.message);
+                    }
+
+                    const lead = latestLeads && latestLeads.length > 0 ? latestLeads[0] : null;
+                    if (lead) {
+                        const safeName = lead.name || 'No proporcionado';
+                        const safeEmail = lead.email || 'No proporcionado';
+                        const safePhone = lead.phone || 'No proporcionado';
+                        leadSectionHtml = `
+                            <h3>Datos del Contacto</h3>
+                            <ul>
+                                <li><strong>Nombre:</strong> ${safeName}</li>
+                                <li><strong>Email:</strong> ${safeEmail}</li>
+                                <li><strong>Teléfono:</strong> ${safePhone}</li>
+                            </ul>
+                        `;
+                    }
+                } catch (leadErr) {
+                    console.warn('[Handoff Email] Error obteniendo datos de lead:', leadErr);
+                }
                 await resend.emails.send({
                     from: `Solicitud de Agente <${from}>`,
                     to: recipients,
@@ -153,6 +184,7 @@ nextApp.prepare().then(() => {
                         <p><strong>Sesión ID:</strong> ${sessionId}</p>
                         <p><strong>Primer Mensaje:</strong></p>
                         <blockquote style="border-left: 4px solid #ccc; padding-left: 1em; margin: 1em 0;">${initialMessage?.content || initialMessage}</blockquote>
+                        ${leadSectionHtml}
                         <p>Por favor, ingresa al dashboard para atenderlo.</p>
                     `,
                 });
