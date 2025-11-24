@@ -21,15 +21,18 @@ export interface BotConfig {
 }
 
 interface DashboardState {
-    // Estado de las solicitudes pendientes
+    // Estado de las solicitudes pendientes (no asignadas)
     requests: ChatRequest[];
-    
+
+    // Estado de los chats asignados al agente
+    assignedChats: ChatRequest[];
+
     // Estado del chat activo
     activeChat: ActiveChat | null;
 
     // Estado del bot para el ChatPanel
     activeBotConfig: BotConfig | null;
-    
+
     // Estado de notificaciones
     notificationsEnabled: boolean;
 
@@ -38,12 +41,16 @@ interface DashboardState {
 
     // Chats de monitoreo
     monitoringChats: ChatRequest[];
-    
+
     // Acciones para las solicitudes
     addRequest: (request: ChatRequest) => void;
     removeRequest: (sessionId: string) => void;
     clearAllRequests: () => void;
-    
+
+    // Acciones para los chats asignados
+    addAssignedChat: (request: ChatRequest) => void;
+    removeAssignedChat: (sessionId: string) => void;
+
     // Acciones para el chat activo
     setActiveChat: (sessionId: string, initialMessages?: Message[]) => void;
     updateActiveChatStatus: (status: ChatSessionStatus) => void;
@@ -73,34 +80,51 @@ export const useDashboardStore = create<DashboardState>()(
     persist(
         (set, get) => ({
             requests: [],
+            assignedChats: [],
             activeChat: null,
             monitoringChats: [],
             notificationsEnabled: false,
             language: 'en',
             activeBotConfig: null,
-            
+
             addRequest: (request) => set((state) => ({
-                requests: state.requests.some(r => r.sessionId === request.sessionId) 
-                    ? state.requests 
+                requests: state.requests.some(r => r.sessionId === request.sessionId)
+                    ? state.requests
                     : [...state.requests, request]
             })),
-            
+
             removeRequest: (sessionId) => set((state) => ({
                 requests: state.requests.filter(r => r.sessionId !== sessionId)
             })),
-            
+
             clearAllRequests: () => set({ requests: [] }),
-            
+
+            addAssignedChat: (request) => set((state) => ({
+                assignedChats: state.assignedChats.some(r => r.sessionId === request.sessionId)
+                    ? state.assignedChats
+                    : [...state.assignedChats, request]
+            })),
+
+            removeAssignedChat: (sessionId) => set((state) => ({
+                assignedChats: state.assignedChats.filter(r => r.sessionId !== sessionId)
+            })),
+
             setActiveChat: (sessionId, initialMessages = []) => {
-                // Remover la solicitud de la lista cuando se acepta
-                set((state) => ({
+                // Mover el chat de requests a assignedChats cuando se acepta
+                const state = get();
+                const chatRequest = state.requests.find(r => r.sessionId === sessionId);
+
+                set({
                     requests: state.requests.filter(r => r.sessionId !== sessionId),
+                    assignedChats: chatRequest && !state.assignedChats.some(r => r.sessionId === sessionId)
+                        ? [...state.assignedChats, chatRequest]
+                        : state.assignedChats,
                     activeChat: {
                         sessionId,
                         messages: initialMessages,
                         status: 'in_progress'
                     }
-                }));
+                });
             },
 
             updateActiveChatStatus: (status) => set((state) => {
@@ -163,6 +187,7 @@ export const useDashboardStore = create<DashboardState>()(
             
             resetDashboard: () => set({
                 requests: [],
+                assignedChats: [],
                 activeChat: null,
                 notificationsEnabled: false
             })
@@ -172,6 +197,7 @@ export const useDashboardStore = create<DashboardState>()(
             partialize: (state) => ({
                 // Solo persistir lo que realmente necesitamos
                 requests: state.requests,
+                assignedChats: state.assignedChats,
                 activeChat: state.activeChat,
                 notificationsEnabled: state.notificationsEnabled,
                 language: state.language,

@@ -36,6 +36,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
     const {
         requests,
+        assignedChats,
         activeChat,
         setActiveChat,
         addMessageToActiveChat,
@@ -44,7 +45,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         setActiveBotConfig,
         clearActiveChatView,
         updateActiveChatStatus,
-        addRequest
+        addRequest,
+        removeAssignedChat
     } = useDashboardStore();
 
     const [input, setInput] = useState("");
@@ -201,13 +203,24 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         };
     }, [socket, activeChat?.sessionId, updateActiveChatStatus]);
 
-    const handleSelectChat = (request: ChatRequest) => {
+    const handleSelectChat = (request: ChatRequest, isAlreadyAssigned: boolean = false) => {
         if (socket && workspaceId && session?.user?.id && isConnected) {
-            socket.emit("agent_joined", {
-                workspaceId,
-                sessionId: request.sessionId,
-                agentId: session.user.id,
-            });
+            // Si el chat ya está asignado, solo cambiamos la vista activa
+            if (isAlreadyAssigned) {
+                // Solo emitir agent_joined para unirse a la sala del socket
+                socket.emit("agent_joined", {
+                    workspaceId,
+                    sessionId: request.sessionId,
+                    agentId: session.user.id,
+                });
+            } else {
+                // Es un chat nuevo de la lista de requests
+                socket.emit("agent_joined", {
+                    workspaceId,
+                    sessionId: request.sessionId,
+                    agentId: session.user.id,
+                });
+            }
         }
     };
 
@@ -241,6 +254,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         if (!activeChat?.sessionId || !socket || !workspaceId || !isConnected)
             return;
         socket.emit("close_chat", { workspaceId, sessionId: activeChat.sessionId });
+        // Remover el chat de la lista de asignados
+        removeAssignedChat(activeChat.sessionId);
         closeActiveChat();
     };
 
@@ -375,32 +390,70 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                 <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>
                     {t("chatPanel.requestsTitle")}
                 </h2>
-                <div className="space-y-2 flex-1 overflow-y-auto">
-                    {requests.map((req) => (
+                <div className="space-y-4 flex-1 overflow-y-auto">
+                    {/* Chats asignados al agente */}
+                    {assignedChats.length > 0 && (
+                        <div>
+                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>My Chats</h3>
+                            <div className="space-y-2">
+                                {assignedChats.map((req) => (
+                                    <div
+                                        key={req.sessionId}
+                                        onClick={() => handleSelectChat(req, true)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors
 
-                        <div
-                            key={req.sessionId}
-                            onClick={() => handleSelectChat(req)}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors
+                                            ${req.isTransfer ? 'border-2 border-orange-400' : ''}
 
-                                ${req.isTransfer ? 'border-2 border-orange-400' : ''}
-
-                                ${activeChat?.sessionId === req.sessionId
-                                    ? `${activeChatBg} text-white`
-                                    : isConnected
-                                        ? `${cardBg} ${cardHoverBg} ${textPrimary}`
-                                        : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
-                                }`}
-                        >
-                            <p className="font-semibold">
-                                Session: {req.sessionId.slice(-6)}
-                            </p>
-                            {/* Mostramos si es una transferencia */}
-                            {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
-                            <p className="text-sm truncate">{req.initialMessage.content}</p>
+                                            ${activeChat?.sessionId === req.sessionId
+                                                ? `${activeChatBg} text-white`
+                                                : isConnected
+                                                    ? `${cardBg} ${cardHoverBg} ${textPrimary}`
+                                                    : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
+                                            }`}
+                                    >
+                                        <p className="font-semibold">
+                                            Session: {req.sessionId.slice(-6)}
+                                        </p>
+                                        {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
+                                        <p className="text-sm truncate">{req.initialMessage.content}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
-                    {requests.length === 0 && (
+                    )}
+
+                    {/* Solicitudes pendientes */}
+                    {requests.length > 0 && (
+                        <div>
+                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>Pending Requests</h3>
+                            <div className="space-y-2">
+                                {requests.map((req) => (
+                                    <div
+                                        key={req.sessionId}
+                                        onClick={() => handleSelectChat(req, false)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors
+
+                                            ${req.isTransfer ? 'border-2 border-orange-400' : ''}
+
+                                            ${activeChat?.sessionId === req.sessionId
+                                                ? `${activeChatBg} text-white`
+                                                : isConnected
+                                                    ? `${cardBg} ${cardHoverBg} ${textPrimary}`
+                                                    : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
+                                            }`}
+                                    >
+                                        <p className="font-semibold">
+                                            Session: {req.sessionId.slice(-6)}
+                                        </p>
+                                        {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
+                                        <p className="text-sm truncate">{req.initialMessage.content}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {requests.length === 0 && assignedChats.length === 0 && (
                         <p className={`text-sm mt-2 ${textSecondary}`}>
                             {t("chatPanel.noRequests")}
                         </p>

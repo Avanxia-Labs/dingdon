@@ -175,7 +175,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
     const { data: session } = useSession();
     const pathname = usePathname();
-    const { language, setLanguage, requests } = useDashboardStore();
+    const { language, setLanguage, requests, assignedChats } = useDashboardStore();
     useSyncLanguage(language);
 
     const [workspaceName, setWorkspaceName] = useState('Loading...');
@@ -194,8 +194,8 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         return () => observer.disconnect();
     }, []);
 
-    // Estado para controlar si hay requests pendientes
-    const hasRequestsPending = requests.length > 0;
+    // Estado para controlar si hay requests pendientes o chats asignados
+    const hasRequestsPending = requests.length > 0 || assignedChats.length > 0;
 
     useEffect(() => {
         if (session?.user?.workspaceId) {
