@@ -27,16 +27,24 @@ async function generateKimiResponse(prompt, apiKey, modelName) {
 // --- La Función Principal del Servicio ---
 
 async function summarizeConversation(history, language, aiConfig) {
+    console.log('[SummaryService] Iniciando generación de resumen...');
+    console.log('[SummaryService] Idioma:', language);
+    console.log('[SummaryService] Modelo:', aiConfig?.model);
+
     if (!history || history.length === 0) {
+        console.log('[SummaryService] No hay historial para resumir');
         return "No hay conversación para resumir.";
     }
     if (!aiConfig || !aiConfig.model || !aiConfig.apiKey) {
+        console.error('[SummaryService] Configuración de IA faltante');
         throw new Error("AI configuration is missing for summarization.");
     }
 
     const conversationText = history
         .map(msg => `${msg.role}: ${msg.content}`)
         .join('\n');
+
+    console.log('[SummaryService] Longitud del texto de conversación:', conversationText.length);
 
     const languageInstructions = {
         en: `You are an expert support conversation summarizer. Your task is to generate a concise summary in English.`,
@@ -48,11 +56,11 @@ async function summarizeConversation(history, language, aiConfig) {
 
     const prompt = `
         ${languageInstructions[language] || languageInstructions.es}
-        
+
         Resume the following conversation in 5-6 concise bullet points. Focus on the customer's main issue, the key information provided, and the last action taken or question asked.
 
         Finally, give some ideas to the agent about what to do next.
-        
+
         CONVERSATION:
         ---
         ${conversationText}
@@ -63,15 +71,27 @@ async function summarizeConversation(history, language, aiConfig) {
         Please, use proper styling for keywords, like bolding important terms, etc...also use saltos de lineas, etc (Keep in mind this is going to be shown in a chat interface).
     `;
 
-    // Enrutador de modelos
-    if (aiConfig.model.startsWith('gemini')) {
-        return await generateGeminiResponse(prompt, aiConfig.apiKey, aiConfig.model);
-    } else if (aiConfig.model.startsWith('moonshot')) {
-        return await generateKimiResponse(prompt, aiConfig.apiKey, aiConfig.model);
-    } else {
-        // Fallback
-        console.warn(`Unknown model for summary: ${aiConfig.model}. Falling back to Gemini.`);
-        return await generateGeminiResponse(prompt, aiConfig.apiKey, 'gemini-1.5-flash');
+    try {
+        // Enrutador de modelos
+        console.log('[SummaryService] Llamando a la API de IA...');
+        let result;
+
+        if (aiConfig.model.startsWith('gemini')) {
+            result = await generateGeminiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+        } else if (aiConfig.model.startsWith('moonshot')) {
+            result = await generateKimiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+        } else {
+            // Fallback
+            console.warn(`[SummaryService] Modelo desconocido: ${aiConfig.model}. Usando Gemini como fallback.`);
+            result = await generateGeminiResponse(prompt, aiConfig.apiKey, 'gemini-1.5-flash');
+        }
+
+        console.log('[SummaryService] Resumen generado exitosamente');
+        return result;
+
+    } catch (error) {
+        console.error('[SummaryService] Error al generar resumen:', error);
+        throw new Error(`Failed to generate summary: ${error.message}`);
     }
 }
 

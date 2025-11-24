@@ -154,7 +154,9 @@
       "pending": "pendiente",
       "completed": "completado",
       "closed": "cerrado"
-    }
+    },
+    "conversationSummary": "Resumen de la Conversación",
+    "close": "Cerrar"
   },
   "leadInfo": {
     "title": "Información del Lead",

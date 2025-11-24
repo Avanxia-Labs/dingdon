@@ -90,9 +90,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                 setIsSummarizing(false);
             }
         };
+        const handleCommandError = ({ message }: { message: string }) => {
+            console.error('[ChatPanel] Error recibido del servidor:', message);
+            if (isSummarizing) {
+                setSummaryText(`Error: ${message || 'No se pudo generar el resumen.'}`);
+                setIsSummarizing(false);
+            }
+        };
         socket.on('summary_received', handleSummaryReceived);
-        return () => { socket.off('summary_received', handleSummaryReceived); };
-    }, [socket, activeChat?.sessionId]);
+        socket.on('command_error', handleCommandError);
+        return () => {
+            socket.off('summary_received', handleSummaryReceived);
+            socket.off('command_error', handleCommandError);
+        };
+    }, [socket, activeChat?.sessionId, isSummarizing]);
 
 
     useEffect(() => {
@@ -264,6 +275,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             setIsSummarizing(true);
             setIsSummaryModalOpen(true);
             socket.emit('get_summary', { workspaceId, sessionId: activeChat.sessionId, language: language });
+
+            // Timeout de seguridad: Si no recibe respuesta en 60 segundos, mostrar error
+            setTimeout(() => {
+                if (isSummarizing) {
+                    console.warn('[ChatPanel] Timeout al esperar el resumen');
+                    setSummaryText('Error: La generación del resumen está tardando más de lo esperado. Por favor, intenta de nuevo.');
+                    setIsSummarizing(false);
+                }
+            }, 60000); // 60 segundos
         }
     };
 

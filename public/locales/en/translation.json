@@ -154,7 +154,9 @@
       "pending": "pending",
       "completed": "completed",
       "closed": "closed"
-    }
+    },
+    "conversationSummary": "Conversation Summary",
+    "close": "Close"
   },
   "leadInfo": {
     "title": "Lead Information",
