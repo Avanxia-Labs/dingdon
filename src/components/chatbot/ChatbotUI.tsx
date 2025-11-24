@@ -153,8 +153,8 @@ const ChatInterface = () => {
             {error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
                     <svg className="w-12 h-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <h4 className="font-semibold text-gray-800">{t('chatbotUI.errorMessage')}</h4>
-                    <p className="text-sm text-gray-500 mt-1">{error}</p>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">{t('chatbotUI.errorMessage')}</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{error}</p>
                 </div>
             ) : (
                 <>
@@ -163,7 +163,7 @@ const ChatInterface = () => {
                             <div key={message.id} className={`flex items-end gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 {/* --- AÑADIR AVATAR A LOS MENSAJES DEL BOT --- */}
                                 {(message.role === 'assistant' || message.role === 'agent') && (
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 self-start border-2 border-black/10 overflow-hidden">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 self-start border-2 border-black/10 dark:border-gray-600 overflow-hidden">
                                         {/* Determinar qué avatar mostrar */}
                                         {(() => {
                                             const avatarUrl = message.role === 'assistant'
@@ -197,9 +197,9 @@ const ChatInterface = () => {
 
 
                                 <div
-                                    className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 text-gray-800' :
+                                    className={`max-w-[80%] px-4 py-2 rounded-xl ${message.role === 'assistant' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100' :
                                         message.role === 'user' ? 'text-white' :
-                                            'bg-slate-200 text-slate-600 border border-slate-300'
+                                            'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
                                         }`}
                                     style={message.role === 'user' ? { backgroundColor: config.botColor } : {}}
                                 >
@@ -208,12 +208,12 @@ const ChatInterface = () => {
                                             {message.role === 'assistant' ? (
                                                 <div className="flex flex-row items-center gap-1">
                                                     {/* <Bot size={16} className='text-gray-500 flex-shrink-0' /> */}
-                                                    <span className="text-xs font-semibold text-gray-600">{t('chatbotUI.botLabel')}</span>
+                                                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">{t('chatbotUI.botLabel')}</span>
                                                 </div>
                                             ) : message.role === 'agent' ? (
                                                 <div className="flex flex-row items-center gap-1">
                                                     {/* <User size={16} className='text-slate-500 flex-shrink-0' /> */}
-                                                    <span className="text-xs font-semibold text-slate-600">{message.agentName || t('chatbotUI.agentLabel')}</span>
+                                                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{message.agentName || t('chatbotUI.agentLabel')}</span>
                                                 </div>
                                             ) : null}
                                         </div>
@@ -221,11 +221,11 @@ const ChatInterface = () => {
                                     </div>
 
                                     {message.role === 'assistant' && (
-                                        <div className="mt-2 pt-2 text-xs text-gray-500 border-t border-gray-200">
+                                        <div className="mt-2 pt-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600">
                                             {t('chatbotUI.agentInstruction')} <br />
                                             <b>{t('chatbotUI.agentKeyword')}</b>
                                             <br />
-                                            <p className="text-gray-500 px-1 py-1 rounded text-xs mt-4">
+                                            <p className="text-gray-500 dark:text-gray-400 px-1 py-1 rounded text-xs mt-4">
                                                 {t('chatbotUI.disclaimer')}
                                             </p>
                                         </div>
@@ -236,8 +236,7 @@ const ChatInterface = () => {
 
                         {/* Muestra el formulario si el lead NO ha sido recolectado */}
                         {!leadCollected && (
-                            // Ajustes para que se le vea a TAURO en modo oscuro (Actualizar cuando se implemente los dos modos)
-                            <div className="p-4 bg-gray-50 rounded-lg border border-black max-w-[80%]">
+                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-black dark:border-gray-600 max-w-[80%]">
                                 <form onSubmit={handleLeadSubmit} className="space-y-3">
                                     <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('chatbotUI.leadFormName')} required className="w-full px-3 py-2 border border-black text-black rounded-lg" />
                                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('chatbotUI.leadFormEmail')} required className="w-full px-3 py-2 border border-black text-black rounded-lg" />
@@ -252,9 +251,9 @@ const ChatInterface = () => {
 
                         {isLoading && (
                             <div className="flex items-end gap-2 justify-start">
-                                <div className="bg-gray-100 px-4 py-2 rounded-xl">
+                                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl">
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-500">{t('chatbotUI.typing')}...</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('chatbotUI.typing')}...</span>
                                     </div>
                                 </div>
                             </div>

@@ -308,13 +308,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             )}
 
             {/* Chat Requests y Connection */}
-            <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
+            <div className="w-1/3 border-r bg-white dark:bg-gray-900 dark:border-gray-700 p-4 flex flex-col lg:w-1/4">
                 <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm mb-2 ${isConnected
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                         : isReconnecting
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                         }`}
                 >
                     {isConnected ? (
@@ -335,7 +335,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             </div>
                             <button
                                 onClick={forceReconnect}
-                                className="ml-1 px-1 py-0.5 text-red-800 rounded-full text-xs hover:bg-red-300"
+                                className="ml-1 px-1 py-0.5 text-red-800 dark:text-red-200 rounded-full text-xs hover:bg-red-300 dark:hover:bg-red-800"
                                 title={t("chatPanel.connection.reconnect")}
                             >
                                 <RefreshCcw size={16} />
@@ -343,7 +343,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     )}
                 </div>
-                <h2 className="text-xl font-bold mb-4">
+                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
                     {t("chatPanel.requestsTitle")}
                 </h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
@@ -352,27 +352,27 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         <div
                             key={req.sessionId}
                             onClick={() => handleSelectChat(req)}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors 
-                                
-                                ${req.isTransfer ? 'border-2 border-orange-400' : ''}
-                                
+                            className={`p-3 rounded-lg cursor-pointer transition-colors
+
+                                ${req.isTransfer ? 'border-2 border-orange-400 dark:border-orange-500' : ''}
+
                                 ${activeChat?.sessionId === req.sessionId
-                                    ? "bg-blue-600 text-white"
+                                    ? "bg-blue-600 text-white dark:bg-blue-700"
                                     : isConnected
-                                        ? "bg-gray-100 hover:bg-gray-200"
-                                        : "bg-gray-50 cursor-not-allowed opacity-50"
+                                        ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                        : "bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed opacity-50 text-gray-900 dark:text-gray-100"
                                 }`}
                         >
                             <p className="font-semibold">
                                 Session: {req.sessionId.slice(-6)}
                             </p>
                             {/* Mostramos si es una transferencia */}
-                            {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
+                            {req.isTransfer && <p className="text-xs font-bold text-orange-600 dark:text-orange-400">TRANSFER</p>}
                             <p className="text-sm truncate">{req.initialMessage.content}</p>
                         </div>
                     ))}
                     {requests.length === 0 && (
-                        <p className="text-gray-500 text-sm mt-2">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
                             {t("chatPanel.noRequests")}
                         </p>
                     )}
@@ -380,11 +380,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             </div>
 
             {/* CHATS */}
-            <div className="flex-1 flex flex-col bg-gray-50">
+            <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
                 {activeChat && ["in_progress", "bot"].includes(activeChat.status) ? (
                     <>
-                        <div className="p-4 border-b bg-white flex justify-between items-center">
-                            <h3 className="text-lg font-bold">
+                        <div className="p-4 border-b bg-white dark:bg-gray-900 dark:border-gray-700 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                 {t("chatPanel.activeChatTitle", {
                                     id: activeChat.sessionId.slice(-6),
                                 })}
@@ -463,17 +463,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     >
                                         {/* --- AVATAR DEL USUARIO (IZQUIERDA) --- */}
                                         {isUser && (
-                                            <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border border-black/10">
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 border border-black/10 dark:border-gray-600">
                                                 {/* El usuario no tiene avatar en el panel, así que usamos un ícono genérico */}
-                                                <User className="w-full h-full text-gray-500 p-1.5" />
+                                                <User className="w-full h-full text-gray-500 dark:text-gray-400 p-1.5" />
                                             </div>
                                         )}
 
                                         {/* --- CUERPO DEL MENSAJE (EN EL MEDIO) --- */}
                                         <div
-                                            className={`max-w-[70%] px-4 py-2 rounded-xl ${isAgent ? "bg-blue-500 text-white" :        // Mensaje del agente
-                                                isBot ? "bg-slate-700 text-white" :         // Mensaje del bot (color distinto para diferenciarlo)
-                                                    "bg-gray-200 border border-black/10 text-gray-800"             // Mensaje del usuario
+                                            className={`max-w-[70%] px-4 py-2 rounded-xl ${isAgent ? "bg-blue-500 dark:bg-blue-600 text-white" :        // Mensaje del agente
+                                                isBot ? "bg-slate-700 dark:bg-slate-800 text-white" :         // Mensaje del bot (color distinto para diferenciarlo)
+                                                    "bg-gray-200 dark:bg-gray-700 border border-black/10 dark:border-gray-600 text-gray-800 dark:text-gray-100"             // Mensaje del usuario
                                                 }`}
                                         >
                                             {/* Nombre del remitente (si es agente o bot) */}
@@ -486,12 +486,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
                                         {/* --- AVATAR DEL AGENTE O DEL BOT (DERECHA) --- */}
                                         {isOutgoing && (
-                                            <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border border-black/10">
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 border border-black/10 dark:border-gray-600">
                                                 {isAgent && (
                                                     msg.avatarUrl ? (
                                                         <img src={msg.avatarUrl} alt={msg.agentName || 'Agent'} className="w-full h-full rounded-full object-cover" />
                                                     ) : (
-                                                        <User className="w-full h-full text-gray-500 p-1.5" /> // Avatar genérico para el agente
+                                                        <User className="w-full h-full text-gray-500 dark:text-gray-400 p-1.5" /> // Avatar genérico para el agente
                                                     )
                                                 )}
                                                 {isBot && (
@@ -506,7 +506,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <div className="p-4 bg-white border-t">
+                        <div className="p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700">
                             <div className="flex space-x-2">
                                 <input
                                     type="text"
@@ -515,8 +515,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                                     disabled={!isConnected || activeChat.status === "bot"}
                                     className={`flex-1 p-2 border rounded-lg ${!isConnected || activeChat.status === "bot"
-                                        ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-20"  // estilos deshabilitado
-                                        : "border-gray-300 focus:border-blue-500"                     // estilos habilitado
+                                        ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-20 text-gray-900 dark:text-gray-100"  // estilos deshabilitado
+                                        : "border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"                     // estilos habilitado
                                         }`}
                                     placeholder={
                                         isConnected
@@ -539,7 +539,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     </>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <p className="text-xl text-gray-500">
+                        <p className="text-xl text-gray-500 dark:text-gray-400">
                             {activeChat?.status === "closed"
                                 ? t("chatPanel.chatClosed")
                                 : t("chatPanel.selectChatPrompt")}
@@ -553,21 +553,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             {/* Modal de Resumen */}
             {isSummaryModalOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-                        <h3 className="text-lg font-bold mb-4">{t("chatPanel.conversationSummary")}</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg p-6">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">{t("chatPanel.conversationSummary")}</h3>
                         {isSummarizing ? (
                             <div className="flex items-center justify-center h-24">
-                                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+                                <Loader2 className="h-8 w-8 animate-spin text-purple-500 dark:text-purple-400" />
                             </div>
                         ) : (
-                            <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                            <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto">
                                 {summaryText}
                             </div>
                         )}
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setIsSummaryModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
                             >
                                 {t("chatPanel.close")}
                             </button>
