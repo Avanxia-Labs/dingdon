@@ -110,19 +110,25 @@ export const useDashboardStore = create<DashboardState>()(
             })),
 
             setActiveChat: (sessionId, initialMessages = []) => {
-                // Mover el chat de requests a assignedChats cuando se acepta
                 const state = get();
+
+                // Verificar si el chat ya está en assignedChats (es un switch)
+                const isAlreadyAssigned = state.assignedChats.some(r => r.sessionId === sessionId);
+
+                // Si no está asignado, buscar en requests
                 const chatRequest = state.requests.find(r => r.sessionId === sessionId);
 
                 set({
-                    requests: state.requests.filter(r => r.sessionId !== sessionId),
-                    assignedChats: chatRequest && !state.assignedChats.some(r => r.sessionId === sessionId)
+                    // Solo remover de requests si es un chat nuevo
+                    requests: chatRequest ? state.requests.filter(r => r.sessionId !== sessionId) : state.requests,
+                    // Solo agregar a assignedChats si es un chat nuevo
+                    assignedChats: chatRequest && !isAlreadyAssigned
                         ? [...state.assignedChats, chatRequest]
                         : state.assignedChats,
                     activeChat: {
                         sessionId,
                         messages: initialMessages,
-                        status: 'in_progress'
+                        status: state.activeChat?.sessionId === sessionId ? state.activeChat.status : 'in_progress'
                     }
                 });
             },

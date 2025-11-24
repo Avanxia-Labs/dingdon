@@ -25,6 +25,64 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
         }
     });
 
+    // Handle switching between already assigned chats
+    socket.on('switch_chat', async ({ workspaceId, sessionId, agentId }) => {
+        if (!workspaceId || !sessionId || !agentId) return;
+
+        let sessionInMemory = workspacesData[workspaceId]?.[sessionId];
+
+        // Load from database if not in memory
+        if (!sessionInMemory) {
+            const { data: sessionData, error } = await supabase
+                .from('chat_sessions')
+                .select('*')
+                .eq('id', sessionId)
+                .eq('workspace_id', workspaceId)
+                .single();
+
+            if (!error && sessionData) {
+                if (!workspacesData[workspaceId]) workspacesData[workspaceId] = {};
+                sessionInMemory = {
+                    status: sessionData.status || 'pending',
+                    history: sessionData.history || [],
+                    assignedAgentId: sessionData.assigned_agent_id,
+                };
+                workspacesData[workspaceId][sessionId] = sessionInMemory;
+            }
+        }
+
+        // Verificar que el chat esté asignado a este agente
+        if (sessionInMemory && sessionInMemory.assignedAgentId === agentId) {
+            // Join session room
+            socket.join(sessionId);
+            addSocketToSession(sessionId, socket.id, sessionSockets);
+
+            // Update agent info
+            const agentInfo = agentSockets.get(socket.id) || {};
+            agentInfo.sessionId = sessionId;
+            agentSockets.set(socket.id, agentInfo);
+
+            // Get bot config
+            const { data: workspaceConfig } = await supabase
+                .from('workspaces')
+                .select('bot_name, bot_avatar_url')
+                .eq('id', workspaceId)
+                .single();
+
+            // Emit success with chat history
+            socket.emit('switch_chat_success', {
+                sessionId,
+                history: sessionInMemory.history,
+                botConfig: {
+                    name: workspaceConfig?.bot_name,
+                    avatarUrl: workspaceConfig?.bot_avatar_url
+                }
+            });
+        } else {
+            socket.emit('assignment_failure', { message: "No tienes permiso para acceder a este chat." });
+        }
+    });
+
     // Handle agent joining session
     socket.on('agent_joined', async ({ workspaceId, sessionId, agentId, agentName }) => {
         if (!workspaceId || !sessionId || !agentId) return;
@@ -39,7 +97,7 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                 .eq('id', sessionId)
                 .eq('workspace_id', workspaceId)
                 .single();
-                
+
             if (!error && sessionData) {
                 if (!workspacesData[workspaceId]) workspacesData[workspaceId] = {};
                 sessionInMemory = {
@@ -52,17 +110,15 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
         }
 
         const canJoin = sessionInMemory && (
-            sessionInMemory.status === 'pending' || 
-            sessionInMemory.status === 'in_progress'
+            sessionInMemory.status === 'pending' ||
+            (sessionInMemory.status === 'in_progress' && sessionInMemory.assignedAgentId === agentId)
         );
 
         if (canJoin) {
             const isFirstTime = sessionInMemory.status === 'pending';
-            
+
             if (isFirstTime) {
                 sessionInMemory.status = 'in_progress';
-                sessionInMemory.assignedAgentId = agentId;
-            } else if (sessionInMemory.assignedAgentId !== agentId) {
                 sessionInMemory.assignedAgentId = agentId;
             }
 

@@ -163,13 +163,33 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
             setActiveBotConfig(botConfig);
         };
 
-        const handleAssignmentFailure = ({ message }: { message: string }) =>
+        const handleSwitchChatSuccess = ({
+            sessionId,
+            history,
+            botConfig
+        }: {
+            sessionId: string;
+            history: Message[];
+            botConfig: BotConfig
+        }) => {
+            console.log(`[ChatPanel] Switch chat success para sesión: ${sessionId}`);
+            // Solo actualizar la vista activa sin modificar assignedChats
+            setActiveChat(sessionId, history);
+            setActiveBotConfig(botConfig);
+        };
+
+        const handleAssignmentFailure = ({ message }: { message: string }) => {
+            console.error("[ChatPanel] Assignment failure:", message);
             alert(message);
+        };
+
         socket.on("assignment_success", handleAssignmentSuccess);
+        socket.on("switch_chat_success", handleSwitchChatSuccess);
         socket.on("assignment_failure", handleAssignmentFailure);
         return () => {
-            console.log("[ChatPanel] Limpiando listener de 'assignment_success'.");
+            console.log("[ChatPanel] Limpiando listeners.");
             socket.off("assignment_success", handleAssignmentSuccess);
+            socket.off("switch_chat_success", handleSwitchChatSuccess);
             socket.off("assignment_failure", handleAssignmentFailure);
         };
     }, [socket, setActiveChat, setActiveBotConfig]);
@@ -205,10 +225,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
     const handleSelectChat = (request: ChatRequest, isAlreadyAssigned: boolean = false) => {
         if (socket && workspaceId && session?.user?.id && isConnected) {
-            // Si el chat ya está asignado, solo cambiamos la vista activa
             if (isAlreadyAssigned) {
-                // Solo emitir agent_joined para unirse a la sala del socket
-                socket.emit("agent_joined", {
+                // Es un chat ya asignado, solo cambiamos la vista localmente
+                // Emitir un evento diferente para recuperar el historial sin reasignar
+                socket.emit("switch_chat", {
                     workspaceId,
                     sessionId: request.sessionId,
                     agentId: session.user.id,
