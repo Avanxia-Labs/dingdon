@@ -169,6 +169,7 @@ import { useTranslation } from 'react-i18next';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/ThemeToggle';
 
 function DashboardUI({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
@@ -179,6 +180,19 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
 
     const [workspaceName, setWorkspaceName] = useState('Loading...');
     const [agentName, setAgentName] = useState(session?.user?.name || 'Loading...');
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+    // Detectar el tema actual
+    useEffect(() => {
+        const checkTheme = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            setTheme(isDark ? 'dark' : 'light');
+        };
+        checkTheme();
+        const observer = new MutationObserver(checkTheme);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
 
     // Estado para controlar si hay requests pendientes
     const hasRequestsPending = requests.length > 0;
@@ -226,29 +240,43 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }
     ];
 
+    // Color palette
+    const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
+    const sidebarBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const sidebarBorderColor = theme === 'dark' ? 'border-[#2a3b47]' : 'border-[#EFF3F5]';
+    const textPrimary = theme === 'dark' ? 'text-[#EFF3F5]' : 'text-[#2A3B47]';
+    const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+    const navItemInactive = theme === 'dark' ? 'text-[#C8CDD0] hover:bg-[#2a3b47]' : 'text-[#697477] hover:bg-[#EFF3F5]';
+    const navItemActive = theme === 'dark' ? 'bg-[#2a3b47]' : 'bg-[#EFF3F5]';
+
     return (
-        <div className="flex h-screen bg-gray-50">
-            <aside className="w-64 bg-gray-800 text-white flex flex-col">
-                <div className="p-4 font-bold text-xl border-b border-gray-700">{workspaceName}</div>
+        <div className={`flex h-screen ${mainBg}`}>
+            <aside className={`w-64 flex flex-col ${sidebarBg}`}>
+                <div className={`p-4 font-bold text-xl border-b ${textPrimary} ${sidebarBorderColor} flex items-center justify-between`}>
+                    <span>{workspaceName}</span>
+                    <ThemeToggle />
+                </div>
                 <nav className="flex-1 px-2 py-4 space-y-1">
                     {navItems.map(item => (
                         workspaceRole && item.requiredRole.includes(workspaceRole) && (
-                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? 'bg-gray-900' : 'text-gray-300 hover:bg-gray-700'}`}>
+                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? `${navItemActive} ${textPrimary}` : navItemInactive}`}>
                                 {item.icon}<span>{item.label}</span>
-                                
+
                                 {/* Bolita de Live Chats */}
                                 {item.href === '/dashboard' && hasRequestsPending &&  <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
                             </Link>
                         )
                     ))}
                 </nav>
-                <div className="p-4 border-t border-gray-700 space-y-4">
+                <div className={`p-4 border-t space-y-4 ${sidebarBorderColor}`}>
                     <div>
-                        <p className="text-sm font-semibold">{agentName}</p>
-                        <p className="text-xs text-gray-400 mb-2">{email}</p>
-                        <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full py-2 bg-red-600 rounded-lg text-sm font-medium hover:bg-red-500">{t('dashboardLayout.signOut')}</button>
+                        <p className={`text-sm font-semibold ${textPrimary}`}>{agentName}</p>
+                        <p className={`text-xs mb-2 ${textSecondary}`}>{email}</p>
+                        <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full py-2 bg-red-600 rounded-lg text-sm font-medium hover:bg-red-500 text-white">{t('dashboardLayout.signOut')}</button>
                     </div>
-                    <LanguageSwitcher setLanguage={setLanguage} />
+                    <div className="flex items-center justify-center">
+                        <LanguageSwitcher setLanguage={setLanguage} />
+                    </div>
                 </div>
             </aside>
             <main className="flex-1 overflow-y-auto">{children}</main>

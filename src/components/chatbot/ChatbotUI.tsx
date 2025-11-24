@@ -238,9 +238,9 @@ const ChatInterface = () => {
                         {!leadCollected && (
                             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-black dark:border-gray-600 max-w-[80%]">
                                 <form onSubmit={handleLeadSubmit} className="space-y-3">
-                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('chatbotUI.leadFormName')} required className="w-full px-3 py-2 border border-black text-black rounded-lg" />
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('chatbotUI.leadFormEmail')} required className="w-full px-3 py-2 border border-black text-black rounded-lg" />
-                                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('chatbotUI.leadFormPhone')} className="w-full px-3 py-2 border border-black text-black rounded-lg" />
+                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('chatbotUI.leadFormName')} required className="w-full px-3 py-2 border border-black dark:border-gray-600 text-black dark:text-white bg-white dark:bg-gray-700 rounded-lg placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('chatbotUI.leadFormEmail')} required className="w-full px-3 py-2 border border-black dark:border-gray-600 text-black dark:text-white bg-white dark:bg-gray-700 rounded-lg placeholder:text-gray-500 dark:placeholder:text-gray-400" />
+                                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('chatbotUI.leadFormPhone')} className="w-full px-3 py-2 border border-black dark:border-gray-600 text-black dark:text-white bg-white dark:bg-gray-700 rounded-lg placeholder:text-gray-500 dark:placeholder:text-gray-400" />
                                     {formError && <p className="text-red-500 text-sm text-center">{formError}</p>}
                                     <button type="submit" disabled={isSubmitting} style={{ backgroundColor: config.botColor }} className="w-full py-2 text-white font-semibold rounded-lg hover:opacity-90 disabled:bg-gray-400">
                                         {isSubmitting ? t('chatbotUI.leadFormLoading') : t('chatbotUI.leadFormButton')}
