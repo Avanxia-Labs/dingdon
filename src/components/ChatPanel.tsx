@@ -448,29 +448,30 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <div className="space-y-2">
                                 {assignedChats
                                     .filter(chat => chat.assignedAgentId === session?.user?.id)
-                                    .map((req) => (
-                                    <div
-                                        key={req.sessionId}
-                                        onClick={() => handleSelectChat(req, true)}
-                                        className={`p-3 rounded-lg cursor-pointer transition-colors
-
-                                            ${req.isTransfer ? 'border-2 border-orange-400' : ''}
-
-                                            ${activeChat?.sessionId === req.sessionId
-                                                ? `${activeChatBg} text-white`
-                                                : isConnected
-                                                    ? `${cardBg} ${cardHoverBg} ${textPrimary}`
-                                                    : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
-                                            }`}
-                                    >
-                                        <p className="font-semibold">
-                                            Session: {req.sessionId.slice(-6)}
-                                        </p>
-                                        {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
-                                        <p className="text-sm truncate">{req.initialMessage.content}</p>
-                                    </div>
-                                ))
-                                }
+                                    .map((req) => {
+                                        console.log(`[ChatPanel] Rendering chat ${req.sessionId} with onClick handler`);
+                                        return (
+                                            <div
+                                                key={req.sessionId}
+                                                onClick={() => {
+                                                    console.log(`[ChatPanel] Chat clicked! SessionId: ${req.sessionId}`);
+                                                    handleSelectChat(req, true);
+                                                }}
+                                                className={`p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
+                                                    ? `${activeChatBg} text-white`
+                                                    : isConnected
+                                                        ? `${cardBg} ${cardHoverBg} ${textPrimary}`
+                                                        : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
+                                                    }`}
+                                            >
+                                                <p className="font-semibold">
+                                                    Session: {req.sessionId.slice(-6)}
+                                                </p>
+                                                {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
+                                                <p className="text-sm truncate">{req.initialMessage.content}</p>
+                                            </div>
+                                        );
+                                    })}
                             </div>
                         </div>
                     )}
