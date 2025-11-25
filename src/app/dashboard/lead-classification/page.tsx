@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useTranslation } from 'react-i18next';
 import { Target, TrendingUp, TrendingDown, Minus, Loader2, Settings, Plus, X, Save } from 'lucide-react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface ClassificationResult {
   chatSessionId: string;
@@ -77,7 +78,18 @@ export default function LeadClassificationPage() {
   const { t } = useTranslation();
   const { data: session } = useSession();
   const { language } = useDashboardStore();
-  
+  const { theme } = useTheme();
+
+  // Paleta de colores
+  const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
+  const cardBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+  const borderColor = theme === 'dark' ? 'border-[#2a3b47]' : 'border-[#EFF3F5]';
+  const textPrimary = theme === 'dark' ? 'text-[#EFF3F5]' : 'text-[#2A3B47]';
+  const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+  const inputBg = theme === 'dark' ? 'bg-[#192229] border-[#2a3b47] text-[#EFF3F5]' : 'bg-[#FFFFFF] border-[#EFF3F5] text-[#2A3B47]';
+  const tableHeaderBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#EFF3F5]';
+  const tableRowHover = theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]';
+
   // Estados principales
   const [results, setResults] = useState<ClassificationResult[]>([]);
   const [statistics, setStatistics] = useState<Statistics>({
@@ -86,13 +98,13 @@ export default function LeadClassificationPage() {
   const [isClassifying, setIsClassifying] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  
+
   // Estados para keywords
   const [hotKeywords, setHotKeywords] = useState<string[]>([]);
   const [warmKeywords, setWarmKeywords] = useState<string[]>([]);
   const [coldKeywords, setColdKeywords] = useState<string[]>([]);
   const [keywordsLoaded, setKeywordsLoaded] = useState(false);
-  
+
   // Estados para nuevas keywords
   const [newHotKeyword, setNewHotKeyword] = useState('');
   const [newWarmKeyword, setNewWarmKeyword] = useState('');
@@ -362,20 +374,20 @@ export default function LeadClassificationPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className={`p-6 max-w-7xl mx-auto min-h-full ${mainBg}`}>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className={`text-2xl font-bold mb-2 ${textPrimary}`}>
           {safeTranslate('leadClassification.title', 'Clasificación de Leads')}
         </h1>
-        <p className="text-gray-600">
+        <p className={textSecondary}>
           {safeTranslate('leadClassification.description', 'Analiza automáticamente las conversaciones para identificar leads calientes, tibios y fríos')}
         </p>
       </div>
 
       {/* Feedback */}
       {feedback && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-800 text-sm">{feedback}</p>
+        <div className={`mb-4 p-3 rounded-lg border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#52A5E0] text-[#52A5E0]' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+          <p className="text-sm">{feedback}</p>
         </div>
       )}
 
@@ -388,9 +400,9 @@ export default function LeadClassificationPage() {
           { labelKey: 'leadClassification.stats.warm', fallback: 'WARM 🟡', value: statistics.warmLeads, color: 'yellow' },
           { labelKey: 'leadClassification.stats.cold', fallback: 'COLD ❄️', value: statistics.coldLeads, color: 'blue' }
         ].map((stat, index) => (
-          <div key={index} className={`bg-${stat.color}-50 p-4 rounded-lg border border-${stat.color}-200`}>
-            <h3 className={`text-${stat.color}-800 text-sm font-medium`}>{safeTranslate(stat.labelKey, stat.fallback)}</h3>
-            <p className={`text-${stat.color}-900 text-xl font-bold`}>{stat.value}</p>
+          <div key={index} className={`p-4 rounded-lg border ${cardBg} ${borderColor}`}>
+            <h3 className={`text-sm font-medium ${textSecondary}`}>{safeTranslate(stat.labelKey, stat.fallback)}</h3>
+            <p className={`text-xl font-bold ${textPrimary}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -400,14 +412,14 @@ export default function LeadClassificationPage() {
         <button
           onClick={handleClassifyAllChats}
           disabled={isClassifying}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`flex items-center gap-2 px-6 py-3 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'bg-[#52A5E0] hover:bg-[#4090c5]' : 'bg-[#1083D3] hover:bg-[#0d6db3]'}`}
         >
           {isClassifying ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Target className="h-4 w-4" />
           )}
-          {isClassifying 
+          {isClassifying
             ? safeTranslate('leadClassification.buttons.classifying', 'Clasificando...')
             : safeTranslate('leadClassification.buttons.classifyAll', 'Clasificar Todos los Chats')
           }
@@ -415,7 +427,7 @@ export default function LeadClassificationPage() {
 
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className="flex items-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+          className={`flex items-center gap-2 px-4 py-3 rounded-lg ${theme === 'dark' ? 'bg-[#2a3b47] text-[#EFF3F5] hover:bg-[#3a4b57]' : 'bg-gray-200 text-[#2A3B47] hover:bg-gray-300'}`}
         >
           <Settings className="h-4 w-4" />
           {safeTranslate('leadClassification.buttons.configureKeywords', 'Configurar Palabras Clave')}
@@ -425,14 +437,14 @@ export default function LeadClassificationPage() {
 
       {/* Modal de Configuración de Keywords */}
       {showSettings && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={`mb-6 rounded-lg shadow-sm border p-6 ${cardBg} ${borderColor}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className={`text-lg font-semibold ${textPrimary}`}>
               {safeTranslate('leadClassification.keywords.configuration', 'Configuración de Palabras Clave')} ({currentLang.toUpperCase()})
             </h2>
             <button
               onClick={() => setShowSettings(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className={`${textSecondary} hover:${textPrimary}`}
             >
               <X className="h-5 w-5" />
             </button>
@@ -450,7 +462,7 @@ export default function LeadClassificationPage() {
               color="red"
               placeholder={safeTranslate('leadClassification.keywords.hotPlaceholder', 'Nueva palabra caliente...')}
             />
-            
+
             <KeywordSection
               type="warm"
               keywords={warmKeywords}
@@ -462,7 +474,7 @@ export default function LeadClassificationPage() {
               color="yellow"
               placeholder={safeTranslate('leadClassification.keywords.warmPlaceholder', 'Nueva palabra tibia...')}
             />
-            
+
             <KeywordSection
               type="cold"
               keywords={coldKeywords}
@@ -479,7 +491,7 @@ export default function LeadClassificationPage() {
           <div className="mt-6 flex justify-end">
             <button
               onClick={saveKeywordsConfig}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg ${theme === 'dark' ? 'bg-[#52A5E0] hover:bg-[#4090c5]' : 'bg-[#1083D3] hover:bg-[#0d6db3]'}`}
             >
               <Save className="h-4 w-4" />
               {safeTranslate('leadClassification.buttons.saveConfig', 'Guardar Configuración')}
@@ -489,46 +501,46 @@ export default function LeadClassificationPage() {
       )}
 
       {/* Tabla de Resultados */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{safeTranslate('leadClassification.results.title', 'Resultados de Clasificación')}</h2>
+      <div className={`rounded-lg shadow-sm border overflow-hidden ${cardBg} ${borderColor}`}>
+        <div className={`px-6 py-4 border-b ${borderColor}`}>
+          <h2 className={`text-lg font-semibold ${textPrimary}`}>{safeTranslate('leadClassification.results.title', 'Resultados de Clasificación')}</h2>
         </div>
-        
+
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className={`min-w-full divide-y ${borderColor}`}>
+            <thead className={tableHeaderBg}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondary} uppercase tracking-wider`}>
                   {safeTranslate('leadClassification.table.classification', 'Clasificación')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondary} uppercase tracking-wider`}>
                   {safeTranslate('leadClassification.table.analysis', 'Análisis del Lead')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondary} uppercase tracking-wider`}>
                   {safeTranslate('leadClassification.table.date', 'Fecha')}
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className={`${cardBg} divide-y ${borderColor}`}>
               {results.map((result, index) => (
-                <tr key={index} className="hover:bg-gray-50">
+                <tr key={index} className={tableRowHover}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium ${getClassificationColor(result.classification)}`}>
                       {getClassificationIcon(result.classification)}
                       {result.classification}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className={`px-6 py-4 text-sm ${textPrimary}`}>
                     <div className="max-w-lg">
                       {result.reasoning}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${textSecondary}`}>
                     {new Date(result.createdAt).toLocaleDateString(
-                      currentLang === 'en' ? 'en-US' : 'es-ES', 
+                      currentLang === 'en' ? 'en-US' : 'es-ES',
                       {
                         day: '2-digit',
-                        month: '2-digit', 
+                        month: '2-digit',
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
@@ -539,9 +551,9 @@ export default function LeadClassificationPage() {
               ))}
             </tbody>
           </table>
-          
+
           {results.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className={`text-center py-8 ${textSecondary}`}>
               {safeTranslate('leadClassification.results.noResults', 'No hay resultados de clasificación disponibles')}
             </div>
           )}

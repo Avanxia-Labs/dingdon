@@ -5,9 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSession } from 'next-auth/react';
 import { useSocket } from '@/providers/SocketContext';
-import { ChatRequest, Message, BotConfig } from '@/types/chatbot'; // Importa los tipos necesarios
+import { ChatRequest, Message, BotConfig } from '@/types/chatbot';
 import { User, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface MonitoringPanelProps {
     workspaceId: string;
@@ -24,11 +25,25 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
     const { data: session } = useSession();
     const { socket } = useSocket();
     const router = useRouter();
+    const { theme } = useTheme();
     const { monitoringChats, setMonitoringChats, removeMonitoringChat, setActiveChat: setGlobalActiveChat, activeBotConfig } = useDashboardStore();
 
     // --- NUEVO ESTADO PARA LA VISTA DETALLADA ---
     const [activeChat, setActiveChat] = useState<ActiveMonitoringChat | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Paleta de colores
+    const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
+    const sidebarBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const borderColor = theme === 'dark' ? 'border-[#2a3b47]' : 'border-[#EFF3F5]';
+    const textPrimary = theme === 'dark' ? 'text-[#EFF3F5]' : 'text-[#2A3B47]';
+    const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+    const cardBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const cardHoverBg = theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]';
+    const activeChatBg = theme === 'dark' ? 'bg-[#52A5E0]' : 'bg-[#1083D3]';
+    const userMsgBg = theme === 'dark' ? 'bg-[#2a3b47]' : 'bg-[#EFF3F5]';
+    const userMsgText = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+    const botMsgBg = theme === 'dark' ? 'bg-[#52A5E0]' : 'bg-[#1083D3]';
 
     // Scroll automático al final del chat
     useEffect(() => {
@@ -152,31 +167,31 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
     }, [socket, removeMonitoringChat, activeChat?.sessionId]);
 
     return (
-        <div className="flex h-full">
+        <div className={`flex h-full ${mainBg}`}>
             {/* Columna Izquierda: Lista de Chats en Monitoreo */}
-            <div className="w-1/3 border-r bg-white p-4 flex flex-col lg:w-1/4">
-                <h2 className="text-xl font-bold mb-4">Bot Conversations ({monitoringChats.length})</h2>
+            <div className={`w-1/3 border-r p-4 flex flex-col lg:w-1/4 ${sidebarBg} ${borderColor}`}>
+                <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>Bot Conversations ({monitoringChats.length})</h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {monitoringChats.map(chat => (
                         <div
                             key={chat.sessionId}
                             onClick={() => handleSelectChat(chat.sessionId)}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`}
+                            className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? `${activeChatBg} text-white` : `${cardBg} ${cardHoverBg} ${textPrimary}`}`}
                         >
                             <p className="font-semibold">Session: {chat.sessionId.slice(-6)}</p>
                             <p className="text-sm truncate">Last: {chat.initialMessage.content}</p>
                         </div>
                     ))}
-                    {monitoringChats.length === 0 && <p className="text-gray-500">No active bot chats.</p>}
+                    {monitoringChats.length === 0 && <p className={textSecondary}>No active bot chats.</p>}
                 </div>
             </div>
 
             {/* Columna Derecha: Vista del Chat Activo */}
-            <div className="flex-1 flex flex-col bg-gray-50">
+            <div className={`flex-1 flex flex-col ${mainBg}`}>
                 {activeChat ? (
                     <>
-                        <div className="p-4 border-b bg-white flex justify-between items-center">
-                            <h3 className="text-lg font-bold">Monitoring Session: {activeChat.sessionId.slice(-6)}</h3>
+                        <div className={`p-4 border-b flex justify-between items-center ${sidebarBg} ${borderColor}`}>
+                            <h3 className={`text-lg font-bold ${textPrimary}`}>Monitoring Session: {activeChat.sessionId.slice(-6)}</h3>
                             <button
                                 onClick={() => handleIntervene(activeChat.sessionId)}
                                 className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
@@ -187,12 +202,11 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                         <div className="flex-1 p-4 overflow-y-auto space-y-4">
                             {activeChat.messages.map((msg) => (
                                 <div key={msg.id} className={`flex items-start gap-3 ${msg.role === 'assistant' ? 'justify-end' : 'justify-start'}`}>
-                                    {msg.role === 'user' && <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border"><User className="w-full h-full text-gray-500 p-1.5" /></div>}
-                                    <div className={`max-w-[70%] px-4 py-2 rounded-xl ${msg.role === 'assistant' ? "bg-slate-700 text-white" : "bg-gray-200 text-gray-800"}`}>
+                                    {msg.role === 'user' && <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}><User className={`w-full h-full p-1.5 ${textSecondary}`} /></div>}
+                                    <div className={`max-w-[70%] px-4 py-2 rounded-xl ${msg.role === 'assistant' ? `${botMsgBg} text-white` : `${userMsgBg} ${userMsgText} border ${theme === 'dark' ? 'border-[#3a4b57]' : 'border-gray-300'}`}`}>
                                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                                     </div>
-                                    {msg.role === 'assistant' && <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 border">
-                                        {/* <Bot className="w-full h-full text-gray-500 p-1.5" /> */}
+                                    {msg.role === 'assistant' && <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
                                         <img
                                             src={activeBotConfig?.avatarUrl || '/default-bot-avatar.png'}
                                             alt={activeBotConfig?.name || 'Bot'}
@@ -206,7 +220,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                     </>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <p className="text-xl text-gray-500">Select a conversation to monitor.</p>
+                        <p className={`text-xl ${textSecondary}`}>Select a conversation to monitor.</p>
                     </div>
                 )}
             </div>

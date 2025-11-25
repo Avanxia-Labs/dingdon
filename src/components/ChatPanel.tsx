@@ -701,6 +701,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <div className="flex items-center justify-center h-24">
                                 <Loader2 className={`h-8 w-8 animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-500'}`} />
                             </div>
+                        ) : summaryText.startsWith('Error:') ? (
+                            <div className={`text-sm p-4 rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                                <p className="font-semibold mb-2">{t("chatPanel.errorOccurred") || "Error"}</p>
+                                <p className="whitespace-pre-wrap">{summaryText.replace('Error: ', '')}</p>
+                            </div>
                         ) : (
                             <div className={`text-sm whitespace-pre-wrap max-h-96 overflow-y-auto ${modalTextColor}`}>
                                 {summaryText}

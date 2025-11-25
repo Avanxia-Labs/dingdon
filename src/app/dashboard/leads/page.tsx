@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
 import { Pagination } from '@/components/Pagination';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Interfaz para el tipado de un lead
 interface Lead {
@@ -20,16 +21,26 @@ interface Lead {
 const LeadsPage = () => {
     const { t } = useTranslation();
     const { data: session } = useSession();
+    const { theme } = useTheme();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
-    
+
     // --- ESTADOS PARA LA PAGINACIÓN ---
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalLeads, setTotalLeads] = useState(0);
 
     const workspaceId = session?.user?.workspaceId;
+
+    // Paleta de colores
+    const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
+    const cardBg = theme === 'dark' ? 'bg-[#212E36]' : 'bg-[#FFFFFF]';
+    const borderColor = theme === 'dark' ? 'border-[#2a3b47]' : 'border-[#EFF3F5]';
+    const textPrimary = theme === 'dark' ? 'text-[#EFF3F5]' : 'text-[#2A3B47]';
+    const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
+    const tableHeaderBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#EFF3F5]';
+    const tableRowHover = theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]';
 
     const fetchLeads = async () => {
         if (!workspaceId) return;
@@ -90,9 +101,9 @@ const LeadsPage = () => {
     };
 
     return (
-        <div className='p-4'>
+        <div className={`p-4 min-h-full ${mainBg}`}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h1 className="text-3xl font-bold text-gray-800">{t('leads.pageTitle')}</h1>
+                <h1 className={`text-3xl font-bold ${textPrimary}`}>{t('leads.pageTitle')}</h1>
                 {session?.user?.workspaceRole === 'admin' && leads.length > 0 && (
                     <button
                         onClick={handleDeleteAllLeads}
@@ -109,36 +120,36 @@ const LeadsPage = () => {
                 </div>
             )}
 
-            <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+            <div className={`shadow-md rounded-lg overflow-x-auto ${cardBg} border ${borderColor}`}>
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 tracking-wider">{t('leads.tableHeaderName')}</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 tracking-wider">{t('leads.tableHeaderEmail')}</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 tracking-wider">{t('leads.tableHeaderPhone')}</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 tracking-wider">{t('leads.tableHeaderDate')}</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 tracking-wider">{t('common.actions')}</th>
+                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderName')}</th>
+                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderEmail')}</th>
+                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderPhone')}</th>
+                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderDate')}</th>
+                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {isLoading ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-gray-500">{t('common.loading')}</td></tr>
+                            <tr><td colSpan={5} className={`text-center p-6 ${textSecondary}`}>{t('common.loading')}</td></tr>
                         ) : leads.length > 0 ? (
                             leads.map((lead) => (
-                                <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm"><p className="text-gray-900 whitespace-no-wrap">{lead.name}</p></td>
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm"><p className="text-gray-900 whitespace-no-wrap">{lead.email}</p></td>
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm"><p className="text-gray-900 whitespace-no-wrap">{lead.phone || 'N/A'}</p></td>
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm"><p className="text-gray-900 whitespace-no-wrap">{new Date(lead.created_at).toLocaleString()}</p></td>
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm text-right">
-                                        <button onClick={() => handleDeleteLead(lead.id)} className="text-red-600 hover:text-red-900" title={t('common.delete')}>
+                                <tr key={lead.id} className={`${tableRowHover} transition-colors`}>
+                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.name}</p></td>
+                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.email}</p></td>
+                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.phone || 'N/A'}</p></td>
+                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{new Date(lead.created_at).toLocaleString()}</p></td>
+                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm text-right`}>
+                                        <button onClick={() => handleDeleteLead(lead.id)} className="text-red-500 hover:text-red-700" title={t('common.delete')}>
                                             <Trash2 size={18} />
                                         </button>
                                     </td>
                                 </tr>
                             ))
                         ) : (
-                            <tr><td colSpan={5} className="text-center p-8 text-gray-500">{t('leads.noLeads')}</td></tr>
+                            <tr><td colSpan={5} className={`text-center p-8 ${textSecondary}`}>{t('leads.noLeads')}</td></tr>
                         )}
                     </tbody>
                 </table>

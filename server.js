@@ -722,7 +722,10 @@ nextApp.prepare().then(() => {
         });
 
         socket.on('get_summary', async ({ workspaceId, sessionId, language }) => {
-            if (!workspaceId || !sessionId) return;
+            if (!workspaceId || !sessionId) {
+                socket.emit('command_error', { message: 'Missing workspaceId or sessionId' });
+                return;
+            }
 
             try {
                 console.log(`[Summary] Solicitud de resumen para la sesión ${sessionId}`);
@@ -737,24 +740,49 @@ nextApp.prepare().then(() => {
                     .eq('id', sessionId)
                     .single();
 
-                if (error || !sessionData) throw new Error("Session not found");
+                if (error) {
+                    console.error("[Summary] Error en consulta de Supabase:", error);
+                    throw new Error(`Database error: ${error.message}`);
+                }
+
+                if (!sessionData) {
+                    throw new Error("Session not found in database");
+                }
 
                 const workspaceConfig = sessionData.workspaces;
                 const history = sessionData.history;
 
+                if (!workspaceConfig) {
+                    throw new Error("Workspace configuration not found");
+                }
+
+                if (!history || history.length === 0) {
+                    socket.emit('summary_received', { sessionId, summary: "No hay mensajes en esta conversación para resumir." });
+                    return;
+                }
+
+                console.log(`[Summary] Modelo de IA: ${workspaceConfig.ai_model}, API Key Name: ${workspaceConfig.ai_api_key_name}`);
+
                 // 2. Determina la clave API a usar
-                const apiKey = process.env[workspaceConfig.ai_api_key_name] || process.env.GEMINI_API_KEY_DEFAULT;
-                if (!apiKey) throw new Error("API Key not found");
+                const apiKeyName = workspaceConfig.ai_api_key_name || 'GEMINI_API_KEY_DEFAULT';
+                const apiKey = process.env[apiKeyName] || process.env.GEMINI_API_KEY_DEFAULT;
+
+                if (!apiKey) {
+                    console.error(`[Summary] API Key no encontrada. Variable de entorno: ${apiKeyName}`);
+                    throw new Error(`API Key not configured. Please set ${apiKeyName} in environment variables.`);
+                }
 
                 const aiConfig = {
-                    model: workspaceConfig.ai_model,
+                    model: workspaceConfig.ai_model || 'gemini-1.5-flash',
                     apiKey: apiKey,
                 };
+
+                console.log(`[Summary] Usando modelo: ${aiConfig.model}`);
 
                 // 3. Llama a la nueva función de resumen del servicio dedicado
                 const summary = await summarizeConversation(
                     history,
-                    language || 'es', // O el idioma que prefieras
+                    language || 'es',
                     aiConfig
                 );
 
@@ -762,8 +790,8 @@ nextApp.prepare().then(() => {
                 socket.emit('summary_received', { sessionId, summary });
 
             } catch (error) {
-                console.error("Error al generar el resumen:", error.message);
-                socket.emit('command_error', { message: 'Failed to generate summary.' });
+                console.error("[Summary] Error al generar el resumen:", error.message);
+                socket.emit('command_error', { message: error.message || 'Failed to generate summary.' });
             }
         });
 
