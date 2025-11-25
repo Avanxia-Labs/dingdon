@@ -46,6 +46,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         clearActiveChatView,
         updateActiveChatStatus,
         addRequest,
+        addAssignedChat,
         removeAssignedChat
     } = useDashboardStore();
 
@@ -60,33 +61,39 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [showNotificationPopup, setShowNotificationPopup] = useState(true);
 
-    // useEffect para hacer el fetch inicial de los chats pendientes al cargar el componente.
+    // useEffect para hacer el fetch inicial de los chats pendientes Y asignados al cargar el componente.
     useEffect(() => {
-        if (!workspaceId) return;
+        if (!workspaceId || !session?.user?.id) return;
 
-        const fetchInitialPendingChats = async () => {
+        const fetchInitialChats = async () => {
             try {
-                const response = await fetch(`/api/workspaces/${workspaceId}/pending-chats`);
-
-                if (!response.ok) {
-                    throw new Error(`Error fetching pending chats: ${response.statusText}`);
+                // Fetch pending chats
+                const pendingResponse = await fetch(`/api/workspaces/${workspaceId}/pending-chats`);
+                if (pendingResponse.ok) {
+                    const pendingChats: ChatRequest[] = await pendingResponse.json();
+                    pendingChats.forEach(chat => {
+                        addRequest(chat);
+                    });
                 }
 
-                const initialChats: ChatRequest[] = await response.json();
-
-                // Aquí actualizamos el estado global con las solicitudes obtenidas
-                initialChats.forEach(chat => {
-                    addRequest(chat);
-                });
+                // Fetch assigned chats for this agent
+                const assignedResponse = await fetch(`/api/workspaces/${workspaceId}/assigned-chats?agentId=${session.user.id}`);
+                if (assignedResponse.ok) {
+                    const assignedChatsData: ChatRequest[] = await assignedResponse.json();
+                    console.log("[ChatPanel] Loaded assigned chats:", assignedChatsData);
+                    assignedChatsData.forEach(chat => {
+                        addAssignedChat(chat);
+                    });
+                }
 
             } catch (error) {
-                console.error("Could not fetch initial pending chats:", error);
+                console.error("Could not fetch initial chats:", error);
             }
         }
 
-        fetchInitialPendingChats();
+        fetchInitialChats();
 
-    }, [workspaceId, addRequest]);
+    }, [workspaceId, session?.user?.id, addRequest]);
 
     useEffect(() => {
         if (!socket) return;
@@ -348,6 +355,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
 
     console.log("ACTIVE BOT CONFIG", activeBotConfig);
+    console.log("[ChatPanel] assignedChats:", assignedChats);
+    console.log("[ChatPanel] Current user ID:", session?.user?.id);
+    console.log("[ChatPanel] Filtered chats:", assignedChats.filter(chat => chat.assignedAgentId === session?.user?.id));
 
     // Paleta de colores exacta proporcionada
     const mainBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#FBFBFE]';
