@@ -29,10 +29,13 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
     socket.on('switch_chat', async ({ workspaceId, sessionId, agentId }) => {
         if (!workspaceId || !sessionId || !agentId) return;
 
+        console.log(`[switch_chat] Agent ${agentId} switching to session ${sessionId}`);
+
         let sessionInMemory = workspacesData[workspaceId]?.[sessionId];
 
         // Load from database if not in memory
         if (!sessionInMemory) {
+            console.log(`[switch_chat] Loading session ${sessionId} from database`);
             const { data: sessionData, error } = await supabase
                 .from('chat_sessions')
                 .select('*')
@@ -48,17 +51,37 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                     assignedAgentId: sessionData.assigned_agent_id,
                 };
                 workspacesData[workspaceId][sessionId] = sessionInMemory;
+                console.log(`[switch_chat] Session loaded. Assigned to: ${sessionInMemory.assignedAgentId}`);
+            } else {
+                console.log(`[switch_chat] Session not found in database`);
             }
         }
 
         // Verificar que el chat esté asignado a este agente
         if (sessionInMemory && sessionInMemory.assignedAgentId === agentId) {
-            // Join session room
+            console.log(`[switch_chat] Permission granted. Joining session room.`);
+
+            // Obtener el sessionId anterior del agente
+            const agentInfo = agentSockets.get(socket.id) || {};
+            const previousSessionId = agentInfo.sessionId;
+
+            // Si hay una sesión anterior, salir de ella
+            if (previousSessionId && previousSessionId !== sessionId) {
+                console.log(`[switch_chat] Leaving previous session: ${previousSessionId}`);
+                socket.leave(previousSessionId);
+                // Remover del tracking de sessionSockets
+                if (sessionSockets.has(previousSessionId)) {
+                    sessionSockets.get(previousSessionId).delete(socket.id);
+                }
+            }
+
+            // Join new session room
             socket.join(sessionId);
             addSocketToSession(sessionId, socket.id, sessionSockets);
 
             // Update agent info
-            const agentInfo = agentSockets.get(socket.id) || {};
+            agentInfo.agentId = agentId;
+            agentInfo.workspaceId = workspaceId;
             agentInfo.sessionId = sessionId;
             agentSockets.set(socket.id, agentInfo);
 
@@ -68,6 +91,8 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                 .select('bot_name, bot_avatar_url')
                 .eq('id', workspaceId)
                 .single();
+
+            console.log(`[switch_chat] Emitting success with ${sessionInMemory.history.length} messages`);
 
             // Emit success with chat history
             socket.emit('switch_chat_success', {
@@ -79,6 +104,7 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                 }
             });
         } else {
+            console.log(`[switch_chat] Permission denied. assignedAgentId: ${sessionInMemory?.assignedAgentId}, agentId: ${agentId}`);
             socket.emit('assignment_failure', { message: "No tienes permiso para acceder a este chat." });
         }
     });
@@ -122,8 +148,21 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                 sessionInMemory.assignedAgentId = agentId;
             }
 
-            // Update agent info
+            // Obtener el sessionId anterior del agente
             const agentInfo = agentSockets.get(socket.id) || {};
+            const previousSessionId = agentInfo.sessionId;
+
+            // Si hay una sesión anterior diferente, salir de ella
+            if (previousSessionId && previousSessionId !== sessionId) {
+                console.log(`[agent_joined] Agent leaving previous session: ${previousSessionId}`);
+                socket.leave(previousSessionId);
+                // Remover del tracking de sessionSockets
+                if (sessionSockets.has(previousSessionId)) {
+                    sessionSockets.get(previousSessionId).delete(socket.id);
+                }
+            }
+
+            // Update agent info
             agentInfo.agentId = agentId;
             agentInfo.workspaceId = workspaceId;
             agentInfo.sessionId = sessionId;
