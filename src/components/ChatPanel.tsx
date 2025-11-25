@@ -451,13 +451,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                     .map((req) => {
                                         console.log(`[ChatPanel] Rendering chat ${req.sessionId} with onClick handler`);
                                         return (
-                                            <div
+                                            <button
                                                 key={req.sessionId}
-                                                onClick={() => {
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
                                                     console.log(`[ChatPanel] Chat clicked! SessionId: ${req.sessionId}`);
                                                     handleSelectChat(req, true);
                                                 }}
-                                                className={`p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
+                                                className={`w-full text-left p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
                                                     ? `${activeChatBg} text-white`
                                                     : isConnected
                                                         ? `${cardBg} ${cardHoverBg} ${textPrimary}`
@@ -469,7 +472,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                 </p>
                                                 {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
                                                 <p className="text-sm truncate">{req.initialMessage.content}</p>
-                                            </div>
+                                            </button>
                                         );
                                     })}
                             </div>
@@ -482,14 +485,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>Pending Requests</h3>
                             <div className="space-y-2">
                                 {requests.map((req) => (
-                                    <div
+                                    <button
                                         key={req.sessionId}
-                                        onClick={() => handleSelectChat(req, false)}
-                                        className={`p-3 rounded-lg cursor-pointer transition-colors
-
-                                            ${req.isTransfer ? 'border-2 border-orange-400' : ''}
-
-                                            ${activeChat?.sessionId === req.sessionId
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log(`[ChatPanel] Pending chat clicked! SessionId: ${req.sessionId}`);
+                                            handleSelectChat(req, false);
+                                        }}
+                                        className={`w-full text-left p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
                                                 ? `${activeChatBg} text-white`
                                                 : isConnected
                                                     ? `${cardBg} ${cardHoverBg} ${textPrimary}`
@@ -501,7 +506,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                         </p>
                                         {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
                                         <p className="text-sm truncate">{req.initialMessage.content}</p>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>

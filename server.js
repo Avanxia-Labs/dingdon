@@ -408,6 +408,91 @@ nextApp.prepare().then(() => {
             }
         });
 
+        // 🔧 NUEVO: Handle switching between already assigned chats
+        socket.on('switch_chat', async ({ workspaceId, sessionId, agentId }) => {
+            if (!workspaceId || !sessionId || !agentId) return;
+
+            console.log(`[switch_chat] Agent ${agentId} switching to session ${sessionId}`);
+
+            let sessionInMemory = workspacesData[workspaceId]?.[sessionId];
+
+            // Load from database if not in memory
+            if (!sessionInMemory) {
+                console.log(`[switch_chat] Loading session ${sessionId} from database`);
+                const { data: sessionData, error } = await supabase
+                    .from('chat_sessions')
+                    .select('*')
+                    .eq('id', sessionId)
+                    .eq('workspace_id', workspaceId)
+                    .single();
+
+                if (!error && sessionData) {
+                    if (!workspacesData[workspaceId]) workspacesData[workspaceId] = {};
+                    sessionInMemory = {
+                        status: sessionData.status || 'pending',
+                        history: sessionData.history || [],
+                        assignedAgentId: sessionData.assigned_agent_id,
+                    };
+                    workspacesData[workspaceId][sessionId] = sessionInMemory;
+                    console.log(`[switch_chat] Session loaded. Assigned to: ${sessionInMemory.assignedAgentId}`);
+                } else {
+                    console.log(`[switch_chat] Session not found in database`);
+                }
+            }
+
+            // Verificar que el chat esté asignado a este agente
+            if (sessionInMemory && sessionInMemory.assignedAgentId === agentId) {
+                console.log(`[switch_chat] Permission granted. Joining session room.`);
+
+                // Obtener el sessionId anterior del agente
+                const agentInfo = agentSockets.get(socket.id) || {};
+                const previousSessionId = agentInfo.sessionId;
+
+                // Si hay una sesión anterior, salir de ella
+                if (previousSessionId && previousSessionId !== sessionId) {
+                    console.log(`[switch_chat] Leaving previous session: ${previousSessionId}`);
+                    socket.leave(previousSessionId);
+                    // Remover del tracking de sessionSockets
+                    const previousSessionSet = sessionSockets.get(previousSessionId);
+                    if (previousSessionSet) {
+                        previousSessionSet.delete(socket.id);
+                    }
+                }
+
+                // Join new session room
+                socket.join(sessionId);
+                addSocketToSession(sessionId, socket.id);
+
+                // Update agent info
+                agentInfo.agentId = agentId;
+                agentInfo.workspaceId = workspaceId;
+                agentInfo.sessionId = sessionId;
+                agentSockets.set(socket.id, agentInfo);
+
+                // Get bot config
+                const { data: workspaceConfig } = await supabase
+                    .from('workspaces')
+                    .select('bot_name, bot_avatar_url')
+                    .eq('id', workspaceId)
+                    .single();
+
+                console.log(`[switch_chat] Emitting success with ${sessionInMemory.history.length} messages`);
+
+                // Emit success with chat history
+                socket.emit('switch_chat_success', {
+                    sessionId,
+                    history: sessionInMemory.history,
+                    botConfig: {
+                        name: workspaceConfig?.bot_name,
+                        avatarUrl: workspaceConfig?.bot_avatar_url
+                    }
+                });
+            } else {
+                console.log(`[switch_chat] Permission denied. assignedAgentId: ${sessionInMemory?.assignedAgentId}, agentId: ${agentId}`);
+                socket.emit('assignment_failure', { message: "No tienes permiso para acceder a este chat." });
+            }
+        });
+
         socket.on('user_message', async ({ workspaceId, sessionId, message }) => {
             if (!workspaceId || !sessionId) return;
 
