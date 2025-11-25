@@ -23,6 +23,20 @@ async function generateKimiResponse(prompt, apiKey, modelName) {
     return response.data.choices[0].message.content.trim();
 }
 
+async function generateDeepSeekResponse(prompt, apiKey, modelName) {
+    const response = await axios.post('https://api.deepseek.com/chat/completions', {
+        model: modelName,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+    }, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        }
+    });
+    return response.data.choices[0].message.content.trim();
+}
+
 
 // --- La Función Principal del Servicio ---
 
@@ -77,13 +91,18 @@ async function summarizeConversation(history, language, aiConfig) {
         let result;
 
         if (aiConfig.model.startsWith('gemini')) {
+            console.log('[SummaryService] Usando Gemini');
             result = await generateGeminiResponse(prompt, aiConfig.apiKey, aiConfig.model);
         } else if (aiConfig.model.startsWith('moonshot')) {
+            console.log('[SummaryService] Usando Kimi (Moonshot)');
             result = await generateKimiResponse(prompt, aiConfig.apiKey, aiConfig.model);
+        } else if (aiConfig.model.startsWith('deepseek')) {
+            console.log('[SummaryService] Usando DeepSeek');
+            result = await generateDeepSeekResponse(prompt, aiConfig.apiKey, aiConfig.model);
         } else {
-            // Fallback
-            console.warn(`[SummaryService] Modelo desconocido: ${aiConfig.model}. Usando Gemini como fallback.`);
-            result = await generateGeminiResponse(prompt, aiConfig.apiKey, 'gemini-1.5-flash');
+            // Fallback a DeepSeek si está disponible, sino intenta Gemini
+            console.warn(`[SummaryService] Modelo desconocido: ${aiConfig.model}. Intentando con DeepSeek como fallback.`);
+            result = await generateDeepSeekResponse(prompt, aiConfig.apiKey, 'deepseek-chat');
         }
 
         console.log('[SummaryService] Resumen generado exitosamente');

@@ -763,9 +763,9 @@ nextApp.prepare().then(() => {
 
                 console.log(`[Summary] Modelo de IA: ${workspaceConfig.ai_model}, API Key Name: ${workspaceConfig.ai_api_key_name}`);
 
-                // 2. Determina la clave API a usar
-                const apiKeyName = workspaceConfig.ai_api_key_name || 'GEMINI_API_KEY_DEFAULT';
-                const apiKey = process.env[apiKeyName] || process.env.GEMINI_API_KEY_DEFAULT;
+                // 2. Determina la clave API a usar (usando DeepSeek como fallback por defecto)
+                const apiKeyName = workspaceConfig.ai_api_key_name || 'DEEPSEEK_API_KEY_1';
+                const apiKey = process.env[apiKeyName] || process.env.DEEPSEEK_API_KEY_1;
 
                 if (!apiKey) {
                     console.error(`[Summary] API Key no encontrada. Variable de entorno: ${apiKeyName}`);
@@ -773,7 +773,7 @@ nextApp.prepare().then(() => {
                 }
 
                 const aiConfig = {
-                    model: workspaceConfig.ai_model || 'gemini-1.5-flash',
+                    model: workspaceConfig.ai_model || 'deepseek-chat',
                     apiKey: apiKey,
                 };
 
