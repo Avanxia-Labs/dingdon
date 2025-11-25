@@ -152,14 +152,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         const handleAssignmentSuccess = ({
             sessionId,
             history,
-            botConfig
+            botConfig,
+            assignedAgentId
         }: {
             sessionId: string;
             history: Message[];
-            botConfig: BotConfig
+            botConfig: BotConfig;
+            assignedAgentId?: string;
         }) => {
-            console.log(`[ChatPanel] ¡EVENTO 'assignment_success' RECIBIDO! Para la sesión: ${sessionId}`);
-            setActiveChat(sessionId, history);
+            console.log(`[ChatPanel] ¡EVENTO 'assignment_success' RECIBIDO! Para la sesión: ${sessionId}, assignedAgentId: ${assignedAgentId}`);
+            setActiveChat(sessionId, history, assignedAgentId || session?.user?.id);
             setActiveBotConfig(botConfig);
         };
 
@@ -170,7 +172,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         }: {
             sessionId: string;
             history: Message[];
-            botConfig: BotConfig
+            botConfig: BotConfig;
         }) => {
             console.log(`[ChatPanel] Switch chat success para sesión: ${sessionId}`);
             // Solo actualizar la vista activa sin modificar assignedChats
@@ -224,23 +226,41 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     }, [socket, activeChat?.sessionId, updateActiveChatStatus]);
 
     const handleSelectChat = (request: ChatRequest, isAlreadyAssigned: boolean = false) => {
-        if (socket && workspaceId && session?.user?.id && isConnected) {
-            if (isAlreadyAssigned) {
-                // Es un chat ya asignado, solo cambiamos la vista localmente
-                // Emitir un evento diferente para recuperar el historial sin reasignar
-                socket.emit("switch_chat", {
-                    workspaceId,
-                    sessionId: request.sessionId,
-                    agentId: session.user.id,
-                });
-            } else {
-                // Es un chat nuevo de la lista de requests
-                socket.emit("agent_joined", {
-                    workspaceId,
-                    sessionId: request.sessionId,
-                    agentId: session.user.id,
-                });
-            }
+        console.log(`[ChatPanel] handleSelectChat called. SessionId: ${request.sessionId}, isAlreadyAssigned: ${isAlreadyAssigned}`);
+
+        if (!socket) {
+            console.error("[ChatPanel] Socket is null");
+            return;
+        }
+        if (!workspaceId) {
+            console.error("[ChatPanel] WorkspaceId is null");
+            return;
+        }
+        if (!session?.user?.id) {
+            console.error("[ChatPanel] Session user ID is null");
+            return;
+        }
+        if (!isConnected) {
+            console.error("[ChatPanel] Socket not connected");
+            return;
+        }
+
+        if (isAlreadyAssigned) {
+            // Es un chat ya asignado, solo cambiamos la vista localmente
+            console.log(`[ChatPanel] Emitting switch_chat for session ${request.sessionId}`);
+            socket.emit("switch_chat", {
+                workspaceId,
+                sessionId: request.sessionId,
+                agentId: session.user.id,
+            });
+        } else {
+            // Es un chat nuevo de la lista de requests
+            console.log(`[ChatPanel] Emitting agent_joined for session ${request.sessionId}`);
+            socket.emit("agent_joined", {
+                workspaceId,
+                sessionId: request.sessionId,
+                agentId: session.user.id,
+            });
         }
     };
 
@@ -411,12 +431,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     {t("chatPanel.requestsTitle")}
                 </h2>
                 <div className="space-y-4 flex-1 overflow-y-auto">
-                    {/* Chats asignados al agente */}
-                    {assignedChats.length > 0 && (
+                    {/* Chats asignados al agente - FILTRADOS por agentId */}
+                    {assignedChats.filter(chat => chat.assignedAgentId === session?.user?.id).length > 0 && (
                         <div>
                             <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>My Chats</h3>
                             <div className="space-y-2">
-                                {assignedChats.map((req) => (
+                                {assignedChats
+                                    .filter(chat => chat.assignedAgentId === session?.user?.id)
+                                    .map((req) => (
                                     <div
                                         key={req.sessionId}
                                         onClick={() => handleSelectChat(req, true)}
@@ -437,7 +459,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                         {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
                                         <p className="text-sm truncate">{req.initialMessage.content}</p>
                                     </div>
-                                ))}
+                                ))
+                                }
                             </div>
                         </div>
                     )}
@@ -473,7 +496,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     )}
 
-                    {requests.length === 0 && assignedChats.length === 0 && (
+                    {requests.length === 0 && assignedChats.filter(chat => chat.assignedAgentId === session?.user?.id).length === 0 && (
                         <p className={`text-sm mt-2 ${textSecondary}`}>
                             {t("chatPanel.noRequests")}
                         </p>

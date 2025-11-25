@@ -7,6 +7,7 @@ interface ChatRequest {
     sessionId: string;
     initialMessage: Message;
     isTransfer?: boolean;
+    assignedAgentId?: string;  // ID del agente asignado
 }
 
 interface ActiveChat {
@@ -52,7 +53,7 @@ interface DashboardState {
     removeAssignedChat: (sessionId: string) => void;
 
     // Acciones para el chat activo
-    setActiveChat: (sessionId: string, initialMessages?: Message[]) => void;
+    setActiveChat: (sessionId: string, initialMessages?: Message[], assignedAgentId?: string) => void;
     updateActiveChatStatus: (status: ChatSessionStatus) => void;
     addMessageToActiveChat: (message: Message) => void;
     closeActiveChat: () => void;
@@ -109,7 +110,7 @@ export const useDashboardStore = create<DashboardState>()(
                 assignedChats: state.assignedChats.filter(r => r.sessionId !== sessionId)
             })),
 
-            setActiveChat: (sessionId, initialMessages = []) => {
+            setActiveChat: (sessionId, initialMessages = [], assignedAgentId?: string) => {
                 const state = get();
 
                 // Verificar si el chat ya está en assignedChats (es un switch)
@@ -123,7 +124,7 @@ export const useDashboardStore = create<DashboardState>()(
                     requests: chatRequest ? state.requests.filter(r => r.sessionId !== sessionId) : state.requests,
                     // Solo agregar a assignedChats si es un chat nuevo
                     assignedChats: chatRequest && !isAlreadyAssigned
-                        ? [...state.assignedChats, chatRequest]
+                        ? [...state.assignedChats, { ...chatRequest, assignedAgentId }]
                         : state.assignedChats,
                     activeChat: {
                         sessionId,

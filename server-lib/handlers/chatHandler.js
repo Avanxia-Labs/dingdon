@@ -194,6 +194,7 @@ module.exports = (socket, appState, io, supabase, sendWhatsAppMessage) => {
                 socket.emit('assignment_success', {
                     sessionId,
                     history: sessionInMemory.history,
+                    assignedAgentId: agentId,
                     botConfig: {
                         name: workspaceConfig?.bot_name,
                         avatarUrl: workspaceConfig?.bot_avatar_url
