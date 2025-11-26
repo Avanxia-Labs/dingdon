@@ -678,15 +678,16 @@ nextApp.prepare().then(() => {
                 console.log(`[Transfer] Agente solicitó transferir la sesión ${sessionId} a la cola.`);
 
                 // 1. Actualiza el estado de la sesión en la DB de vuelta a 'pending'.
-                // Mantenemos el 'assigned_agent_id' por si queremos saber quién lo atendió antes.
+                // Limpiamos assigned_agent_id para que cualquier agente pueda tomarlo
                 await supabase
                     .from('chat_sessions')
-                    .update({ status: 'pending' })
+                    .update({ status: 'pending', assigned_agent_id: null })
                     .eq('id', sessionId);
 
                 // Actualizar el estado en memoria
                 if (workspacesData[workspaceId] && workspacesData[workspaceId][sessionId]) {
                     workspacesData[workspaceId][sessionId].status = 'pending';
+                    workspacesData[workspaceId][sessionId].assignedAgentId = null;
                 }
 
                 // 2. Obtiene el mensaje inicial para darle contexto a otro agente

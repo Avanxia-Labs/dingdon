@@ -325,11 +325,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     // --- Funcion para el boton de transferir chat ---
     const handleTransferToQueue = () => {
         if (socket && activeChat) {
+            const sessionIdToTransfer = activeChat.sessionId;
+
             socket.emit('transfer_to_queue', {
                 workspaceId,
-                sessionId: activeChat.sessionId
+                sessionId: sessionIdToTransfer
             });
-            // Cerramos la vista del chat para el agente actual.
+
+            // Quitamos el chat de la lista de chats asignados del agente
+            removeAssignedChat(sessionIdToTransfer);
+
+            // Cerramos la vista del chat para el agente actual
             clearActiveChatView();
         }
     };

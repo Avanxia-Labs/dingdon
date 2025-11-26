@@ -131,8 +131,14 @@ export const useDashboardStore = create<DashboardState>()(
                     // Solo remover de requests si es un chat nuevo
                     requests: chatRequest ? state.requests.filter(r => r.sessionId !== sessionId) : state.requests,
                     // Solo agregar a assignedChats si es un chat nuevo
+                    // IMPORTANTE: Quitamos isTransfer porque ya fue tomado por este agente
                     assignedChats: chatRequest && !isAlreadyAssigned
-                        ? [...state.assignedChats, { ...chatRequest, assignedAgentId }]
+                        ? [...state.assignedChats, {
+                            sessionId: chatRequest.sessionId,
+                            initialMessage: chatRequest.initialMessage,
+                            assignedAgentId,
+                            isTransfer: false // Ya no es transferencia, es un chat asignado
+                        }]
                         : state.assignedChats,
                     activeChat: {
                         sessionId,
