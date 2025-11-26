@@ -12,6 +12,7 @@ import { Message } from '@/types/chatbot';
 interface ChatRequest {
     sessionId: string;
     initialMessage: Message;
+    isTransfer?: boolean;
 }
 
 interface SocketContextType {
@@ -121,7 +122,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             console.log(`[Dashboard] New chat request received:`, request);
             addRequest(request);
             playSound();
-            showNotification('New Chat Request', { body: `Session: ${request.sessionId.slice(-6)}` });
+            const notificationTitle = request.isTransfer ? '🔄 Chat Transferred' : 'New Chat Request';
+            showNotification(notificationTitle, { body: `Session: ${request.sessionId.slice(-6)}` });
         });
 
         socket.on('chat_taken', ({ sessionId, takenBy }: { sessionId: string; takenBy?: { agentId: string; agentName: string } }) => {

@@ -98,11 +98,33 @@ export const useDashboardStore = create<DashboardState>()(
             // Nueva acción para REEMPLAZAR todas las solicitudes
             setRequests: (requests) => set({ requests }),
 
-            addRequest: (request) => set((state) => ({
-                requests: state.requests.some(r => r.sessionId === request.sessionId)
-                    ? state.requests
-                    : [...state.requests, request]
-            })),
+            addRequest: (request) => set((state) => {
+                const existingIndex = state.requests.findIndex(r => r.sessionId === request.sessionId);
+
+                // Si es una transferencia, actualizar o agregar el request
+                if (request.isTransfer) {
+                    if (existingIndex >= 0) {
+                        // Ya existe: actualizar el request existente (quitar takenBy, poner isTransfer)
+                        const updatedRequests = [...state.requests];
+                        updatedRequests[existingIndex] = {
+                            ...updatedRequests[existingIndex],
+                            isTransfer: true,
+                            takenBy: undefined, // Limpiar porque ya no está tomado
+                            initialMessage: request.initialMessage // Actualizar mensaje inicial
+                        };
+                        return { requests: updatedRequests };
+                    } else {
+                        // No existe: agregar nuevo
+                        return { requests: [...state.requests, request] };
+                    }
+                }
+
+                // Si NO es transferencia, comportamiento original (no agregar si ya existe)
+                if (existingIndex >= 0) {
+                    return { requests: state.requests };
+                }
+                return { requests: [...state.requests, request] };
+            }),
 
             removeRequest: (sessionId) => set((state) => ({
                 requests: state.requests.filter(r => r.sessionId !== sessionId)

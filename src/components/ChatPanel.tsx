@@ -449,7 +449,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     {/* Chats asignados al agente - FILTRADOS por agentId */}
                     {assignedChats.filter(chat => chat.assignedAgentId === session?.user?.id).length > 0 && (
                         <div>
-                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>My Chats</h3>
+                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>{t("chatPanel.myChats")}</h3>
                             <div className="space-y-2">
                                 {assignedChats
                                     .filter(chat => chat.assignedAgentId === session?.user?.id)
@@ -475,7 +475,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                 <p className="font-semibold">
                                                     Session: {req.sessionId.slice(-6)}
                                                 </p>
-                                                {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
+                                                {req.isTransfer && <p className="text-xs font-bold text-orange-600">{t("chatPanel.transferLabel")}</p>}
                                                 <p className="text-sm truncate">{req.initialMessage.content}</p>
                                             </button>
                                         );
@@ -487,7 +487,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                     {/* Solicitudes pendientes */}
                     {requests.length > 0 && (
                         <div>
-                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>Pending Requests</h3>
+                            <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>{t("chatPanel.pendingRequests")}</h3>
                             <div className="space-y-2">
                                 {requests.map((req) => {
                                     const isTakenByOther = !!req.takenBy;
@@ -520,11 +520,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                 Session: {req.sessionId.slice(-6)}
                                             </p>
                                             {req.isTransfer && !isTakenByOther && (
-                                                <p className="text-xs font-bold text-orange-600">TRANSFER</p>
+                                                <p className="text-xs font-bold text-orange-600">{t("chatPanel.transferLabel")}</p>
                                             )}
                                             {isTakenByOther ? (
                                                 <p className="text-xs font-bold text-green-600">
-                                                    ✅ Tomado por {req.takenBy?.agentName}
+                                                    {t("chatPanel.takenBy", { agent: req.takenBy?.agentName })}
                                                 </p>
                                             ) : (
                                                 <p className={`text-sm truncate ${isTakenByOther ? textSecondary : ''}`}>
@@ -563,7 +563,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm flex items-center gap-1.5"
                             >
                                 <Users size={14} />
-                                <span>Transfer</span>
+                                <span>{t("chatPanel.transferButton")}</span>
                             </button>
 
                             {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
@@ -577,12 +577,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 {activeChat.status === 'in_progress' ? (
                                     <>
                                         <Play size={14} />
-                                        <span>Resume Bot</span>
+                                        <span>{t("chatPanel.resumeBotButton")}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Pause size={14} />
-                                        <span>Pause Bot</span>
+                                        <span>{t("chatPanel.pauseBotButton")}</span>
                                     </>
                                 )}
                             </button>
@@ -593,7 +593,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm flex items-center gap-1.5"
                             >
                                 <FileText size={14} />
-                                <span>Summarize</span>
+                                <span>{t("chatPanel.summarizeButton")}</span>
                             </button>
 
                             {/* --- BOTÓN DE CERRAR CHAT --- */}

@@ -156,7 +156,15 @@
       "closed": "cerrado"
     },
     "conversationSummary": "Resumen de la Conversación",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "transferButton": "Transferir",
+    "resumeBotButton": "Reanudar Bot",
+    "pauseBotButton": "Pausar Bot",
+    "summarizeButton": "Resumir",
+    "myChats": "Mis Chats",
+    "pendingRequests": "Solicitudes Pendientes",
+    "transferLabel": "TRANSFERENCIA",
+    "takenBy": "✅ Tomado por {{agent}}"
   },
   "leadInfo": {
     "title": "Información del Lead",
