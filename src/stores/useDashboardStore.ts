@@ -8,6 +8,10 @@ interface ChatRequest {
     initialMessage: Message;
     isTransfer?: boolean;
     assignedAgentId?: string;  // ID del agente asignado
+    takenBy?: {                // Info del agente que tomó el chat (para mostrar en cola)
+        agentId: string;
+        agentName: string;
+    };
 }
 
 interface ActiveChat {
@@ -47,6 +51,7 @@ interface DashboardState {
     setRequests: (requests: ChatRequest[]) => void;
     addRequest: (request: ChatRequest) => void;
     removeRequest: (sessionId: string) => void;
+    markRequestAsTaken: (sessionId: string, takenBy: { agentId: string; agentName: string }) => void;
     clearAllRequests: () => void;
 
     // Acciones para los chats asignados
@@ -101,6 +106,15 @@ export const useDashboardStore = create<DashboardState>()(
 
             removeRequest: (sessionId) => set((state) => ({
                 requests: state.requests.filter(r => r.sessionId !== sessionId)
+            })),
+
+            // Marcar un chat como tomado por otro agente (en vez de quitarlo)
+            markRequestAsTaken: (sessionId, takenBy) => set((state) => ({
+                requests: state.requests.map(r =>
+                    r.sessionId === sessionId
+                        ? { ...r, takenBy }
+                        : r
+                )
             })),
 
             clearAllRequests: () => set({ requests: [] }),

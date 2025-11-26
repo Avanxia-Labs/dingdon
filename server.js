@@ -372,6 +372,16 @@ nextApp.prepare().then(() => {
                     .eq('id', workspaceId)
                     .single();
 
+                // 2. Obtener el nombre del agente para notificar a los demás
+                const { data: agentProfile } = await supabase
+                    .from('profiles')
+                    .select('name')
+                    .eq('id', agentId)
+                    .single();
+
+                const agentName = agentProfile?.name || 'Agente';
+                agentInfo.agentName = agentName;
+                agentSockets.set(socket.id, agentInfo);
 
                 // 🔧 MEJORADO: Secuencia de emisión con delays y mejor logging
                 setTimeout(() => {
@@ -397,9 +407,15 @@ nextApp.prepare().then(() => {
                 }, 200);
 
                 setTimeout(() => {
-                    // Notificar a otros agentes que el chat fue tomado
-                    socket.to(`dashboard_${workspaceId}`).emit('chat_taken', { sessionId });
-                    console.log(`[Socket.IO] Chat taken notificado para sesión ${sessionId}`);
+                    // Notificar a otros agentes que el chat fue tomado (incluyendo nombre del agente)
+                    socket.to(`dashboard_${workspaceId}`).emit('chat_taken', {
+                        sessionId,
+                        takenBy: {
+                            agentId: agentId,
+                            agentName: agentName
+                        }
+                    });
+                    console.log(`[Socket.IO] Chat taken by ${agentName} notificado para sesión ${sessionId}`);
                 }, 300);
 
             } else {
@@ -959,6 +975,61 @@ nextApp.prepare().then(() => {
     app.all('/{*splat}', (req, res) => {
         return handle(req, res);
     });
+
+    // ========== CIERRE AUTOMÁTICO DE CHATS INACTIVOS (24 HORAS) ==========
+    async function closeInactiveChats() {
+        try {
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            // Buscar y cerrar chats inactivos
+            const { data, error } = await supabase
+                .from('chat_sessions')
+                .update({
+                    status: 'closed',
+                    ended_at: new Date().toISOString()
+                })
+                .in('status', ['in_progress', 'pending', 'bot'])
+                .lt('updated_at', twentyFourHoursAgo)
+                .select('id, workspace_id');
+
+            if (error) {
+                console.error('[Auto-Close] Error al cerrar chats inactivos:', error.message);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                console.log(`[Auto-Close] ✅ Cerrados ${data.length} chats inactivos (más de 24h sin actividad)`);
+
+                // Notificar a los dashboards que estos chats fueron cerrados
+                data.forEach(chat => {
+                    io.to(`dashboard_${chat.workspace_id}`).emit('chat_auto_closed', {
+                        sessionId: chat.id,
+                        reason: 'inactivity_24h'
+                    });
+
+                    // También emitir al cliente si está conectado
+                    io.to(chat.id).emit('status_change', 'closed');
+
+                    // Limpiar de memoria
+                    if (workspacesData[chat.workspace_id]?.[chat.id]) {
+                        delete workspacesData[chat.workspace_id][chat.id];
+                    }
+                });
+            } else {
+                console.log('[Auto-Close] No hay chats inactivos para cerrar');
+            }
+        } catch (error) {
+            console.error('[Auto-Close] Error inesperado:', error);
+        }
+    }
+
+    // Ejecutar al iniciar el servidor
+    closeInactiveChats();
+
+    // Ejecutar cada hora (3600000 ms = 1 hora)
+    setInterval(closeInactiveChats, 60 * 60 * 1000);
+    console.log('⏰ Cierre automático de chats configurado (cada 1 hora, inactividad > 24h)');
+    // =====================================================================
 
     server.listen(PORT, () => {
         console.log(`🚀 Servidor de WebSockets escuchando en el puerto ${PORT}`);

@@ -489,30 +489,51 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         <div>
                             <h3 className={`text-sm font-semibold mb-2 ${textSecondary}`}>Pending Requests</h3>
                             <div className="space-y-2">
-                                {requests.map((req) => (
-                                    <button
-                                        key={req.sessionId}
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log(`[ChatPanel] Pending chat clicked! SessionId: ${req.sessionId}`);
-                                            handleSelectChat(req, false);
-                                        }}
-                                        className={`w-full text-left p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
-                                                ? `${activeChatBg} text-white`
-                                                : isConnected
-                                                    ? `${cardBg} ${cardHoverBg} ${textPrimary}`
-                                                    : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
-                                            }`}
-                                    >
-                                        <p className="font-semibold">
-                                            Session: {req.sessionId.slice(-6)}
-                                        </p>
-                                        {req.isTransfer && <p className="text-xs font-bold text-orange-600">TRANSFER</p>}
-                                        <p className="text-sm truncate">{req.initialMessage.content}</p>
-                                    </button>
-                                ))}
+                                {requests.map((req) => {
+                                    const isTakenByOther = !!req.takenBy;
+
+                                    return (
+                                        <button
+                                            key={req.sessionId}
+                                            type="button"
+                                            disabled={isTakenByOther}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (!isTakenByOther) {
+                                                    console.log(`[ChatPanel] Pending chat clicked! SessionId: ${req.sessionId}`);
+                                                    handleSelectChat(req, false);
+                                                }
+                                            }}
+                                            className={`w-full text-left p-3 rounded-lg transition-colors
+                                                ${req.isTransfer ? 'border-2 border-orange-400' : ''}
+                                                ${isTakenByOther
+                                                    ? `${cardBg} opacity-60 cursor-not-allowed border border-green-500`
+                                                    : activeChat?.sessionId === req.sessionId
+                                                        ? `${activeChatBg} text-white cursor-pointer`
+                                                        : isConnected
+                                                            ? `${cardBg} ${cardHoverBg} ${textPrimary} cursor-pointer`
+                                                            : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
+                                                }`}
+                                        >
+                                            <p className={`font-semibold ${isTakenByOther ? textSecondary : ''}`}>
+                                                Session: {req.sessionId.slice(-6)}
+                                            </p>
+                                            {req.isTransfer && !isTakenByOther && (
+                                                <p className="text-xs font-bold text-orange-600">TRANSFER</p>
+                                            )}
+                                            {isTakenByOther ? (
+                                                <p className="text-xs font-bold text-green-600">
+                                                    ✅ Tomado por {req.takenBy?.agentName}
+                                                </p>
+                                            ) : (
+                                                <p className={`text-sm truncate ${isTakenByOther ? textSecondary : ''}`}>
+                                                    {req.initialMessage.content}
+                                                </p>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

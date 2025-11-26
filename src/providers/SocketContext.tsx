@@ -38,6 +38,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const {
         addRequest,
         removeRequest,
+        markRequestAsTaken,
         addMessageToActiveChat,
         activeChat,
         notificationsEnabled,
@@ -113,7 +114,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         socket.removeAllListeners('new_chat_request');
         socket.removeAllListeners('chat_taken');
         socket.removeAllListeners('incoming_user_message');
-        
+        socket.removeAllListeners('chat_auto_closed');
+
         // Configurar listeners
         socket.on('new_chat_request', (request: ChatRequest) => {
             console.log(`[Dashboard] New chat request received:`, request);
@@ -122,9 +124,16 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             showNotification('New Chat Request', { body: `Session: ${request.sessionId.slice(-6)}` });
         });
 
-        socket.on('chat_taken', ({ sessionId }: { sessionId: string }) => {
-            console.log(`[Dashboard] Chat taken:`, sessionId);
-            removeRequest(sessionId);
+        socket.on('chat_taken', ({ sessionId, takenBy }: { sessionId: string; takenBy?: { agentId: string; agentName: string } }) => {
+            console.log(`[Dashboard] Chat taken:`, sessionId, takenBy ? `by ${takenBy.agentName}` : '');
+
+            if (takenBy) {
+                // Marcar el chat como tomado (se queda visible pero no clickeable)
+                markRequestAsTaken(sessionId, takenBy);
+            } else {
+                // Fallback: si no hay info del agente, quitar de la lista
+                removeRequest(sessionId);
+            }
         });
 
         socket.on('incoming_user_message', ({ sessionId, message }: { sessionId: string; message: Message }) => {
@@ -134,10 +143,21 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
                 addMessageToActiveChat(message);
             }
         });
-        
-       
 
-    }, [addMessageToActiveChat, addRequest, playSound, removeRequest, showNotification]); // Dependencias estables.
+        // Listener para chats cerrados automáticamente por inactividad (24h)
+        socket.on('chat_auto_closed', ({ sessionId, reason }: { sessionId: string; reason: string }) => {
+            console.log(`[Dashboard] Chat auto-closed: ${sessionId}, reason: ${reason}`);
+            // Quitar de requests y assignedChats
+            removeRequest(sessionId);
+            useDashboardStore.getState().removeAssignedChat(sessionId);
+
+            // Si es el chat activo, cerrar la vista
+            if (useDashboardStore.getState().activeChat?.sessionId === sessionId) {
+                useDashboardStore.getState().clearActiveChatView();
+            }
+        });
+
+    }, [addMessageToActiveChat, addRequest, markRequestAsTaken, playSound, removeRequest, showNotification]); // Dependencias estables.
 
     // 🔧 CAMBIO 3: useEffect para gestionar el unirse/salir de las salas de chat.
     // Se ejecuta solo cuando el chat activo cambia.
