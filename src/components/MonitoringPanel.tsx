@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSession } from 'next-auth/react';
 import { useSocket } from '@/providers/SocketContext';
@@ -9,6 +10,7 @@ import { ChatRequest, Message, BotConfig } from '@/types/chatbot';
 import { User, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/providers/ThemeProvider';
+import { useSyncLanguage } from '@/hooks/useSyncLanguage';
 
 interface MonitoringPanelProps {
     workspaceId: string;
@@ -22,11 +24,13 @@ interface ActiveMonitoringChat {
 }
 
 export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId }) => {
+    const { t } = useTranslation();
     const { data: session } = useSession();
     const { socket } = useSocket();
     const router = useRouter();
     const { theme } = useTheme();
-    const { monitoringChats, setMonitoringChats, removeMonitoringChat, setActiveChat: setGlobalActiveChat, activeBotConfig } = useDashboardStore();
+    const { monitoringChats, setMonitoringChats, removeMonitoringChat, setActiveChat: setGlobalActiveChat, activeBotConfig, language } = useDashboardStore();
+    useSyncLanguage(language);
 
     // --- NUEVO ESTADO PARA LA VISTA DETALLADA ---
     const [activeChat, setActiveChat] = useState<ActiveMonitoringChat | null>(null);
@@ -71,7 +75,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
             // a. Obtenemos el historial del chat que ya tenemos en la vista activa.
             //    Si no hay un chat activo seleccionado, no podemos intervenir.
             if (activeChat?.sessionId !== sessionId) {
-                alert("Please select a chat to view its history before intervening.");
+                alert(t("monitoring.selectChatFirst"));
                 return;
             }
             const currentHistory = activeChat.messages;
@@ -170,7 +174,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
         <div className={`flex h-full ${mainBg}`}>
             {/* Columna Izquierda: Lista de Chats en Monitoreo */}
             <div className={`w-1/3 border-r p-4 flex flex-col lg:w-1/4 ${sidebarBg} ${borderColor}`}>
-                <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>Bot Conversations ({monitoringChats.length})</h2>
+                <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>{t("monitoring.title")} ({monitoringChats.length})</h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {monitoringChats.map(chat => (
                         <div
@@ -178,11 +182,11 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                             onClick={() => handleSelectChat(chat.sessionId)}
                             className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? `${activeChatBg} text-white` : `${cardBg} ${cardHoverBg} ${textPrimary}`}`}
                         >
-                            <p className="font-semibold">Session: {chat.sessionId.slice(-6)}</p>
-                            <p className="text-sm truncate">Last: {chat.initialMessage.content}</p>
+                            <p className="font-semibold">{t("monitoring.sessionLabel")}: {chat.sessionId.slice(-6)}</p>
+                            <p className="text-sm truncate">{t("monitoring.lastMessage")}: {chat.initialMessage.content}</p>
                         </div>
                     ))}
-                    {monitoringChats.length === 0 && <p className={textSecondary}>No active bot chats.</p>}
+                    {monitoringChats.length === 0 && <p className={textSecondary}>{t("monitoring.noActiveChats")}</p>}
                 </div>
             </div>
 
@@ -191,12 +195,12 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                 {activeChat ? (
                     <>
                         <div className={`p-4 border-b flex justify-between items-center ${sidebarBg} ${borderColor}`}>
-                            <h3 className={`text-lg font-bold ${textPrimary}`}>Monitoring Session: {activeChat.sessionId.slice(-6)}</h3>
+                            <h3 className={`text-lg font-bold ${textPrimary}`}>{t("monitoring.monitoringSession")}: {activeChat.sessionId.slice(-6)}</h3>
                             <button
                                 onClick={() => handleIntervene(activeChat.sessionId)}
                                 className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                             >
-                                Intervene
+                                {t("monitoring.interveneButton")}
                             </button>
                         </div>
                         <div className="flex-1 p-4 overflow-y-auto space-y-4">
@@ -220,7 +224,7 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                     </>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <p className={`text-xl ${textSecondary}`}>Select a conversation to monitor.</p>
+                        <p className={`text-xl ${textSecondary}`}>{t("monitoring.selectPrompt")}</p>
                     </div>
                 )}
             </div>

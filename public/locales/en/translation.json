@@ -388,5 +388,16 @@
     "topics": { "title": "Topics & Trends" },
     "actions": { "title": "Actionable Insights" },
     "leads": { "title": "Lead Analysis" }
+  },
+
+  "monitoring": {
+    "title": "Bot Conversations",
+    "sessionLabel": "Session",
+    "lastMessage": "Last",
+    "noActiveChats": "No active bot chats.",
+    "monitoringSession": "Monitoring Session",
+    "interveneButton": "Intervene",
+    "selectPrompt": "Select a conversation to monitor.",
+    "selectChatFirst": "Please select a chat to view its history before intervening."
   }
 }

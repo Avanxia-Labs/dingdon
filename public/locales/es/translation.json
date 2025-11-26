@@ -385,5 +385,16 @@
     "topics": { "title": "Temas y Tendencias" },
     "actions": { "title": "Acciones Recomendadas" },
     "leads": { "title": "Análisis de Leads" }
+  },
+
+  "monitoring": {
+    "title": "Conversaciones del Bot",
+    "sessionLabel": "Sesión",
+    "lastMessage": "Último",
+    "noActiveChats": "No hay chats de bot activos.",
+    "monitoringSession": "Monitoreando Sesión",
+    "interveneButton": "Intervenir",
+    "selectPrompt": "Selecciona una conversación para monitorear.",
+    "selectChatFirst": "Por favor selecciona un chat para ver su historial antes de intervenir."
   }
 }
