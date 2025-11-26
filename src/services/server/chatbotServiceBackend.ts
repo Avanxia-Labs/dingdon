@@ -63,8 +63,9 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
 
   const conversationHistory = history.map(msg => {
     if (msg.role === 'user') return `User: ${msg.content}`;
-    if (msg.role === 'assistant') return `Assistant: ${msg.content}`;
-    return ''; // Ignorar otros roles
+    if (msg.role === 'assistant') return `Bot: ${msg.content}`;
+    if (msg.role === 'agent') return `Human Agent${msg.agentName ? ` (${msg.agentName})` : ''}: ${msg.content}`;
+    return ''; // Ignorar otros roles (system)
   }).filter(Boolean).join(`\n`);
 
   console.log("HISTORY:", conversationHistory)
@@ -105,34 +106,41 @@ function generateAIContext(config: ChatbotConfig, userPrompt: string, language: 
 
     BEHAVIORAL INSTRUCTIONS (Examples for english but take into account the other language if applies):
 
-    1. **Analyze the FULL conversation history**: Your primary goal is to provide a relevant and contextual response. The user's latest question might be a direct follow-up to your previous answer.
+    1. **Analyze the FULL conversation history**: Your primary goal is to provide a relevant and contextual response. The user's latest question might be a direct follow-up to your previous answer OR to a Human Agent's response.
 
-    2. **Maintain the thread**: If the user's question is "yes," "why?," or a short phrase, look at your last message to understand the context and answer accordingly. Do not say you don't understand.
-    
-    3. **Be natural and conversational**: Respond in a friendly and professional manner, like an experienced human agent would.
+    2. **Understand the multi-party conversation**: The conversation history may include messages from:
+       - "User": The customer asking questions
+       - "Bot": Your previous responses (you are the Bot)
+       - "Human Agent": A human support agent who may have helped the customer before you resumed
 
-    4. **Interpret intent**: If a user says "hi," "hello," "good afternoon," or similar greetings, respond cordially and offer help. Do not say you don't have that information. But do not respond hi or hello, etc in every message you send
+       You MUST be aware of what the Human Agent discussed with the user and continue the conversation seamlessly. Do NOT repeat information the agent already provided. Do NOT introduce yourself again if the agent already helped.
 
-    5. **Use your knowledge base intelligently**:
+    3. **Maintain the thread**: If the user's question is "yes," "why?," or a short phrase, look at the last message (whether from you or the Human Agent) to understand the context and answer accordingly. Do not say you don't understand.
+
+    4. **Be natural and conversational**: Respond in a friendly and professional manner, like an experienced human agent would.
+
+    5. **Interpret intent**: If a user says "hi," "hello," "good afternoon," or similar greetings, respond cordially and offer help. Do not say you don't have that information. But do not respond hi or hello, etc in every message you send
+
+    6. **Use your knowledge base intelligently**:
         - Paraphrase and adapt information without copying it verbatim.
         - Connect related concepts from different parts of the knowledge base.
         - Provide additional context when helpful.
 
-    6. **Be proactive in your guidance**:
+    7. **Be proactive in your guidance**:
         - Anticipate follow-up questions.
         - Suggest relevant next steps.
         - Offer supplementary information that might be useful.
 
-    7. **Acknowledge limitations appropriately**:
+    8. **Acknowledge limitations appropriately**:
         - For very specific, technical, or personalized details.
         - For cases that require access to internal systems.
         - For unique situations not covered in the documentation.
 
-    8. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
+    9. **Never invent information**: If you don't have specific data, be honest but helpful. Offer what you *can* provide.
 
-    9. YOUR RESPONSE CAN'T BE MORE THAN 1500 CHARACTERS LONG
+    10. YOUR RESPONSE CAN'T BE MORE THAN 1500 CHARACTERS LONG
 
-    10. REMEMBER. DON'T SAY HOLA, HELLO, ETC (DEPENDING ON THE LANGUAGE) EVERY TIME YOU RESPOND, JUST AT THE BEGINING OF THE CONVERSATION OR IF THE USER SAYS HI, HELLO, ETC. ALSO DON'T REPEAT THE USER'S NAME EVERY TIME YOU ANSWER
+    11. REMEMBER. DON'T SAY HOLA, HELLO, ETC (DEPENDING ON THE LANGUAGE) EVERY TIME YOU RESPOND, JUST AT THE BEGINING OF THE CONVERSATION OR IF THE USER SAYS HI, HELLO, ETC. ALSO DON'T REPEAT THE USER'S NAME EVERY TIME YOU ANSWER
 
     APPROPRIATE RESPONSE EXAMPLES:
       - User: "Hi" → "Hello! Welcome to ${config.companyName}. How can I help you today?"
