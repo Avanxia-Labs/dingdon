@@ -41,7 +41,9 @@ export const useChatbot = () => {
     language,
     initializeOrSyncWorkspace,
     leadCollected,
-    setLeadCollected
+    setLeadCollected,
+    systemNotification,
+    setSystemNotification
   } = useChatStore(
 
     // useShallow prevents re-renders if other parts of the state change
@@ -66,7 +68,9 @@ export const useChatbot = () => {
       language: state.language,
       initializeOrSyncWorkspace: state.initializeOrSyncWorkspace,
       leadCollected: state.leadCollected,
-      setLeadCollected: state.setLeadCollected
+      setLeadCollected: state.setLeadCollected,
+      systemNotification: state.systemNotification,
+      setSystemNotification: state.setSystemNotification
     }))
   );
 
@@ -111,9 +115,23 @@ export const useChatbot = () => {
         addMessage(message);
       });
 
-      socket.on('status_change', (newStatus: ChatSessionStatus) => {
-        console.log(`[Chatbot] Status change to: ${newStatus}`);
+      socket.on('status_change', (data: ChatSessionStatus | { status: ChatSessionStatus; name: string; type: 'agent_joined' | 'bot_returned' | 'agent_returned' }) => {
+        // Soportar formato antiguo (solo status) y nuevo (objeto con name y type)
+        const newStatus = typeof data === 'string' ? data : data.status;
+        const notificationName = typeof data === 'object' ? data.name : null;
+        const notificationType = typeof data === 'object' ? data.type : null;
+
+        console.log(`[Chatbot] Status change to: ${newStatus}`, notificationName ? `by ${notificationName}` : '');
         setSessionStatus(newStatus);
+
+        // Mostrar notificación del sistema si hay nombre
+        if (notificationName && notificationType) {
+          setSystemNotification({ type: notificationType, name: notificationName });
+          // Auto-limpiar la notificación después de 5 segundos
+          setTimeout(() => {
+            setSystemNotification(null);
+          }, 5000);
+        }
 
         // 🔧 CAMBIO 2: Re-join INMEDIATAMENTE cuando cambia el status
         if (newStatus === 'in_progress' && sessionId) {
@@ -349,7 +367,8 @@ export const useChatbot = () => {
     error,
     leadCollected,
     setLeadCollected,
-    workspaceId
+    workspaceId,
+    systemNotification
   };
 };
 

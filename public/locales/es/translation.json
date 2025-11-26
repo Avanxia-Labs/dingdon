@@ -189,6 +189,12 @@
     "conversationSummary": "Resumen de la Conversación",
     "close": "Cerrar"
   },
+  "systemMessages": {
+    "waitingForAgent": "Esperando agente...",
+    "agentJoined": "{{name}} se ha unido a la conversación",
+    "botReturned": "{{name}} ha regresado",
+    "agentReturned": "{{name}} ha regresado"
+  },
   "chatbotUI": {
     "botLabel": "Bot",
     "agentLabel": "Agente",

@@ -20,6 +20,12 @@ interface ChatbotConfigState {
 /**
  * Interface for the chatbot's state.
  */
+// Tipo para las notificaciones del sistema (temporales, no se guardan)
+interface SystemNotification {
+    type: 'agent_joined' | 'bot_returned' | 'agent_returned';
+    name: string;
+}
+
 interface ChatState {
     // STATE
     messages: Message[];
@@ -31,7 +37,8 @@ interface ChatState {
     config: ChatbotConfigState;
     error: string | null;
     language: string;
-    leadCollected: boolean
+    leadCollected: boolean;
+    systemNotification: SystemNotification | null;
 
     // ACTIONS
     /** Toggles the chat window's visibility */
@@ -86,6 +93,8 @@ interface ChatState {
     initializeOrSyncWorkspace: (workspaceId: string) => void;
 
     setLeadCollected: (collected: boolean) => void;
+
+    setSystemNotification: (notification: SystemNotification | null) => void;
 }
 
 // Developer Note: Initial messages are now managed in a multilingual dictionary.
@@ -146,6 +155,7 @@ export const useChatStore = create<ChatState>()(
                 error: null,
                 language: initialLanguage,
                 leadCollected: false,
+                systemNotification: null,
 
                 toggleChat: () => set((state) => ({
                     isOpen: !state.isOpen
@@ -262,6 +272,8 @@ export const useChatStore = create<ChatState>()(
                 },
 
                 setLeadCollected: (collected) => set({leadCollected: collected}),
+
+                setSystemNotification: (notification) => set({ systemNotification: notification }),
             };
         },
         {

@@ -189,6 +189,13 @@
     "conversationSummary": "Conversation Summary",
     "close": "Close"
   },
+  "systemMessages": {
+    "waitingForAgent": "Waiting for agent...",
+    "agentJoined": "{{name}} has joined the conversation",
+    "botReturned": "{{name}} has returned",
+    "agentReturned": "{{name}} has returned"
+  },
+
   "chatbotUI": {
     "botLabel": "Bot",
     "agentLabel": "Agent",

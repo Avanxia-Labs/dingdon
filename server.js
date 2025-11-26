@@ -385,12 +385,16 @@ nextApp.prepare().then(() => {
 
                 // 🔧 MEJORADO: Secuencia de emisión con delays y mejor logging
                 setTimeout(() => {
-                    // Emitir status_change a toda la sala
+                    // Emitir status_change a toda la sala CON el nombre del agente
                     const sessionSockets = io.sockets.adapter.rooms.get(sessionId);
                     console.log(`[Socket.IO] Session ${sessionId} has ${sessionSockets?.size || 0} connected sockets`);
 
-                    io.to(sessionId).emit('status_change', 'in_progress');
-                    console.log(`[Socket.IO] Status change 'in_progress' emitido a sala ${sessionId}`);
+                    io.to(sessionId).emit('status_change', {
+                        status: 'in_progress',
+                        name: agentName,
+                        type: 'agent_joined'
+                    });
+                    console.log(`[Socket.IO] Status change 'in_progress' con nombre ${agentName} emitido a sala ${sessionId}`);
                 }, 100);
 
                 setTimeout(() => {
@@ -637,7 +641,7 @@ nextApp.prepare().then(() => {
             }
 
             try {
-                // 1. Obtiene el estado actual de la sesión
+                // 1. Obtiene el estado actual de la sesión y datos del agente/bot
                 const { data: currentSession, error: fetchError } = await supabase
                     .from('chat_sessions')
                     .select('status, assigned_agent_id')
@@ -647,15 +651,6 @@ nextApp.prepare().then(() => {
                 if (fetchError || !currentSession) {
                     throw new Error("Session not found");
                 }
-
-                // Seguridad: Solo el agente asignado puede cambiar el estado
-                // const agentInfo = agentSockets.get(socket.id);
-
-                // if (agentInfo?.agentId !== currentSession.assigned_agent_id) {
-                //     console.warn(`[Bot Control] Intento no autorizado de cambiar estado por agente ${agentInfo?.agentId}`);
-                //     socket.emit('bot_control_error', { sessionId, message: 'Not authorized.' });
-                //     return;
-                // }
 
                 // 2. Determina el nuevo estado
                 const newStatus = currentSession.status === 'bot' ? 'in_progress' : 'bot';
@@ -670,11 +665,35 @@ nextApp.prepare().then(() => {
 
                 console.log(`[Bot Control] Estado de la sesión ${sessionId} cambiado a: ${newStatus}`);
 
-                // 4. Notifica al panel para que actualice la UI
+                // 4. Obtener el nombre correspondiente según el nuevo estado
+                let notificationName = '';
+                if (newStatus === 'bot') {
+                    // El bot regresa - obtener nombre del bot
+                    const { data: workspaceData } = await supabase
+                        .from('workspaces')
+                        .select('bot_name')
+                        .eq('id', workspaceId)
+                        .single();
+                    notificationName = workspaceData?.bot_name || 'Bot';
+                } else {
+                    // El agente regresa - obtener nombre del agente
+                    const { data: agentData } = await supabase
+                        .from('profiles')
+                        .select('name')
+                        .eq('id', currentSession.assigned_agent_id)
+                        .single();
+                    notificationName = agentData?.name || 'Agente';
+                }
+
+                // 5. Notifica al panel para que actualice la UI
                 io.to(`dashboard_${workspaceId}`).emit('session_status_changed', { sessionId, newStatus });
 
-                // 5. Notifica al cliente (ChatbotUI) que el estado ha cambiado
-                io.to(sessionId).emit('status_change', newStatus);
+                // 6. Notifica al cliente (ChatbotUI) que el estado ha cambiado CON el nombre
+                io.to(sessionId).emit('status_change', {
+                    status: newStatus,
+                    name: notificationName,
+                    type: newStatus === 'bot' ? 'bot_returned' : 'agent_returned'
+                });
 
             } catch (error) {
                 console.error("Error toggling bot status:", error);
