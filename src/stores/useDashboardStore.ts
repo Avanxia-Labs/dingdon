@@ -44,11 +44,13 @@ interface DashboardState {
     monitoringChats: ChatRequest[];
 
     // Acciones para las solicitudes
+    setRequests: (requests: ChatRequest[]) => void;
     addRequest: (request: ChatRequest) => void;
     removeRequest: (sessionId: string) => void;
     clearAllRequests: () => void;
 
     // Acciones para los chats asignados
+    setAssignedChats: (chats: ChatRequest[]) => void;
     addAssignedChat: (request: ChatRequest) => void;
     removeAssignedChat: (sessionId: string) => void;
 
@@ -88,6 +90,9 @@ export const useDashboardStore = create<DashboardState>()(
             language: 'en',
             activeBotConfig: null,
 
+            // Nueva acción para REEMPLAZAR todas las solicitudes
+            setRequests: (requests) => set({ requests }),
+
             addRequest: (request) => set((state) => ({
                 requests: state.requests.some(r => r.sessionId === request.sessionId)
                     ? state.requests
@@ -99,6 +104,9 @@ export const useDashboardStore = create<DashboardState>()(
             })),
 
             clearAllRequests: () => set({ requests: [] }),
+
+            // Nueva acción para REEMPLAZAR todos los chats asignados
+            setAssignedChats: (chats) => set({ assignedChats: chats }),
 
             addAssignedChat: (request) => set((state) => ({
                 assignedChats: state.assignedChats.some(r => r.sessionId === request.sessionId)
@@ -202,13 +210,10 @@ export const useDashboardStore = create<DashboardState>()(
         {
             name: 'dashboard-storage', // Nombre para localStorage
             partialize: (state) => ({
-                // Solo persistir lo que realmente necesitamos
-                requests: state.requests,
-                assignedChats: state.assignedChats,
-                activeChat: state.activeChat,
+                // Solo persistir preferencias del usuario (NO datos de chats)
+                // Los chats se cargan del servidor en cada sesión
                 notificationsEnabled: state.notificationsEnabled,
                 language: state.language,
-                activeBotConfig: state.activeBotConfig,
             })
         }
     )

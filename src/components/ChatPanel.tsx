@@ -45,8 +45,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
         setActiveBotConfig,
         clearActiveChatView,
         updateActiveChatStatus,
-        addRequest,
-        addAssignedChat,
+        setRequests,
+        setAssignedChats,
         removeAssignedChat
     } = useDashboardStore();
 
@@ -62,28 +62,27 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const [showNotificationPopup, setShowNotificationPopup] = useState(true);
 
     // useEffect para hacer el fetch inicial de los chats pendientes Y asignados al cargar el componente.
+    // IMPORTANTE: Usamos setRequests/setAssignedChats para REEMPLAZAR los datos con los del servidor
+    // Esto evita datos fantasma de sesiones anteriores
     useEffect(() => {
         if (!workspaceId || !session?.user?.id) return;
 
         const fetchInitialChats = async () => {
             try {
-                // Fetch pending chats
+                // Fetch pending chats - REEMPLAZA el estado completo
                 const pendingResponse = await fetch(`/api/workspaces/${workspaceId}/pending-chats`);
                 if (pendingResponse.ok) {
                     const pendingChats: ChatRequest[] = await pendingResponse.json();
-                    pendingChats.forEach(chat => {
-                        addRequest(chat);
-                    });
+                    setRequests(pendingChats);
+                    console.log("[ChatPanel] Loaded pending chats:", pendingChats.length);
                 }
 
-                // Fetch assigned chats for this agent
+                // Fetch assigned chats for this agent - REEMPLAZA el estado completo
                 const assignedResponse = await fetch(`/api/workspaces/${workspaceId}/assigned-chats?agentId=${session.user.id}`);
                 if (assignedResponse.ok) {
                     const assignedChatsData: ChatRequest[] = await assignedResponse.json();
-                    console.log("[ChatPanel] Loaded assigned chats:", assignedChatsData);
-                    assignedChatsData.forEach(chat => {
-                        addAssignedChat(chat);
-                    });
+                    setAssignedChats(assignedChatsData);
+                    console.log("[ChatPanel] Loaded assigned chats:", assignedChatsData.length);
                 }
 
             } catch (error) {
@@ -93,7 +92,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
         fetchInitialChats();
 
-    }, [workspaceId, session?.user?.id, addRequest]);
+    }, [workspaceId, session?.user?.id, setRequests, setAssignedChats]);
 
     useEffect(() => {
         if (!socket) return;
