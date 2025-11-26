@@ -252,14 +252,14 @@ const ChatInterface = () => {
                         {/* Indicador de "Esperando agente..." */}
                         {status === 'pending' && (
                             <div className="flex justify-center">
-                                <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 px-4 py-2 rounded-full">
+                                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-full">
                                     <div className="flex items-center space-x-2">
                                         <div className="flex space-x-1">
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                                         </div>
-                                        <span className="text-sm text-amber-700 dark:text-amber-300 font-medium">{t('systemMessages.waitingForAgent')}</span>
+                                        <span className="text-sm text-gray-600 dark:text-gray-300">{t('systemMessages.waitingForAgent')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -267,22 +267,16 @@ const ChatInterface = () => {
 
                         {/* Mensajes de sistema temporales (agente se unió, bot regresó, etc.) */}
                         {systemNotification && (
-                            <div className="flex justify-center animate-fade-in">
-                                <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-                                    systemNotification.type === 'agent_joined'
-                                        ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300'
-                                        : systemNotification.type === 'bot_returned'
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300'
-                                        : 'bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300'
-                                }`}>
+                            <div className="flex justify-center">
+                                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-full text-sm text-gray-600 dark:text-gray-300">
                                     {systemNotification.type === 'agent_joined' && (
-                                        <span>✅ {t('systemMessages.agentJoined', { name: systemNotification.name })}</span>
+                                        <span>{t('systemMessages.agentJoined', { name: systemNotification.name })}</span>
                                     )}
                                     {systemNotification.type === 'bot_returned' && (
-                                        <span>🤖 {t('systemMessages.botReturned', { name: systemNotification.name })}</span>
+                                        <span>{t('systemMessages.botReturned', { name: systemNotification.name })}</span>
                                     )}
                                     {systemNotification.type === 'agent_returned' && (
-                                        <span>👤 {t('systemMessages.agentReturned', { name: systemNotification.name })}</span>
+                                        <span>{t('systemMessages.agentReturned', { name: systemNotification.name })}</span>
                                     )}
                                 </div>
                             </div>
