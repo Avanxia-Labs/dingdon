@@ -101,13 +101,13 @@ const LeadsPage = () => {
     };
 
     return (
-        <div className={`p-4 min-h-full ${mainBg}`}>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h1 className={`text-3xl font-bold ${textPrimary}`}>{t('leads.pageTitle')}</h1>
+        <div className={`p-3 sm:p-4 min-h-full ${mainBg}`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-4">
+                <h1 className={`text-xl sm:text-3xl font-bold ${textPrimary}`}>{t('leads.pageTitle')}</h1>
                 {session?.user?.workspaceRole === 'admin' && leads.length > 0 && (
                     <button
                         onClick={handleDeleteAllLeads}
-                        className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                        className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors text-sm"
                     >
                         {t('leads.deleteAllButton')}
                     </button>
@@ -115,20 +115,46 @@ const LeadsPage = () => {
             </div>
 
             {feedback && (
-                <div className={`mb-4 p-3 rounded-lg border text-sm ${feedback.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'}`}>
+                <div className={`mb-3 sm:mb-4 p-3 rounded-lg border text-xs sm:text-sm ${feedback.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'}`}>
                     {feedback.message}
                 </div>
             )}
 
-            <div className={`shadow-md rounded-lg overflow-x-auto ${cardBg} border ${borderColor}`}>
+            {/* Vista móvil: Cards */}
+            <div className="block sm:hidden space-y-3">
+                {isLoading ? (
+                    <div className={`text-center p-6 ${textSecondary}`}>{t('common.loading')}</div>
+                ) : leads.length > 0 ? (
+                    leads.map((lead) => (
+                        <div key={lead.id} className={`p-3 rounded-lg ${cardBg} border ${borderColor}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className={`font-semibold text-sm ${textPrimary}`}>{lead.name}</span>
+                                <button onClick={() => handleDeleteLead(lead.id)} className="text-red-500 hover:text-red-700">
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                            <p className={`text-xs ${textSecondary} truncate`}>{lead.email}</p>
+                            <div className="flex items-center justify-between mt-2">
+                                <span className={`text-xs ${textSecondary}`}>{lead.phone || 'N/A'}</span>
+                                <span className={`text-xs ${textSecondary}`}>{new Date(lead.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className={`text-center p-8 ${textSecondary}`}>{t('leads.noLeads')}</div>
+                )}
+            </div>
+
+            {/* Vista desktop: Tabla */}
+            <div className={`hidden sm:block shadow-md rounded-lg overflow-x-auto ${cardBg} border ${borderColor}`}>
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderName')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderEmail')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderPhone')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderDate')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.actions')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderName')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderEmail')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider hidden lg:table-cell`}>{t('leads.tableHeaderPhone')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('leads.tableHeaderDate')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,11 +163,11 @@ const LeadsPage = () => {
                         ) : leads.length > 0 ? (
                             leads.map((lead) => (
                                 <tr key={lead.id} className={`${tableRowHover} transition-colors`}>
-                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.name}</p></td>
-                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.email}</p></td>
-                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{lead.phone || 'N/A'}</p></td>
-                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><p className={`${textPrimary} whitespace-no-wrap`}>{new Date(lead.created_at).toLocaleString()}</p></td>
-                                    <td className={`px-5 py-4 border-b ${borderColor} text-sm text-right`}>
+                                    <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm`}><p className={`${textPrimary} whitespace-nowrap`}>{lead.name}</p></td>
+                                    <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm`}><p className={`${textPrimary} whitespace-nowrap truncate max-w-[150px] md:max-w-none`}>{lead.email}</p></td>
+                                    <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm hidden lg:table-cell`}><p className={`${textPrimary} whitespace-nowrap`}>{lead.phone || 'N/A'}</p></td>
+                                    <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm`}><p className={`${textPrimary} whitespace-nowrap`}>{new Date(lead.created_at).toLocaleDateString()}</p></td>
+                                    <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-sm text-right`}>
                                         <button onClick={() => handleDeleteLead(lead.id)} className="text-red-500 hover:text-red-700" title={t('common.delete')}>
                                             <Trash2 size={18} />
                                         </button>
@@ -153,6 +179,17 @@ const LeadsPage = () => {
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={totalLeads}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+            </div>
+
+            {/* Paginación móvil */}
+            <div className="block sm:hidden mt-4">
                 <Pagination
                     currentPage={currentPage}
                     totalItems={totalLeads}

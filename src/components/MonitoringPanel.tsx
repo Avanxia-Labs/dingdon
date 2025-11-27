@@ -7,7 +7,7 @@ import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useSession } from 'next-auth/react';
 import { useSocket } from '@/providers/SocketContext';
 import { ChatRequest, Message, BotConfig } from '@/types/chatbot';
-import { User, Bot } from 'lucide-react';
+import { User, Bot, ArrowLeft, Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useSyncLanguage } from '@/hooks/useSyncLanguage';
@@ -170,47 +170,76 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
         };
     }, [socket, removeMonitoringChat, activeChat?.sessionId]);
 
+    // Estado para vista móvil
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+
+    // Handler para seleccionar chat en móvil
+    const handleMobileSelectChat = async (sessionId: string) => {
+        await handleSelectChat(sessionId);
+        setMobileView('chat');
+    };
+
     return (
         <div className={`flex h-full ${mainBg}`}>
             {/* Columna Izquierda: Lista de Chats en Monitoreo */}
-            <div className={`w-1/3 border-r p-4 flex flex-col lg:w-1/4 ${sidebarBg} ${borderColor}`}>
-                <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>{t("monitoring.title")} ({monitoringChats.length})</h2>
+            <div className={`
+                ${activeChat && mobileView === 'chat' ? 'hidden' : 'flex'}
+                md:flex
+                w-full md:w-80 lg:w-72 xl:w-80
+                border-r p-3 sm:p-4 flex-col flex-shrink-0
+                ${sidebarBg} ${borderColor}
+            `}>
+                <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 ${textPrimary}`}>{t("monitoring.title")} ({monitoringChats.length})</h2>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {monitoringChats.map(chat => (
                         <div
                             key={chat.sessionId}
-                            onClick={() => handleSelectChat(chat.sessionId)}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? `${activeChatBg} text-white` : `${cardBg} ${cardHoverBg} ${textPrimary}`}`}
+                            onClick={() => handleMobileSelectChat(chat.sessionId)}
+                            className={`p-2.5 sm:p-3 rounded-lg cursor-pointer transition-colors ${activeChat?.sessionId === chat.sessionId ? `${activeChatBg} text-white` : `${cardBg} ${cardHoverBg} ${textPrimary}`}`}
                         >
-                            <p className="font-semibold">{t("monitoring.sessionLabel")}: {chat.sessionId.slice(-6)}</p>
-                            <p className="text-sm truncate">{t("monitoring.lastMessage")}: {chat.initialMessage.content}</p>
+                            <p className="font-semibold text-sm sm:text-base">{t("monitoring.sessionLabel")}: {chat.sessionId.slice(-6)}</p>
+                            <p className="text-xs sm:text-sm truncate">{t("monitoring.lastMessage")}: {chat.initialMessage.content}</p>
                         </div>
                     ))}
-                    {monitoringChats.length === 0 && <p className={textSecondary}>{t("monitoring.noActiveChats")}</p>}
+                    {monitoringChats.length === 0 && <p className={`text-sm ${textSecondary}`}>{t("monitoring.noActiveChats")}</p>}
                 </div>
             </div>
 
             {/* Columna Derecha: Vista del Chat Activo */}
-            <div className={`flex-1 flex flex-col ${mainBg}`}>
+            <div className={`
+                ${!activeChat || mobileView === 'list' ? 'hidden' : 'flex'}
+                md:flex
+                flex-1 flex-col min-w-0
+                ${mainBg}
+            `}>
                 {activeChat ? (
                     <>
-                        <div className={`p-4 border-b flex justify-between items-center ${sidebarBg} ${borderColor}`}>
-                            <h3 className={`text-lg font-bold ${textPrimary}`}>{t("monitoring.monitoringSession")}: {activeChat.sessionId.slice(-6)}</h3>
-                            <button
-                                onClick={() => handleIntervene(activeChat.sessionId)}
-                                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                            >
-                                {t("monitoring.interveneButton")}
-                            </button>
+                        <div className={`p-2 sm:p-4 border-b ${sidebarBg} ${borderColor}`}>
+                            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                                {/* Botón volver - solo móvil */}
+                                <button
+                                    onClick={() => setMobileView('list')}
+                                    className={`md:hidden p-2 rounded-lg ${theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]'}`}
+                                >
+                                    <ArrowLeft size={20} className={textPrimary} />
+                                </button>
+                                <h3 className={`text-base sm:text-lg font-bold ${textPrimary} truncate flex-1`}>{t("monitoring.monitoringSession")}: {activeChat.sessionId.slice(-6)}</h3>
+                                <button
+                                    onClick={() => handleIntervene(activeChat.sessionId)}
+                                    className="px-2 sm:px-3 py-1.5 sm:py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs sm:text-sm"
+                                >
+                                    {t("monitoring.interveneButton")}
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                        <div className="flex-1 p-2 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4">
                             {activeChat.messages.map((msg) => (
-                                <div key={msg.id} className={`flex items-start gap-3 ${msg.role === 'assistant' ? 'justify-end' : 'justify-start'}`}>
-                                    {msg.role === 'user' && <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}><User className={`w-full h-full p-1.5 ${textSecondary}`} /></div>}
-                                    <div className={`max-w-[70%] px-4 py-2 rounded-xl ${msg.role === 'assistant' ? `${botMsgBg} text-white` : `${userMsgBg} ${userMsgText} border ${theme === 'dark' ? 'border-[#3a4b57]' : 'border-gray-300'}`}`}>
-                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                <div key={msg.id} className={`flex items-start gap-2 sm:gap-3 ${msg.role === 'assistant' ? 'justify-end' : 'justify-start'}`}>
+                                    {msg.role === 'user' && <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}><User className={`w-full h-full p-1 sm:p-1.5 ${textSecondary}`} /></div>}
+                                    <div className={`max-w-[80%] sm:max-w-[70%] px-3 sm:px-4 py-2 rounded-xl ${msg.role === 'assistant' ? `${botMsgBg} text-white` : `${userMsgBg} ${userMsgText} border ${theme === 'dark' ? 'border-[#3a4b57]' : 'border-gray-300'}`}`}>
+                                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                                     </div>
-                                    {msg.role === 'assistant' && <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
+                                    {msg.role === 'assistant' && <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
                                         <img
                                             src={activeBotConfig?.avatarUrl || '/default-bot-avatar.png'}
                                             alt={activeBotConfig?.name || 'Bot'}
@@ -223,8 +252,11 @@ export const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ workspaceId })
                         </div>
                     </>
                 ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <p className={`text-xl ${textSecondary}`}>{t("monitoring.selectPrompt")}</p>
+                    <div className="flex items-center justify-center h-full p-4">
+                        <div className="text-center">
+                            <Eye size={48} className={`mx-auto mb-4 ${textSecondary} opacity-50`} />
+                            <p className={`text-base sm:text-xl ${textSecondary}`}>{t("monitoring.selectPrompt")}</p>
+                        </div>
                     </div>
                 )}
             </div>

@@ -89,62 +89,93 @@ export const AgentsPanel: React.FC<AgentsPanelProps> = ({ workspaceId }) => {
     const tableHeaderBg = theme === 'dark' ? 'bg-[#192229]' : 'bg-[#EFF3F5]';
     const tableRowHover = theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]';
 
-    if (isLoading) { return <div className={`p-6 ${mainBg} ${textPrimary}`}>{t('common.loading')}</div>; }
+    if (isLoading) { return <div className={`p-4 sm:p-6 ${mainBg} ${textPrimary}`}>{t('common.loading')}</div>; }
 
     return (
-        <div className={`p-6 min-h-full ${mainBg}`}>
-            <h2 className={`text-2xl font-bold mb-6 ${textPrimary}`}>{t('agents.pageTitle')}</h2>
-            <div className={`p-6 rounded-lg shadow-md mb-8 ${cardBg} border ${borderColor}`}>
-                <h3 className={`text-lg font-semibold mb-4 ${textPrimary}`}>{t('agents.inviteTitle')}</h3>
-                <form onSubmit={handleInviteAgent} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div className={`p-3 sm:p-6 min-h-full ${mainBg}`}>
+            <h2 className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 ${textPrimary}`}>{t('agents.pageTitle')}</h2>
+            <div className={`p-4 sm:p-6 rounded-lg shadow-md mb-6 sm:mb-8 ${cardBg} border ${borderColor}`}>
+                <h3 className={`text-base sm:text-lg font-semibold mb-3 sm:mb-4 ${textPrimary}`}>{t('agents.inviteTitle')}</h3>
+                <form onSubmit={handleInviteAgent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
                     <div>
-                        <label htmlFor="name" className={`block text-sm font-medium ${textSecondary}`}>{t('agents.fullNameLabel')}</label>
-                        <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
+                        <label htmlFor="name" className={`block text-xs sm:text-sm font-medium ${textSecondary}`}>{t('agents.fullNameLabel')}</label>
+                        <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required className={`mt-1 block w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
                     </div>
                     <div>
-                        <label htmlFor="email" className={`block text-sm font-medium ${textSecondary}`}>{t('common.email')}</label>
-                        <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
+                        <label htmlFor="email" className={`block text-xs sm:text-sm font-medium ${textSecondary}`}>{t('common.email')}</label>
+                        <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className={`mt-1 block w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
                     </div>
                     <div>
-                        <label htmlFor="password" className={`block text-sm font-medium ${textSecondary}`}>{t('agents.initialPasswordLabel')}</label>
-                        <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
+                        <label htmlFor="password" className={`block text-xs sm:text-sm font-medium ${textSecondary}`}>{t('agents.initialPasswordLabel')}</label>
+                        <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={`mt-1 block w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`} />
                     </div>
                     <div>
-                        <label htmlFor="role" className={`block text-sm font-medium ${textSecondary}`}>{t('common.role')}</label>
-                        <select id="role" value={role} onChange={e => setRole(e.target.value as WorkspaceRole)} className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`}>
+                        <label htmlFor="role" className={`block text-xs sm:text-sm font-medium ${textSecondary}`}>{t('common.role')}</label>
+                        <select id="role" value={role} onChange={e => setRole(e.target.value as WorkspaceRole)} className={`mt-1 block w-full px-3 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-[#52A5E0] ${inputBg}`}>
                             <option value="agent">{t('agents.roleAgent')}</option>
                             <option value="admin">{t('agents.roleAdmin')}</option>
                         </select>
                     </div>
-                    <div className="lg:col-span-4">
-                        <button type="submit" disabled={isSubmitting} className={`w-full py-2 px-4 font-semibold rounded-lg disabled:opacity-50 ${theme === 'dark' ? 'bg-[#52A5E0] hover:bg-[#4090c5] text-white' : 'bg-[#1083D3] hover:bg-[#0d6db3] text-white'}`}>
+                    <div className="sm:col-span-2 lg:col-span-4">
+                        <button type="submit" disabled={isSubmitting} className={`w-full py-2 px-4 font-semibold rounded-lg disabled:opacity-50 text-sm ${theme === 'dark' ? 'bg-[#52A5E0] hover:bg-[#4090c5] text-white' : 'bg-[#1083D3] hover:bg-[#0d6db3] text-white'}`}>
                             {isSubmitting ? t('agents.invitingButton') : `+ ${t('agents.inviteButton')}`}
                         </button>
                     </div>
                 </form>
-                {feedback && <p className={`mt-4 text-sm text-center ${textSecondary}`}>{feedback}</p>}
+                {feedback && <p className={`mt-3 sm:mt-4 text-xs sm:text-sm text-center ${textSecondary}`}>{feedback}</p>}
             </div>
-            <div className={`shadow rounded-lg overflow-hidden ${cardBg} border ${borderColor}`}>
+
+            {/* Vista móvil: Cards */}
+            <div className="block sm:hidden space-y-3">
+                {agents.map(agent => (
+                    <div key={agent.id} className={`p-3 rounded-lg ${cardBg} border ${borderColor}`}>
+                        <div className="flex items-center justify-between mb-2">
+                            <span className={`font-semibold text-sm ${textPrimary}`}>{agent.name || '-'}</span>
+                            <button onClick={() => handleDeleteAgent(agent.id, agent.name)} className="text-red-500 hover:text-red-700">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                        <p className={`text-xs ${textSecondary} truncate mb-2`}>{agent.email}</p>
+                        <span className={`px-2 py-1 font-semibold leading-tight rounded-full text-xs ${agent.role === 'admin' ? 'text-green-900 bg-green-200' : theme === 'dark' ? 'text-[#C8CDD0] bg-[#2a3b47]' : 'text-gray-700 bg-gray-200'}`}>
+                            {agent.role === 'admin' ? t('agents.roleAdmin') : t('agents.roleAgent')}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Vista desktop: Tabla */}
+            <div className={`hidden sm:block shadow rounded-lg overflow-x-auto ${cardBg} border ${borderColor}`}>
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.name')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.email')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.role')}</th>
-                            <th className={`px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.actions')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.name')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.email')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.role')}</th>
+                            <th className={`px-3 md:px-5 py-3 border-b-2 ${borderColor} ${tableHeaderBg} text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{t('common.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {agents.map(agent => (
                             <tr key={agent.id} className={tableRowHover}>
-                                <td className={`px-5 py-4 border-b ${borderColor} text-sm ${textPrimary}`}>{agent.name || '-'}</td>
-                                <td className={`px-5 py-4 border-b ${borderColor} text-sm ${textPrimary}`}>{agent.email}</td>
-                                <td className={`px-5 py-4 border-b ${borderColor} text-sm`}><span className={`px-2 py-1 font-semibold leading-tight rounded-full text-xs ${agent.role === 'admin' ? 'text-green-900 bg-green-200' : theme === 'dark' ? 'text-[#C8CDD0] bg-[#2a3b47]' : 'text-gray-700 bg-gray-200'}`}>{agent.role === 'admin' ? t('agents.roleAdmin') : t('agents.roleAgent')}</span></td>
-                                <td className={`px-5 py-4 border-b ${borderColor} text-sm text-center`}><button onClick={() => handleDeleteAgent(agent.id, agent.name)} className="text-red-500 hover:text-red-700" title={t('common.delete')}><Trash2 size={18} /></button></td>
+                                <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm ${textPrimary}`}>{agent.name || '-'}</td>
+                                <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-xs md:text-sm ${textPrimary}`}>{agent.email}</td>
+                                <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-sm`}><span className={`px-2 py-1 font-semibold leading-tight rounded-full text-xs ${agent.role === 'admin' ? 'text-green-900 bg-green-200' : theme === 'dark' ? 'text-[#C8CDD0] bg-[#2a3b47]' : 'text-gray-700 bg-gray-200'}`}>{agent.role === 'admin' ? t('agents.roleAdmin') : t('agents.roleAgent')}</span></td>
+                                <td className={`px-3 md:px-5 py-3 md:py-4 border-b ${borderColor} text-sm text-center`}><button onClick={() => handleDeleteAgent(agent.id, agent.name)} className="text-red-500 hover:text-red-700" title={t('common.delete')}><Trash2 size={18} /></button></td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={totalAgents}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+            </div>
+
+            {/* Paginación móvil */}
+            <div className="block sm:hidden mt-4">
                 <Pagination
                     currentPage={currentPage}
                     totalItems={totalAgents}

@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/SocketContext";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
-import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2, MessageSquare, X } from "lucide-react";
+import { Send, Wifi, WifiOff, RefreshCcw, User, Bot, Play, Pause, Users, FileText, Loader2, MessageSquare, X, ArrowLeft } from "lucide-react";
 import { useTheme } from '@/providers/ThemeProvider';
 
 
@@ -383,31 +383,46 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
     const userMsgText = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
     const agentBotMsgBg = theme === 'dark' ? 'bg-[#52A5E0]' : 'bg-[#1083D3]';
 
+    // Estado para controlar vista móvil (lista vs chat)
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+
+    // Cuando se selecciona un chat en móvil, cambiar a vista de chat
+    const handleMobileSelectChat = (request: ChatRequest, isAlreadyAssigned: boolean = false) => {
+        handleSelectChat(request, isAlreadyAssigned);
+        setMobileView('chat');
+    };
+
     return (
         <div className={`flex h-full relative ${mainBg}`}>
             {!notificationsEnabled && showNotificationPopup && (
-                <div className={`absolute top-4 right-4 p-3 rounded-lg shadow-md z-10 border max-w-xs ${theme === 'dark' ? 'bg-amber-900 border-amber-700 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
+                <div className={`absolute top-4 right-4 p-3 rounded-lg shadow-md z-10 border max-w-[280px] sm:max-w-xs ${theme === 'dark' ? 'bg-amber-900 border-amber-700 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
                     <button
                         onClick={() => setShowNotificationPopup(false)}
                         className={`absolute top-1 right-1 p-1 rounded ${theme === 'dark' ? 'hover:bg-amber-800' : 'hover:bg-amber-100'}`}
                     >
                         <X size={14} />
                     </button>
-                    <p className="font-semibold">{t("chatPanel.notifications.title")}</p>
-                    <p className="text-sm mb-2">
+                    <p className="font-semibold text-sm">{t("chatPanel.notifications.title")}</p>
+                    <p className="text-xs sm:text-sm mb-2">
                         {t("chatPanel.notifications.description")}
                     </p>
                     <button
                         onClick={enableNotifications}
-                        className={`px-3 py-1 rounded text-sm ${theme === 'dark' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                        className={`px-3 py-1 rounded text-xs sm:text-sm ${theme === 'dark' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
                     >
                         {t("chatPanel.notifications.button")}
                     </button>
                 </div>
             )}
 
-            {/* Chat Requests y Connection */}
-            <div className={`w-1/3 border-r p-4 flex flex-col lg:w-1/4 ${sidebarBg} ${sidebarBorderColor}`}>
+            {/* Chat Requests y Connection - Oculto en móvil cuando hay chat activo */}
+            <div className={`
+                ${activeChat && mobileView === 'chat' ? 'hidden' : 'flex'}
+                md:flex
+                w-full md:w-80 lg:w-72 xl:w-80
+                border-r p-3 sm:p-4 flex-col flex-shrink-0
+                ${sidebarBg} ${sidebarBorderColor}
+            `}>
                 <div
                     className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm mb-2 ${isConnected
                         ? theme === 'dark' ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"
@@ -442,7 +457,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     )}
                 </div>
-                <h2 className={`text-xl font-bold mb-4 ${textPrimary}`}>
+                <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 ${textPrimary}`}>
                     {t("chatPanel.requestsTitle")}
                 </h2>
                 <div className="space-y-4 flex-1 overflow-y-auto">
@@ -463,20 +478,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     console.log(`[ChatPanel] Chat clicked! SessionId: ${req.sessionId}`);
-                                                    handleSelectChat(req, true);
+                                                    handleMobileSelectChat(req, true);
                                                 }}
-                                                className={`w-full text-left p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
+                                                className={`w-full text-left p-2.5 sm:p-3 rounded-lg cursor-pointer transition-colors ${req.isTransfer ? 'border-2 border-orange-400' : ''} ${activeChat?.sessionId === req.sessionId
                                                     ? `${activeChatBg} text-white`
                                                     : isConnected
                                                         ? `${cardBg} ${cardHoverBg} ${textPrimary}`
                                                         : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
                                                     }`}
                                             >
-                                                <p className="font-semibold">
+                                                <p className="font-semibold text-sm sm:text-base">
                                                     Session: {req.sessionId.slice(-6)}
                                                 </p>
                                                 {req.isTransfer && <p className="text-xs font-bold text-orange-600">{t("chatPanel.transferLabel")}</p>}
-                                                <p className="text-sm truncate">{req.initialMessage.content}</p>
+                                                <p className="text-xs sm:text-sm truncate">{req.initialMessage.content}</p>
                                             </button>
                                         );
                                     })}
@@ -502,10 +517,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                 e.stopPropagation();
                                                 if (!isTakenByOther) {
                                                     console.log(`[ChatPanel] Pending chat clicked! SessionId: ${req.sessionId}`);
-                                                    handleSelectChat(req, false);
+                                                    handleMobileSelectChat(req, false);
                                                 }
                                             }}
-                                            className={`w-full text-left p-3 rounded-lg transition-colors
+                                            className={`w-full text-left p-2.5 sm:p-3 rounded-lg transition-colors
                                                 ${req.isTransfer ? 'border-2 border-orange-400' : ''}
                                                 ${isTakenByOther
                                                     ? `${cardBg} opacity-60 cursor-not-allowed border border-green-500`
@@ -516,7 +531,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                             : `${cardBg} cursor-not-allowed opacity-50 ${textPrimary}`
                                                 }`}
                                         >
-                                            <p className={`font-semibold ${isTakenByOther ? textSecondary : ''}`}>
+                                            <p className={`font-semibold text-sm sm:text-base ${isTakenByOther ? textSecondary : ''}`}>
                                                 Session: {req.sessionId.slice(-6)}
                                             </p>
                                             {req.isTransfer && !isTakenByOther && (
@@ -527,7 +542,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                                     {t("chatPanel.takenBy", { agent: req.takenBy?.agentName })}
                                                 </p>
                                             ) : (
-                                                <p className={`text-sm truncate ${isTakenByOther ? textSecondary : ''}`}>
+                                                <p className={`text-xs sm:text-sm truncate ${isTakenByOther ? textSecondary : ''}`}>
                                                     {req.initialMessage.content}
                                                 </p>
                                             )}
@@ -546,124 +561,132 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                 </div>
             </div>
 
-            {/* CHATS */}
-            <div className={`flex-1 flex flex-col ${mainBg}`}>
+            {/* CHATS - Oculto en móvil cuando no hay chat activo o estamos en vista de lista */}
+            <div className={`
+                ${!activeChat || mobileView === 'list' ? 'hidden' : 'flex'}
+                md:flex
+                flex-1 flex-col min-w-0
+                ${mainBg}
+            `}>
                 {activeChat && ["in_progress", "bot"].includes(activeChat.status) ? (
                     <>
-                        <div className={`p-4 border-b flex justify-between items-center ${sidebarBg} ${sidebarBorderColor}`}>
-                            <h3 className={`text-lg font-bold ${textPrimary}`}>
-                                {t("chatPanel.activeChatTitle", {
-                                    id: activeChat.sessionId.slice(-6),
-                                })}
-                            </h3>
+                        <div className={`p-2 sm:p-4 border-b ${sidebarBg} ${sidebarBorderColor}`}>
+                            {/* Header con botón volver en móvil */}
+                            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                                {/* Botón volver - solo móvil */}
+                                <button
+                                    onClick={() => setMobileView('list')}
+                                    className={`md:hidden p-2 rounded-lg ${theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-[#EFF3F5]'}`}
+                                >
+                                    <ArrowLeft size={20} className={textPrimary} />
+                                </button>
+                                <h3 className={`text-base sm:text-lg font-bold ${textPrimary} truncate`}>
+                                    {t("chatPanel.activeChatTitle", {
+                                        id: activeChat.sessionId.slice(-6),
+                                    })}
+                                </h3>
+                            </div>
 
-                            {/* --- BOTÓN DE TRANSFERENCIA --- */}
-                            <button
-                                onClick={handleTransferToQueue}
-                                className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm flex items-center gap-1.5"
-                            >
-                                <Users size={14} />
-                                <span>{t("chatPanel.transferButton")}</span>
-                            </button>
+                            {/* Botones de acción - Responsive grid */}
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
+                                {/* --- BOTÓN DE TRANSFERENCIA --- */}
+                                <button
+                                    onClick={handleTransferToQueue}
+                                    className="px-2 sm:px-3 py-1.5 sm:py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5"
+                                >
+                                    <Users size={14} className="hidden sm:block" />
+                                    <span>{t("chatPanel.transferButton")}</span>
+                                </button>
 
-                            {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
-                            <button
-                                onClick={handleToggleBotStatus} // <-- Llama a la función toggle
-                                className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1.5 transition-colors ${activeChat.status === 'in_progress'
-                                    ? 'bg-green-500 hover:bg-green-600 text-white' // Estilo para "Resume Bot"
-                                    : 'bg-yellow-500 hover:bg-yellow-600 text-white' // Estilo para "Pause Bot"
-                                    }`}
-                            >
-                                {activeChat.status === 'in_progress' ? (
-                                    <>
-                                        <Play size={14} />
-                                        <span>{t("chatPanel.resumeBotButton")}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Pause size={14} />
-                                        <span>{t("chatPanel.pauseBotButton")}</span>
-                                    </>
-                                )}
-                            </button>
+                                {/* --- BOTÓN DE PAUSAR/REANUDAR BOT --- */}
+                                <button
+                                    onClick={handleToggleBotStatus}
+                                    className={`px-2 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors ${activeChat.status === 'in_progress'
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                                        : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                        }`}
+                                >
+                                    {activeChat.status === 'in_progress' ? (
+                                        <>
+                                            <Play size={14} className="hidden sm:block" />
+                                            <span>{t("chatPanel.resumeBotButton")}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Pause size={14} className="hidden sm:block" />
+                                            <span>{t("chatPanel.pauseBotButton")}</span>
+                                        </>
+                                    )}
+                                </button>
 
-                            {/* --- BOTÓN DE RESUMEN --- */}
-                            <button
-                                onClick={handleGetSummary}
-                                className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm flex items-center gap-1.5"
-                            >
-                                <FileText size={14} />
-                                <span>{t("chatPanel.summarizeButton")}</span>
-                            </button>
+                                {/* --- BOTÓN DE RESUMEN --- */}
+                                <button
+                                    onClick={handleGetSummary}
+                                    className="px-2 sm:px-3 py-1.5 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5"
+                                >
+                                    <FileText size={14} className="hidden sm:block" />
+                                    <span>{t("chatPanel.summarizeButton")}</span>
+                                </button>
 
-                            {/* --- BOTÓN DE CERRAR CHAT --- */}
-                            <button
-                                onClick={handleCloseChat}
-                                disabled={!isConnected}
-                                className={`px-3 py-1 rounded-lg text-sm ${isConnected
-                                    ? "bg-red-500 text-white hover:bg-red-600"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    }`}
-                            >
-                                {t("chatPanel.closeChatButton")}
-                            </button>
+                                {/* --- BOTÓN DE CERRAR CHAT --- */}
+                                <button
+                                    onClick={handleCloseChat}
+                                    disabled={!isConnected}
+                                    className={`px-2 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs sm:text-sm ${isConnected
+                                        ? "bg-red-500 text-white hover:bg-red-600"
+                                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        }`}
+                                >
+                                    {t("chatPanel.closeChatButton")}
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                        <div className="flex-1 p-2 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4">
 
                             {activeChat.messages.map((msg) => {
-                                // 1. Determina los roles para facilitar la lectura
                                 const isUser = msg.role === 'user';
                                 const isAgent = msg.role === 'agent';
                                 const isBot = msg.role === 'assistant';
-
-                                // 2. Define si el mensaje es "saliente" (del agente o del bot)
                                 const isOutgoing = isAgent || isBot;
-
                                 const isBotAttending = activeChat.status === "bot";
 
                                 return (
                                     <div
                                         key={msg.id}
-                                        // 3. La alineación ahora depende de si el mensaje es saliente
-                                        className={`flex items-start gap-3 ${isOutgoing ? 'justify-end' : 'justify-start'} ${isBotAttending ? 'opacity-20' : ''}`}
+                                        className={`flex items-start gap-2 sm:gap-3 ${isOutgoing ? 'justify-end' : 'justify-start'} ${isBotAttending ? 'opacity-20' : ''}`}
                                     >
                                         {/* --- AVATAR DEL USUARIO (IZQUIERDA) --- */}
                                         {isUser && (
-                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
-                                                {/* El usuario no tiene avatar en el panel, así que usamos un ícono genérico */}
-                                                <User className={`w-full h-full p-1.5 ${textSecondary}`} />
+                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
+                                                <User className={`w-full h-full p-1 sm:p-1.5 ${textSecondary}`} />
                                             </div>
                                         )}
 
-                                        {/* --- CUERPO DEL MENSAJE (EN EL MEDIO) --- */}
+                                        {/* --- CUERPO DEL MENSAJE --- */}
                                         <div
-                                            className={`max-w-[70%] px-4 py-2 rounded-xl ${
+                                            className={`max-w-[80%] sm:max-w-[70%] px-3 sm:px-4 py-2 rounded-xl ${
                                                 isAgent || isBot
                                                     ? `${agentBotMsgBg} text-white`
                                                     : `${userMsgBg} ${userMsgText} border ${theme === 'dark' ? 'border-[#3a4b57]' : 'border-gray-300'}`
                                             }`}
                                         >
-                                            {/* Nombre del remitente (si es agente o bot) */}
                                             {isAgent && <p className="text-xs font-bold text-white/80 mb-1">{msg.agentName}</p>}
                                             {isBot && <p className="text-xs font-bold text-white/80 mb-1">{activeBotConfig?.name || 'Bot'}</p>}
-
-                                            {/* Contenido del mensaje */}
-                                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                            <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                                         </div>
 
                                         {/* --- AVATAR DEL AGENTE O DEL BOT (DERECHA) --- */}
                                         {isOutgoing && (
-                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
+                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-[#EFF3F5] border-gray-300'}`}>
                                                 {isAgent && (
                                                     msg.avatarUrl ? (
                                                         <img src={msg.avatarUrl} alt={msg.agentName || 'Agent'} className="w-full h-full rounded-full object-cover" />
                                                     ) : (
-                                                        <User className={`w-full h-full p-1.5 ${textSecondary}`} /> // Avatar genérico para el agente
+                                                        <User className={`w-full h-full p-1 sm:p-1.5 ${textSecondary}`} />
                                                     )
                                                 )}
                                                 {isBot && (
-                                                    // 4. Usa el activeBotConfig para el avatar del bot
                                                     <img src={activeBotConfig?.avatarUrl || '/default-bot-avatar.png'} alt="Bot Avatar" className="w-full h-full rounded-full object-cover" />
                                                 )}
                                             </div>
@@ -674,15 +697,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <div className={`p-4 border-t ${sidebarBg} ${sidebarBorderColor}`}>
-                            <div className="flex space-x-2">
+                        <div className={`p-2 sm:p-4 border-t ${sidebarBg} ${sidebarBorderColor}`}>
+                            <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                                     disabled={!isConnected || activeChat.status === "bot"}
-                                    className={`flex-1 p-2 border rounded-lg ${textPrimary} ${!isConnected || activeChat.status === "bot"
+                                    className={`flex-1 p-2 text-sm sm:text-base border rounded-lg ${textPrimary} ${!isConnected || activeChat.status === "bot"
                                         ? `${inputDisabledBg} cursor-not-allowed opacity-20`
                                         : `${inputBg} focus:border-[#52A5E0] focus:outline-none`
                                         }`}
@@ -695,7 +718,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!isConnected || !input.trim()}
-                                    className={`px-4 py-2 rounded-lg ${isConnected && input.trim()
+                                    className={`px-3 sm:px-4 py-2 rounded-lg flex-shrink-0 ${isConnected && input.trim()
                                         ? `${agentBotMsgBg} text-white hover:opacity-90`
                                         : theme === 'dark' ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                         }`}
@@ -706,12 +729,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
                         </div>
                     </>
                 ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <p className={`text-xl ${textSecondary}`}>
-                            {activeChat?.status === "closed"
-                                ? t("chatPanel.chatClosed")
-                                : t("chatPanel.selectChatPrompt")}
-                        </p>
+                    <div className="flex items-center justify-center h-full p-4">
+                        <div className="text-center">
+                            <MessageSquare size={48} className={`mx-auto mb-4 ${textSecondary} opacity-50`} />
+                            <p className={`text-base sm:text-xl ${textSecondary}`}>
+                                {activeChat?.status === "closed"
+                                    ? t("chatPanel.chatClosed")
+                                    : t("chatPanel.selectChatPrompt")}
+                            </p>
+                        </div>
                     </div>
                 )}
 
@@ -720,27 +746,27 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ workspaceId }) => {
 
             {/* Modal de Resumen */}
             {isSummaryModalOpen && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className={`rounded-lg shadow-xl w-full max-w-lg p-6 ${modalBg}`}>
-                        <h3 className={`text-lg font-bold mb-4 ${textPrimary}`}>{t("chatPanel.conversationSummary")}</h3>
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className={`rounded-lg shadow-xl w-full max-w-[95vw] sm:max-w-lg p-4 sm:p-6 ${modalBg}`}>
+                        <h3 className={`text-base sm:text-lg font-bold mb-3 sm:mb-4 ${textPrimary}`}>{t("chatPanel.conversationSummary")}</h3>
                         {isSummarizing ? (
-                            <div className="flex items-center justify-center h-24">
-                                <Loader2 className={`h-8 w-8 animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-500'}`} />
+                            <div className="flex items-center justify-center h-20 sm:h-24">
+                                <Loader2 className={`h-6 w-6 sm:h-8 sm:w-8 animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-500'}`} />
                             </div>
                         ) : summaryText.startsWith('Error:') ? (
-                            <div className={`text-sm p-4 rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                            <div className={`text-xs sm:text-sm p-3 sm:p-4 rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'}`}>
                                 <p className="font-semibold mb-2">{t("chatPanel.errorOccurred") || "Error"}</p>
                                 <p className="whitespace-pre-wrap">{summaryText.replace('Error: ', '')}</p>
                             </div>
                         ) : (
-                            <div className={`text-sm whitespace-pre-wrap max-h-96 overflow-y-auto ${modalTextColor}`}>
+                            <div className={`text-xs sm:text-sm whitespace-pre-wrap max-h-[50vh] sm:max-h-96 overflow-y-auto ${modalTextColor}`}>
                                 {summaryText}
                             </div>
                         )}
-                        <div className="mt-6 flex justify-end">
+                        <div className="mt-4 sm:mt-6 flex justify-end">
                             <button
                                 onClick={() => setIsSummaryModalOpen(false)}
-                                className={`px-4 py-2 rounded-md ${buttonCloseBg} ${textPrimary}`}
+                                className={`px-3 sm:px-4 py-2 rounded-md text-sm ${buttonCloseBg} ${textPrimary}`}
                             >
                                 {t("chatPanel.close")}
                             </button>

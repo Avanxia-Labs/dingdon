@@ -162,7 +162,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { redirect, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3, Monitor } from 'lucide-react';
+import { MessageSquare, Users, Settings, History, Star, UserCircle, Target, BarChart3, Monitor, Menu, X } from 'lucide-react';
 import { SocketProvider } from '@/providers/SocketContext';
 import { I18nProvider } from '@/providers/I18nProvider';
 import { useTranslation } from 'react-i18next';
@@ -181,6 +181,7 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const [workspaceName, setWorkspaceName] = useState('Loading...');
     const [agentName, setAgentName] = useState(session?.user?.name || 'Loading...');
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Detectar el tema actual
     useEffect(() => {
@@ -193,6 +194,11 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         return () => observer.disconnect();
     }, []);
+
+    // Cerrar menú móvil cuando cambia la ruta
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
 
     // Estado para controlar si hay requests pendientes o chats asignados
     const hasRequestsPending = requests.length > 0 || assignedChats.length > 0;
@@ -229,15 +235,15 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const { workspaceRole, email } = session!.user;
 
     const navItems = [
-        { href: '/dashboard', label: t('dashboardLayout.liveChats'), icon: <MessageSquare className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
-        { href: '/dashboard/members', label: t('dashboardLayout.teamMembers'), icon: <Users className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/history', label: t('dashboardLayout.chatHistory'), icon: <History className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/leads', label: t('dashboardLayout.leads'), icon: <Star className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/profile', label: t('dashboardLayout.profile'), icon: <UserCircle className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
-        { href: '/dashboard/monitoring', label: "Monitoring", icon: <Monitor className="mr-3 h-5 w-5" />, requiredRole: ['admin', 'agent'] },
-        { href: '/dashboard/lead-classification', label: t('dashboardLayout.leadClassification'), icon: <Target className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/reports', label: t('dashboardLayout.reports'), icon: <BarChart3 className="mr-3 h-5 w-5" />, requiredRole: ['admin'] },
-        { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="mr-3 h-5 w-5" />, requiredRole: ['admin'] }
+        { href: '/dashboard', label: t('dashboardLayout.liveChats'), icon: <MessageSquare className="h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/members', label: t('dashboardLayout.teamMembers'), icon: <Users className="h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/history', label: t('dashboardLayout.chatHistory'), icon: <History className="h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/leads', label: t('dashboardLayout.leads'), icon: <Star className="h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/profile', label: t('dashboardLayout.profile'), icon: <UserCircle className="h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/monitoring', label: "Monitoring", icon: <Monitor className="h-5 w-5" />, requiredRole: ['admin', 'agent'] },
+        { href: '/dashboard/lead-classification', label: t('dashboardLayout.leadClassification'), icon: <Target className="h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/reports', label: t('dashboardLayout.reports'), icon: <BarChart3 className="h-5 w-5" />, requiredRole: ['admin'] },
+        { href: '/dashboard/settings', label: t('dashboardLayout.settingsAndBot'), icon: <Settings className="h-5 w-5" />, requiredRole: ['admin'] }
     ];
 
     // Color palette
@@ -248,38 +254,88 @@ function DashboardUI({ children }: { children: React.ReactNode }) {
     const textSecondary = theme === 'dark' ? 'text-[#C8CDD0]' : 'text-[#697477]';
     const navItemInactive = theme === 'dark' ? 'text-[#C8CDD0] hover:bg-[#2a3b47]' : 'text-[#697477] hover:bg-[#EFF3F5]';
     const navItemActive = theme === 'dark' ? 'bg-[#2a3b47]' : 'bg-[#EFF3F5]';
+    const mobileHeaderBg = theme === 'dark' ? 'bg-[#212E36] border-[#2a3b47]' : 'bg-white border-gray-200';
+
+    // Componente de navegación reutilizable
+    const NavContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+        <>
+            <nav className={`flex-1 px-2 py-4 space-y-1 ${isMobile ? 'overflow-y-auto' : ''}`}>
+                {navItems.map(item => (
+                    workspaceRole && item.requiredRole.includes(workspaceRole) && (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => isMobile && setIsMobileMenuOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? `${navItemActive} ${textPrimary}` : navItemInactive}`}
+                        >
+                            {item.icon}
+                            <span className="truncate">{item.label}</span>
+                            {item.href === '/dashboard' && hasRequestsPending && (
+                                <span className="ml-auto inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse flex-shrink-0" title={t('dashboardLayout.online')}></span>
+                            )}
+                        </Link>
+                    )
+                ))}
+            </nav>
+            <div className={`p-4 border-t space-y-4 ${sidebarBorderColor}`}>
+                <div>
+                    <p className={`text-sm font-semibold truncate ${textPrimary}`}>{agentName}</p>
+                    <p className={`text-xs mb-2 truncate ${textSecondary}`}>{email}</p>
+                    <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full py-2 bg-red-600 rounded-lg text-sm font-medium hover:bg-red-500 text-white">
+                        {t('dashboardLayout.signOut')}
+                    </button>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                    <LanguageSwitcher setLanguage={setLanguage} />
+                    {isMobile && <ThemeToggle />}
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <div className={`flex h-screen ${mainBg}`}>
-            <aside className={`w-64 flex flex-col ${sidebarBg}`}>
-                <div className={`p-4 font-bold text-xl border-b ${textPrimary} ${sidebarBorderColor} flex items-center justify-between`}>
-                    <span>{workspaceName}</span>
+            {/* Mobile Header - Solo visible en móvil */}
+            <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${mobileHeaderBg} border-b px-4 flex justify-between items-center z-40`}>
+                <h1 className={`font-bold text-base truncate max-w-[200px] ${textPrimary}`}>{workspaceName}</h1>
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-[#2a3b47]' : 'hover:bg-gray-100'}`}
+                        aria-label="Toggle menu"
+                    >
+                        {isMobileMenuOpen ? <X size={22} className={textPrimary} /> : <Menu size={22} className={textPrimary} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/50 z-40 pt-14"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                >
+                    <aside
+                        className={`${sidebarBg} w-72 max-w-[85vw] h-full flex flex-col shadow-xl`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <NavContent isMobile={true} />
+                    </aside>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Oculto en móvil, visible en lg+ */}
+            <aside className={`hidden lg:flex w-64 flex-col flex-shrink-0 ${sidebarBg} border-r ${sidebarBorderColor}`}>
+                <div className={`p-4 font-bold text-lg border-b ${textPrimary} ${sidebarBorderColor} flex items-center justify-between gap-2`}>
+                    <span className="truncate">{workspaceName}</span>
                     <ThemeToggle />
                 </div>
-                <nav className="flex-1 px-2 py-4 space-y-1">
-                    {navItems.map(item => (
-                        workspaceRole && item.requiredRole.includes(workspaceRole) && (
-                            <Link key={item.href} href={item.href} className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === item.href ? `${navItemActive} ${textPrimary}` : navItemInactive}`}>
-                                {item.icon}<span>{item.label}</span>
-
-                                {/* Bolita de Live Chats */}
-                                {item.href === '/dashboard' && hasRequestsPending &&  <span className="ml-auto inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse" title={t('dashboardLayout.online')}></span>}
-                            </Link>
-                        )
-                    ))}
-                </nav>
-                <div className={`p-4 border-t space-y-4 ${sidebarBorderColor}`}>
-                    <div>
-                        <p className={`text-sm font-semibold ${textPrimary}`}>{agentName}</p>
-                        <p className={`text-xs mb-2 ${textSecondary}`}>{email}</p>
-                        <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full py-2 bg-red-600 rounded-lg text-sm font-medium hover:bg-red-500 text-white">{t('dashboardLayout.signOut')}</button>
-                    </div>
-                    <div className="flex items-center justify-center">
-                        <LanguageSwitcher setLanguage={setLanguage} />
-                    </div>
-                </div>
+                <NavContent />
             </aside>
-            <main className="flex-1 overflow-y-auto">{children}</main>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">{children}</main>
         </div>
     );
 }

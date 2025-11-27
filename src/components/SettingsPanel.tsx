@@ -174,28 +174,28 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
     const embedCode = `<script src="${appUrl}/loader.js" data-bot-color="${botColor}" data-workspace-id="${workspaceId}" defer></script>`;
 
     return (
-        <div className={`min-h-screen py-6 px-4 sm:px-6 lg:px-8 ${mainBg}`}>
+        <div className={`min-h-screen py-4 sm:py-6 px-3 sm:px-6 lg:px-8 ${mainBg}`}>
             <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className={`text-3xl font-bold mb-2 ${textPrimary}`}>{t('settings.pageTitle')}</h1>
-                    <p className={textSecondary}>{t('settings.pageSubtitle')}</p>
+                <div className="text-center mb-6 sm:mb-8">
+                    <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${textPrimary}`}>{t('settings.pageTitle')}</h1>
+                    <p className={`text-sm sm:text-base ${textSecondary}`}>{t('settings.pageSubtitle')}</p>
                 </div>
                 {feedback && (
-                    <div className={`mb-6 p-4 rounded-lg border ${feedback.includes(t('common.errorPrefix')) ? 'bg-red-50 border-red-200 text-red-700' : feedback.includes(t('settings.feedback.savedSuccess')) ? 'bg-green-50 border-green-200 text-green-700' : theme === 'dark' ? 'bg-[#2a3b47] border-[#52A5E0] text-[#52A5E0]' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                    <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg border ${feedback.includes(t('common.errorPrefix')) ? 'bg-red-50 border-red-200 text-red-700' : feedback.includes(t('settings.feedback.savedSuccess')) ? 'bg-green-50 border-green-200 text-green-700' : theme === 'dark' ? 'bg-[#2a3b47] border-[#52A5E0] text-[#52A5E0]' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
                         <div className="flex items-center">
-                            <Info className="w-5 h-5 mr-3 flex-shrink-0" />
-                            <p className="text-sm font-medium">{feedback}</p>
+                            <Info className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
+                            <p className="text-xs sm:text-sm font-medium">{feedback}</p>
                         </div>
                     </div>
                 )}
-                <div className="space-y-8">
+                <div className="space-y-6 sm:space-y-8">
                     <div className={`shadow-sm rounded-xl border ${cardBg} ${borderColor}`}>
-                        <div className={`px-6 py-4 border-b ${borderColor}`}>
-                            <h2 className={`text-xl font-semibold flex items-center ${textPrimary}`}><SlidersHorizontal className={`w-5 h-5 mr-2 ${theme === 'dark' ? 'text-[#52A5E0]' : 'text-[#1083D3]'}`} />{t('settings.customization.title')}</h2>
-                            <p className={`text-sm mt-1 ${textSecondary}`}>{t('settings.customization.subtitle')}</p>
+                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${borderColor}`}>
+                            <h2 className={`text-lg sm:text-xl font-semibold flex items-center ${textPrimary}`}><SlidersHorizontal className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${theme === 'dark' ? 'text-[#52A5E0]' : 'text-[#1083D3]'}`} />{t('settings.customization.title')}</h2>
+                            <p className={`text-xs sm:text-sm mt-1 ${textSecondary}`}>{t('settings.customization.subtitle')}</p>
                         </div>
-                        <form onSubmit={handleSaveSettings} className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleSaveSettings} className="p-4 sm:p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
                                     <label htmlFor="botName" className={`block text-sm font-medium mb-2 ${textPrimary}`}>{t('settings.botName.label')}</label>
                                     <p className={`text-xs mb-3 ${textSecondary}`}>{t('settings.botName.description')}</p>
@@ -297,24 +297,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
 
 
                             </div>
-                            <div className="mt-6 flex justify-end"><button type="submit" className={`px-6 py-2 text-white font-medium rounded-lg focus:ring-2 focus:ring-[#52A5E0] ${buttonPrimaryBg}`}>{t('settings.saveButton')}</button></div>
+                            <div className="mt-4 sm:mt-6 flex justify-end"><button type="submit" className={`w-full sm:w-auto px-6 py-2 text-white font-medium rounded-lg focus:ring-2 focus:ring-[#52A5E0] ${buttonPrimaryBg}`}>{t('settings.saveButton')}</button></div>
                         </form>
                     </div>
                     <div className={`shadow-sm rounded-xl border ${cardBg} ${borderColor}`}>
-                        <div className={`px-6 py-4 border-b ${borderColor}`}>
-                            <h2 className={`text-xl font-semibold flex items-center ${textPrimary}`}><Code2 className="w-5 h-5 mr-2 text-green-600" />{t('settings.installation.title')}</h2>
-                            <p className={`text-sm mt-1 ${textSecondary}`}>{t('settings.installation.subtitle')}</p>
+                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${borderColor}`}>
+                            <h2 className={`text-lg sm:text-xl font-semibold flex items-center ${textPrimary}`}><Code2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-600" />{t('settings.installation.title')}</h2>
+                            <p className={`text-xs sm:text-sm mt-1 ${textSecondary}`}>{t('settings.installation.subtitle')}</p>
                         </div>
-                        <div className="p-6">
-                            <div className="mb-6">
-                                <h3 className={`text-lg font-medium mb-3 ${textPrimary}`}>{t('settings.installation.embedTitle')}</h3>
-                                <p className={`text-sm mb-4 ${textSecondary}`}>{t('settings.installation.embedDescription')}</p>
-                                <div className="relative"><pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto"><code>{embedCode}</code></pre><button onClick={() => { navigator.clipboard.writeText(embedCode); setFeedback(t('settings.feedback.copied')); }} className="absolute top-2 right-2 px-3 py-1 bg-gray-700 text-white text-xs rounded hover:bg-gray-600">{t('settings.installation.copyButton')}</button></div>
+                        <div className="p-4 sm:p-6">
+                            <div className="mb-4 sm:mb-6">
+                                <h3 className={`text-base sm:text-lg font-medium mb-2 sm:mb-3 ${textPrimary}`}>{t('settings.installation.embedTitle')}</h3>
+                                <p className={`text-xs sm:text-sm mb-3 sm:mb-4 ${textSecondary}`}>{t('settings.installation.embedDescription')}</p>
+                                <div className="relative"><pre className="bg-gray-900 text-gray-100 p-3 sm:p-4 rounded-lg text-xs sm:text-sm overflow-x-auto"><code className="break-all">{embedCode}</code></pre><button onClick={() => { navigator.clipboard.writeText(embedCode); setFeedback(t('settings.feedback.copied')); }} className="absolute top-2 right-2 px-2 sm:px-3 py-1 bg-gray-700 text-white text-xs rounded hover:bg-gray-600">{t('settings.installation.copyButton')}</button></div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className={`rounded-lg p-4 ${theme === 'dark' ? 'bg-[#2a3b47] border border-[#52A5E0]/30' : 'bg-blue-50 border border-blue-200'}`}>
-                                    <h4 className={`font-medium mb-2 flex items-center ${theme === 'dark' ? 'text-[#EFF3F5]' : 'text-blue-900'}`}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                <div className={`rounded-lg p-3 sm:p-4 ${theme === 'dark' ? 'bg-[#2a3b47] border border-[#52A5E0]/30' : 'bg-blue-50 border border-blue-200'}`}>
+                                    <h4 className={`font-medium mb-2 flex items-center text-sm sm:text-base ${theme === 'dark' ? 'text-[#EFF3F5]' : 'text-blue-900'}`}>
                                         <BadgeCheck className="w-4 h-4 mr-2" />
                                         {t('settings.installation.wpTitle')}
                                     </h4>
@@ -391,25 +391,25 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ workspaceId }) => 
                         </div>
                     </div>
                     <div className={`shadow-sm rounded-xl border ${cardBg} ${borderColor}`}>
-                        <div className={`px-6 py-4 border-b ${borderColor}`}>
-                            <h2 className={`text-xl font-semibold flex items-center ${textPrimary}`}><FileText className="w-5 h-5 mr-2 text-purple-600" />{t('settings.knowledge.title')}</h2>
-                            <p className={`text-sm mt-1 ${textSecondary}`}>{t('settings.knowledge.subtitle')}</p>
+                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${borderColor}`}>
+                            <h2 className={`text-lg sm:text-xl font-semibold flex items-center ${textPrimary}`}><FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-600" />{t('settings.knowledge.title')}</h2>
+                            <p className={`text-xs sm:text-sm mt-1 ${textSecondary}`}>{t('settings.knowledge.subtitle')}</p>
                         </div>
-                        <div className="p-6">
-                            <p className={`text-sm mb-4 ${textSecondary}`}>{t('settings.knowledge.description')}</p>
-                            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${theme === 'dark' ? 'border-[#2a3b47] hover:border-[#3a4b57]' : 'border-gray-300 hover:border-gray-400'}`}><UploadCloud className={`mx-auto h-12 w-12 ${textSecondary}`} strokeWidth={1.5} /><div className="mt-4"><label htmlFor="file-upload" className="cursor-pointer"><span className={`mt-2 block text-sm font-medium ${textPrimary}`}>{t('settings.knowledge.uploadLabel')}</span><span className={`block text-xs mt-1 ${textSecondary}`}>{t('settings.knowledge.uploadHint')}</span></label><input id="file-upload" type="file" onChange={handleFileChange} accept=".pdf,.txt,.docx" className="hidden" /></div></div>
-                            {file && (<div className={`mt-4 p-3 rounded-lg border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-gray-50 border-gray-200'}`}><div className="flex items-center justify-between"><div className="flex items-center"><File className={`w-4 h-4 mr-2 ${textSecondary}`} /><span className={`text-sm ${textPrimary}`}>{file.name}</span></div><button onClick={() => setFile(null)} className="text-red-500 hover:text-red-700 text-sm">{t('settings.knowledge.removeButton')}</button></div></div>)}
-                            <div className="mt-6 flex justify-end"><button onClick={handleKnowledgeUpload} disabled={!file || isUploading} className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 disabled:bg-gray-400">{isUploading ? (<><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" />{t('settings.knowledge.processingButton')}</>) : (t('settings.knowledge.uploadButton'))}</button></div>
+                        <div className="p-4 sm:p-6">
+                            <p className={`text-xs sm:text-sm mb-3 sm:mb-4 ${textSecondary}`}>{t('settings.knowledge.description')}</p>
+                            <div className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center ${theme === 'dark' ? 'border-[#2a3b47] hover:border-[#3a4b57]' : 'border-gray-300 hover:border-gray-400'}`}><UploadCloud className={`mx-auto h-10 w-10 sm:h-12 sm:w-12 ${textSecondary}`} strokeWidth={1.5} /><div className="mt-3 sm:mt-4"><label htmlFor="file-upload" className="cursor-pointer"><span className={`mt-2 block text-sm font-medium ${textPrimary}`}>{t('settings.knowledge.uploadLabel')}</span><span className={`block text-xs mt-1 ${textSecondary}`}>{t('settings.knowledge.uploadHint')}</span></label><input id="file-upload" type="file" onChange={handleFileChange} accept=".pdf,.txt,.docx" className="hidden" /></div></div>
+                            {file && (<div className={`mt-3 sm:mt-4 p-3 rounded-lg border ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57]' : 'bg-gray-50 border-gray-200'}`}><div className="flex items-center justify-between gap-2"><div className="flex items-center min-w-0"><File className={`w-4 h-4 mr-2 flex-shrink-0 ${textSecondary}`} /><span className={`text-xs sm:text-sm ${textPrimary} truncate`}>{file.name}</span></div><button onClick={() => setFile(null)} className="text-red-500 hover:text-red-700 text-xs sm:text-sm flex-shrink-0">{t('settings.knowledge.removeButton')}</button></div></div>)}
+                            <div className="mt-4 sm:mt-6 flex justify-end"><button onClick={handleKnowledgeUpload} disabled={!file || isUploading} className="w-full sm:w-auto px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 disabled:bg-gray-400 text-sm">{isUploading ? (<><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" />{t('settings.knowledge.processingButton')}</>) : (t('settings.knowledge.uploadButton'))}</button></div>
                         </div>
                     </div>
                     <div className={`shadow-sm rounded-xl border opacity-60 ${cardBg} ${borderColor}`}>
-                        <div className={`px-6 py-4 border-b ${borderColor}`}>
-                            <div className="flex items-center justify-between"><h2 className={`text-xl font-semibold flex items-center ${textSecondary}`}><Globe className={`w-5 h-5 mr-2 ${textSecondary}`} />{t('settings.comingSoon.title')}</h2><span className={`px-2 py-1 text-xs font-semibold rounded-full ${theme === 'dark' ? 'text-[#C8CDD0] bg-[#2a3b47]' : 'text-gray-500 bg-gray-200'}`}>{t('settings.comingSoon.tag')}</span></div>
-                            <p className={`text-sm mt-1 ${textSecondary}`}>{t('settings.comingSoon.subtitle')}</p>
+                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${borderColor}`}>
+                            <div className="flex items-center justify-between gap-2"><h2 className={`text-lg sm:text-xl font-semibold flex items-center ${textSecondary}`}><Globe className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${textSecondary}`} />{t('settings.comingSoon.title')}</h2><span className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${theme === 'dark' ? 'text-[#C8CDD0] bg-[#2a3b47]' : 'text-gray-500 bg-gray-200'}`}>{t('settings.comingSoon.tag')}</span></div>
+                            <p className={`text-xs sm:text-sm mt-1 ${textSecondary}`}>{t('settings.comingSoon.subtitle')}</p>
                         </div>
-                        <div className="p-6">
-                            <p className={`text-sm mb-4 ${textSecondary}`}>{t('settings.comingSoon.description')}</p>
-                            <div className="flex gap-4"><input type="url" placeholder="https://www.example.com" className={`flex-1 px-3 py-2 border rounded-lg cursor-not-allowed ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57] text-[#C8CDD0]' : 'bg-gray-100 border-gray-300'}`} disabled /><button disabled className={`px-6 py-2 text-white font-medium rounded-lg cursor-not-allowed ${theme === 'dark' ? 'bg-[#3a4b57]' : 'bg-gray-400'}`}>{t('settings.comingSoon.crawlButton')}</button></div>
+                        <div className="p-4 sm:p-6">
+                            <p className={`text-xs sm:text-sm mb-3 sm:mb-4 ${textSecondary}`}>{t('settings.comingSoon.description')}</p>
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"><input type="url" placeholder="https://www.example.com" className={`flex-1 px-3 py-2 border rounded-lg cursor-not-allowed text-sm ${theme === 'dark' ? 'bg-[#2a3b47] border-[#3a4b57] text-[#C8CDD0]' : 'bg-gray-100 border-gray-300'}`} disabled /><button disabled className={`w-full sm:w-auto px-6 py-2 text-white font-medium rounded-lg cursor-not-allowed text-sm ${theme === 'dark' ? 'bg-[#3a4b57]' : 'bg-gray-400'}`}>{t('settings.comingSoon.crawlButton')}</button></div>
                         </div>
                     </div>
                 </div>
